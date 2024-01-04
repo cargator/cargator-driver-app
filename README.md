@@ -50,6 +50,13 @@ npm run ios
 yarn ios
 ```
 
+```bash
+# generating build
+cd ios/ && pod deintegrate && pod install
+
+# for building app follow this link:
+```
+link: https://stackoverflow.com/questions/42110496/how-to-build-ipa-application-for-react-native-ios
 
 
 If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
