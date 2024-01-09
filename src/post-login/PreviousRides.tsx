@@ -65,6 +65,7 @@ const PreviousRides = (props: any) => {
 
             <Text
               style={{
+                fontFamily: 'RobotoMono-Regular',
                 fontSize: hp(2.5),
                 color: '#000000',
                 marginBottom: hp(1),
@@ -129,6 +130,7 @@ const PreviousRides = (props: any) => {
                         <View>
                           <Text
                             style={{
+                              fontFamily: 'RobotoMono-Regular',
                               color: '#000000',
                               marginBottom: hp(0.5),
                               fontWeight: '700',
@@ -147,6 +149,7 @@ const PreviousRides = (props: any) => {
                         }}>
                         <Text
                           style={{
+                            fontFamily: 'RobotoMono-Regular',
                             color: '#000000',
                             fontWeight: '500',
                             marginLeft: wp(2),
@@ -177,6 +180,7 @@ const PreviousRides = (props: any) => {
                           }}>
                           <Text
                             style={{
+                              fontFamily: 'RobotoMono-Regular',
                               color:
                                 rides?.status == 'cancelled'
                                   ? '#EB5757'
@@ -219,6 +223,7 @@ const styles = StyleSheet.create({
     // width: wp(100),
   },
   noRidesContainerText: {
+    fontFamily: 'RobotoMono-Regular',
     fontWeight: '800',
     color: '#000',
     fontSize: hp(5),
@@ -267,6 +272,7 @@ const styles = StyleSheet.create({
     // maxWidth: wp(70),
   },
   spinnerAddressText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#000000',
     // marginLeft: wp(2),
     fontWeight: '500',

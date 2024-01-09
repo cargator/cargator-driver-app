@@ -122,7 +122,7 @@ const LoginScreen = ({navigation}: any) => {
               <View style={styles.formikContainer}>
                 <View>
                   <Text style={styles.textEnterNumber}>
-                    Enter Your mobile number
+                    Enter your mobile number
                   </Text>
                   <Text style={styles.textContinue}>to continue</Text>
                 </View>
@@ -199,11 +199,13 @@ const styles = StyleSheet.create({
     marginVertical: hp(4),
   },
   textEnterNumber: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'black',
     fontSize: wp(5),
     fontWeight: '600',
   },
   textContinue: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#747688',
     fontSize: wp(5),
     alignSelf: 'flex-start',
@@ -221,16 +223,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mobileInputCountryCode: {
+    fontFamily: 'RobotoMono-Regular',
     fontSize: wp(4.5),
     marginLeft: wp(0.5),
   },
   mobileInputErrorText: {
+    fontFamily: 'RobotoMono-Regular',
     fontSize: hp(2),
     color: 'red',
     position: 'absolute',
     top: hp(-2.5),
   },
   mobileInput: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#747688',
     width: wp(90),
     borderRadius: wp(3),
@@ -254,6 +259,7 @@ const styles = StyleSheet.create({
     gap: wp(2),
   },
   buttonText: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontSize: wp(4.5),
     fontWeight: '600',

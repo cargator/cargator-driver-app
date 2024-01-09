@@ -730,10 +730,11 @@ const MapScreen = ({navigation}: any) => {
                 <TouchableOpacity onPress={handleLogout}>
                   <Text style={styles.logoutText}>Logout</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                  setDeleteModal(true)
-                  setIsProfileModal(false)
-                }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setDeleteModal(true);
+                    setIsProfileModal(false);
+                  }}>
                   <Text style={styles.deleteText}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -1260,8 +1261,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoutText: {fontSize: wp(4.5), fontWeight: 'bold'},
+  logoutText: {
+    fontFamily: 'RobotoMono-Regular',
+    fontSize: wp(4.5), 
+    fontWeight: 'bold'
+  },
   deleteText: {
+    fontFamily: 'RobotoMono-Regular',
     fontSize: wp(4.5),
     fontWeight: 'bold',
     color: 'red',
@@ -1282,6 +1288,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileIconText: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontSize: wp(5),
   },
@@ -1310,12 +1317,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   offlineModalHeaderText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontWeight: '500',
     fontSize: wp(5.5),
     textAlign: 'center',
   },
   offlineModalBodyText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#464E5F',
     fontWeight: '500',
     fontSize: wp(4.5),
@@ -1334,11 +1343,13 @@ const styles = StyleSheet.create({
     gap: hp(1),
   },
   availableRidesAddressText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontWeight: 'bold',
     fontSize: hp(2.5),
   },
   availableRidesAddressDataText: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'grey',
     fontSize: hp(2),
   },
@@ -1401,11 +1412,13 @@ const styles = StyleSheet.create({
     gap: hp(0.5),
   },
   pickupDropModalText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontWeight: 'bold',
     fontSize: hp(2),
   },
   pickupDropModalTextData: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'grey',
     fontSize: hp(1.7),
   },
@@ -1460,6 +1473,7 @@ const styles = StyleSheet.create({
     borderWidth: wp(0.4),
   },
   textStyle: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
@@ -1476,6 +1490,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   textNavigateReached: {
+    fontFamily: 'RobotoMono-Regular',
     textAlign: 'center',
     color: '#212121',
     fontSize: wp(4.5),
@@ -1594,6 +1609,7 @@ const styles = StyleSheet.create({
     bottom: hp(15),
   },
   reachedPickupTextEnterOtp: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'black',
     fontSize: wp(5.5),
     fontWeight: 'bold',
@@ -1602,16 +1618,19 @@ const styles = StyleSheet.create({
     marginBottom: wp(1),
   },
   reachedPickupOtpInput: {
+    fontFamily: 'RobotoMono-Regular',
     width: wp(35),
     height: hp(5),
   },
   reachedPickupDoneBtnText: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontWeight: '500',
     textAlign: 'center',
     fontSize: wp(4.5),
   },
   rideCompletedModalText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontSize: wp(4.4),
     textAlign: 'center',
@@ -1623,18 +1642,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   rideCompletedModalNoBtnText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#EB5757',
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: wp(4),
   },
   rideCompletedModalYesBtnText: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: wp(4),
   },
   paymentModalHeaderText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontSize: wp(5),
     textAlign: 'center',
@@ -1642,6 +1664,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   paymentModalBodyText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontSize: wp(4),
     textAlign: 'center',
@@ -1654,11 +1677,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   paymentModalFareRupeeSymbol: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#000000',
     fontSize: wp(6),
     marginRight: 8,
   },
   paymentModalFareText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontSize: wp(6),
     fontWeight: 'bold',
@@ -1703,6 +1728,7 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   modalText1: {
+    fontFamily: 'RobotoMono-Regular',
     fontSize: 18,
     marginBottom: 20,
     textAlign: 'center',
@@ -1728,6 +1754,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#fff',
     fontSize: 16,
   },

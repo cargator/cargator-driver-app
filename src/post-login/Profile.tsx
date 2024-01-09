@@ -194,11 +194,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   contentViewHeading: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#9CA3AF',
     fontSize: hp(1.8),
     fontWeight: '500',
   },
   contentViewText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontSize: hp(2.2),
     fontWeight: '500',
@@ -210,7 +212,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
   },
-  date: {marginTop: hp(5), color: '#BAB6B6'},
+  date: {fontFamily: 'RobotoMono-Regular',marginTop: hp(5), color: '#BAB6B6'},
 });
 
 export default Profile;

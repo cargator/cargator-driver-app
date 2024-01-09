@@ -36,16 +36,16 @@ const SelectCustomer = ({
     <View style={styles.centeredView}>
       <View style={styles.modalView}>
         <View>
-          <Text style={{color: 'black', fontWeight: 'bold'}}>
+          <Text style={{fontFamily: 'RobotoMono-Regular',color: 'black', fontWeight: 'bold'}}>
             Pickup Location:
           </Text>
-          <Text style={{color: 'black', fontSize: hp(1.8)}}>
+          <Text style={{fontFamily: 'RobotoMono-Regular',color: 'black', fontSize: hp(1.8)}}>
             {chooseRide.pickUpAddress}
           </Text>
         </View>
 
         <View>
-          <Text style={{color: 'black', fontWeight: 'bold', margin: wp(2)}}>
+          <Text style={{fontFamily: 'RobotoMono-Regular', color: 'black', fontWeight: 'bold', margin: wp(2)}}>
             Estimated Fare: $10
           </Text>
         </View>
@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
   },
   textStyle: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
