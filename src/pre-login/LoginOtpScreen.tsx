@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: wp(1),
     color: 'black',
     fontSize: wp(6),
-    borderColor: '#404080',
+    borderColor: '#118F5E',
     fontWeight: '600',
   },
   underlineStyleHighLighted: {
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     height: hp(6),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#404080',
+    backgroundColor: '#118F5E',
     borderRadius: wp(3),
     marginTop: hp(2),
     flexDirection: 'row',

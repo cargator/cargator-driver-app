@@ -46,6 +46,7 @@ import * as geolib from 'geolib';
 import {isEmpty as _isEmpty} from 'lodash';
 import {FetchUserImage} from '../components/functions';
 import RNFetchBlob from 'rn-fetch-blob';
+import customAxios from '../services/appservices';
 // import Spinner from 'react-native-spinkit';
 
 export let socketInstance: any;
@@ -57,6 +58,7 @@ const MapScreen = ({navigation}: any) => {
   const profileImageKey = useSelector(
     (store: any) => store.userData.profileImageKey,
   );
+  const documentsKey = useSelector((store: any) => store.userData.documentsKey);
   const userImg = useSelector((store: any) => store.userImage.path);
   const rideDetails = useSelector((store: any) => store.rideDetails);
   // const pendingPayment = useSelector((store: any) => store.pendingPayment);
@@ -76,6 +78,7 @@ const MapScreen = ({navigation}: any) => {
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
   const mapRef = useRef<any>(null);
   const [OTP, setOTP] = useState('');
+  const [deleteModal, setDeleteModal] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isReachedDrop, setIsReachedDrop] = useState<boolean>(false);
   const [isChatComponent, setIsChatComponent] = useState<boolean>(false);
@@ -96,6 +99,17 @@ const MapScreen = ({navigation}: any) => {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const res = await customAxios.patch(`/update-driver-status/${userId}`);
+      if (res) {
+        handleLogout();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleSeenAllMessges = () => {
     // console.log(`handleSeenAllMessages called !`);
     socketInstance.emit('all-chat-messages-seen', {
@@ -108,7 +122,7 @@ const MapScreen = ({navigation}: any) => {
     socketInstance.on('chat-message', (body: any) => {
       console.log(`chat-message event >> body :>> `, body);
       body = JSON.parse(body);
-      if (body.status == 203) {
+      if (body.message == 'New message from rider') {
         setMessages((previousMessages: any) =>
           GiftedChat.append(previousMessages, body.newChatMessage),
         );
@@ -122,13 +136,13 @@ const MapScreen = ({navigation}: any) => {
 
   const handleSendMessage = useCallback(
     (newMessage: any = []) => {
-      // console.log(`handleSendMessage >> newMessage :>> `, newMessage);
+      console.log(`handleSendMessage >> newMessage :>> `, newMessage);
       setMessages((previousMessages: any) =>
         GiftedChat.append(previousMessages, newMessage),
       );
       socketInstance.emit('chat-message', {
-        // message: 'New message from driver',
-        status: 203,
+        message: 'New message from driver',
+        // status: 203,
         rideId: rideDetails._id,
         chatMessage: newMessage[0],
       });
@@ -716,6 +730,37 @@ const MapScreen = ({navigation}: any) => {
                 <TouchableOpacity onPress={handleLogout}>
                   <Text style={styles.logoutText}>Logout</Text>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                  setDeleteModal(true)
+                  setIsProfileModal(false)
+                }}>
+                  <Text style={styles.deleteText}>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {deleteModal && (
+              <View style={styles.deleteContainer}>
+                <View style={styles.modalContainer}>
+                  {deleteModal && (
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalText1}>
+                        Are you sure you want to delete?
+                      </Text>
+                      <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={handleDelete}>
+                          <Text style={styles.buttonText}>Yes</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.cancelButton}
+                          onPress={() => setDeleteModal(false)}>
+                          <Text style={styles.buttonText}>No</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+                </View>
               </View>
             )}
 
@@ -1194,7 +1239,33 @@ const styles = StyleSheet.create({
   mainView: {
     flex: 1,
   },
+  deleteContainer: {
+    display: 'flex',
+    width: wp(100),
+    height: hp(100),
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  deleteModal: {
+    backgroundColor: 'white',
+    width: wp(60),
+    height: hp(20),
+    zIndex: 10,
+    top: hp(0),
+    left: wp(0),
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   logoutText: {fontSize: wp(4.5), fontWeight: 'bold'},
+  deleteText: {
+    fontSize: wp(4.5),
+    fontWeight: 'bold',
+    color: 'red',
+  },
   headerBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1435,7 +1506,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: wp(1),
     color: 'black',
     fontSize: wp(6),
-    borderColor: '#404080',
+    borderColor: '#118F5E',
     fontWeight: '700',
   },
   underlineStyleHighLighted: {
@@ -1447,7 +1518,7 @@ const styles = StyleSheet.create({
     width: wp(25),
     marginBottom: hp(1.5),
     marginTop: wp(7),
-    backgroundColor: '#404080',
+    backgroundColor: '#118F5E',
   },
   yesBtn: {
     borderRadius: 5,
@@ -1619,6 +1690,46 @@ const styles = StyleSheet.create({
     right: wp(0),
     top: hp(0.5),
     zIndex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalText1: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  deleteButton: {
+    backgroundColor: '#FF5050',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

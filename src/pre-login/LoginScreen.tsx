@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     height: hp(6),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#404080',
+    backgroundColor: '#118F5E',
     borderRadius: wp(3),
     flexDirection: 'row',
     gap: wp(2),

@@ -3,7 +3,7 @@ import store from '../redux/redux';
 
 const customAxios = axios.create({
   baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
-  // baseURL: `http://192.168.1.101:3001`,
+  // baseURL: `http://192.168.1.153:3001`,
 });
 
 customAxios.interceptors.request.use(
