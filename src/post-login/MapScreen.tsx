@@ -3,6 +3,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   BackHandler,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -1263,8 +1264,8 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontFamily: 'RobotoMono-Regular',
-    fontSize: wp(4.5), 
-    fontWeight: 'bold'
+    fontSize: wp(4.5),
+    fontWeight: 'bold',
   },
   deleteText: {
     fontFamily: 'RobotoMono-Regular',
@@ -1709,6 +1710,11 @@ const styles = StyleSheet.create({
     gap: wp(10),
     // height:hp(15)
     flex: 1,
+    position: Platform.OS == 'ios' ? 'absolute' : 'relative',
+    // bottom: -1,
+    alignSelf: 'center',
+    backgroundColor: '#f2f3f7',
+    width: wp(100),
   },
   notificationBadge: {
     position: 'absolute',

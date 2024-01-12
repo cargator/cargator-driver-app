@@ -1,4 +1,4 @@
-package com.codeb.cargatordriverid;
+package com.codeb.cargatordriver;
 
 import android.os.Bundle; // here
 import com.facebook.react.ReactActivity;

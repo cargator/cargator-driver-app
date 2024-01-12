@@ -22,51 +22,52 @@ export const requestGpsPermission = async (dispatch: any) => {
   try {
     // console.log(`requestGpsPermission called !`);
 
-    RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-      interval: 10000,
-      fastInterval: 5000,
-    })
-      .then(data => {
-        // The user has accepted to enable the location services
-        // data can be :
-        //  - "already-enabled" if the location services has been already enabled
-        //  - "enabled" if user has clicked on OK button in the popup
-        // console.log(`promptForEnableLocationIfNeeded data :>> `, data);
-
-        Geolocation.getCurrentPosition(
-          position => {
-            const {coords} = position;
-            // console.log(`requestGpsPermission position :>> `, position);
-            dispatch(setlivelocation(coords));
-          },
-          (error: any) => {
-            console.log(`requestGpsPermission error :>> `, error);
-            if (error.message == 'Location permission not granted.') {
-              dispatch(setLocationPermission(false));
-            }
-            if (error.code == 2) {
-              // console.log(`requestGpsPermission error.code == 2`);
-              dispatch(setGpsPermission(false));
-            }
-          },
-          // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-          {enableHighAccuracy: false, timeout: 15000},
-        );
-
-        dispatch(setGpsPermission(true));
+    Platform.OS == 'android' &&
+      RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+        interval: 10000,
+        fastInterval: 5000,
       })
-      .catch(error => {
-        // The user has not accepted to enable the location services or something went wrong during the process
-        // "error" : { "code" : "ERR00|ERR01|ERR02|ERR03", "message" : "message"}
-        // codes :
-        //  - ERR00 : The user has clicked on Cancel button in the popup
-        //  - ERR01 : If the Settings change are unavailable
-        //  - ERR02 : If the popup has failed to open
-        //  - ERR03 : Internal error
+        .then(data => {
+          // The user has accepted to enable the location services
+          // data can be :
+          //  - "already-enabled" if the location services has been already enabled
+          //  - "enabled" if user has clicked on OK button in the popup
+          // console.log(`promptForEnableLocationIfNeeded data :>> `, data);
 
-        console.log(`promptForEnableLocationIfNeeded error :>> `, error);
-        dispatch(setGpsPermission(false));
-      });
+          Geolocation.getCurrentPosition(
+            position => {
+              const {coords} = position;
+              // console.log(`requestGpsPermission position :>> `, position);
+              dispatch(setlivelocation(coords));
+            },
+            (error: any) => {
+              console.log(`requestGpsPermission error :>> `, error);
+              if (error.message == 'Location permission not granted.') {
+                dispatch(setLocationPermission(false));
+              }
+              if (error.code == 2) {
+                // console.log(`requestGpsPermission error.code == 2`);
+                dispatch(setGpsPermission(false));
+              }
+            },
+            // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+            {enableHighAccuracy: false, timeout: 15000},
+          );
+
+          dispatch(setGpsPermission(true));
+        })
+        .catch(error => {
+          // The user has not accepted to enable the location services or something went wrong during the process
+          // "error" : { "code" : "ERR00|ERR01|ERR02|ERR03", "message" : "message"}
+          // codes :
+          //  - ERR00 : The user has clicked on Cancel button in the popup
+          //  - ERR01 : If the Settings change are unavailable
+          //  - ERR02 : If the popup has failed to open
+          //  - ERR03 : Internal error
+
+          console.log(`promptForEnableLocationIfNeeded error :>> `, error);
+          dispatch(setGpsPermission(false));
+        });
   } catch (error) {
     console.log(`requestGpsPermission error :>> `, error);
   }
@@ -81,6 +82,7 @@ export const checkLocationPermission = async (dispatch: any) => {
       // console.log(`handleLocationPermission :>> `, {locationPermission});
 
       if (locationPermission == 'granted') {
+        dispatch(setGpsPermission(true));
         Geolocation.getCurrentPosition(
           position => {
             const {coords} = position;
