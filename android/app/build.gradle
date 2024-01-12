@@ -73,12 +73,12 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.codeb.cargatordriver"
+    namespace "com.codeb.cargatordriverid"
     defaultConfig {
-        applicationId "com.codeb.cargatordriver"
+        applicationId "com.codeb.cargatordriverid"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22
+        versionCode 24
         versionName "1.0.0"
     }
     signingConfigs {
