@@ -11,9 +11,9 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		21A8A52A40C4B4ABD632832D /* libPods-CargatorDriver.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B3C7B403BD28009E81DB5FBB /* libPods-CargatorDriver.a */; };
+		61AC3B280B1FEF5C384A2F12 /* libPods-CargatorDriver-CargatorDriverTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8531CC7DF39EECE566243DC3 /* libPods-CargatorDriver-CargatorDriverTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		9C132DD2738569CBC5ACFA73 /* libPods-CargatorDriver-CargatorDriverTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95E6C7F57DAD7B778937083D /* libPods-CargatorDriver-CargatorDriverTests.a */; };
-		CE240430F75122016B6B039A /* libPods-CargatorDriver.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EF9DEEF2426E7A05DCBA25B3 /* libPods-CargatorDriver.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,14 +36,14 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CargatorDriver/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CargatorDriver/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = CargatorDriver/main.m; sourceTree = "<group>"; };
-		23FCD15C765303AC5E33CF6D /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig"; path = "Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig"; sourceTree = "<group>"; };
+		200384D9C54C8A3DDE6EDE15 /* Pods-CargatorDriver.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver.release.xcconfig"; path = "Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver.release.xcconfig"; sourceTree = "<group>"; };
+		33B7B650E506B9DB790D4C46 /* Pods-CargatorDriver.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver.debug.xcconfig"; path = "Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver.debug.xcconfig"; sourceTree = "<group>"; };
+		45F32D01978F93FCB44E2C8D /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig"; path = "Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CargatorDriver/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		95E6C7F57DAD7B778937083D /* libPods-CargatorDriver-CargatorDriverTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CargatorDriver-CargatorDriverTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		C0DE122DF254F3D47E1870EB /* Pods-CargatorDriver.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver.debug.xcconfig"; path = "Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver.debug.xcconfig"; sourceTree = "<group>"; };
-		C4F926537A476D30D73FD06B /* Pods-CargatorDriver.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver.release.xcconfig"; path = "Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver.release.xcconfig"; sourceTree = "<group>"; };
+		8531CC7DF39EECE566243DC3 /* libPods-CargatorDriver-CargatorDriverTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CargatorDriver-CargatorDriverTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B3C7B403BD28009E81DB5FBB /* libPods-CargatorDriver.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CargatorDriver.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D1E0D0CCB1C973501198B0E3 /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver-CargatorDriverTests.release.xcconfig"; path = "Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		EF9DEEF2426E7A05DCBA25B3 /* libPods-CargatorDriver.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CargatorDriver.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F8719AAF40E3BD171EBA8BEF /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver-CargatorDriverTests.release.xcconfig"; path = "Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,7 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9C132DD2738569CBC5ACFA73 /* libPods-CargatorDriver-CargatorDriverTests.a in Frameworks */,
+				61AC3B280B1FEF5C384A2F12 /* libPods-CargatorDriver-CargatorDriverTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,7 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE240430F75122016B6B039A /* libPods-CargatorDriver.a in Frameworks */,
+				21A8A52A40C4B4ABD632832D /* libPods-CargatorDriver.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,8 +100,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				EF9DEEF2426E7A05DCBA25B3 /* libPods-CargatorDriver.a */,
-				95E6C7F57DAD7B778937083D /* libPods-CargatorDriver-CargatorDriverTests.a */,
+				B3C7B403BD28009E81DB5FBB /* libPods-CargatorDriver.a */,
+				8531CC7DF39EECE566243DC3 /* libPods-CargatorDriver-CargatorDriverTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -140,10 +140,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				C0DE122DF254F3D47E1870EB /* Pods-CargatorDriver.debug.xcconfig */,
-				C4F926537A476D30D73FD06B /* Pods-CargatorDriver.release.xcconfig */,
-				23FCD15C765303AC5E33CF6D /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */,
-				F8719AAF40E3BD171EBA8BEF /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */,
+				33B7B650E506B9DB790D4C46 /* Pods-CargatorDriver.debug.xcconfig */,
+				200384D9C54C8A3DDE6EDE15 /* Pods-CargatorDriver.release.xcconfig */,
+				45F32D01978F93FCB44E2C8D /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */,
+				D1E0D0CCB1C973501198B0E3 /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -155,12 +155,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "CargatorDriverTests" */;
 			buildPhases = (
-				B3494906B0363AA3EF4C98CC /* [CP] Check Pods Manifest.lock */,
+				AAF4B2EA0386D467FCD80FE0 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				39061FE5A73C955909BE1C84 /* [CP] Embed Pods Frameworks */,
-				4C7BCB6F583F9166D0EB99E0 /* [CP] Copy Pods Resources */,
+				91D8A702F13F91861A2A974A /* [CP] Embed Pods Frameworks */,
+				472374EE108F1B2D582393C9 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -176,14 +176,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CargatorDriver" */;
 			buildPhases = (
-				647BC967D90F7B62321DA094 /* [CP] Check Pods Manifest.lock */,
+				525ABE45D0BC8B4C8ECC08BC /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				2259B8EF6FF2C83F040D9335 /* [CP] Embed Pods Frameworks */,
-				C9AF2B57C88D227CCF431838 /* [CP] Copy Pods Resources */,
+				C16A2C4B9AA91828C8A26E9D /* [CP] Embed Pods Frameworks */,
+				FA519F3F6BA3BE24E75B468A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -266,41 +266,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		2259B8EF6FF2C83F040D9335 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		39061FE5A73C955909BE1C84 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4C7BCB6F583F9166D0EB99E0 /* [CP] Copy Pods Resources */ = {
+		472374EE108F1B2D582393C9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -317,7 +283,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		647BC967D90F7B62321DA094 /* [CP] Check Pods Manifest.lock */ = {
+		525ABE45D0BC8B4C8ECC08BC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -339,7 +305,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B3494906B0363AA3EF4C98CC /* [CP] Check Pods Manifest.lock */ = {
+		91D8A702F13F91861A2A974A /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AAF4B2EA0386D467FCD80FE0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -361,7 +344,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C9AF2B57C88D227CCF431838 /* [CP] Copy Pods Resources */ = {
+		C16A2C4B9AA91828C8A26E9D /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FA519F3F6BA3BE24E75B468A /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -430,7 +430,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 23FCD15C765303AC5E33CF6D /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */;
+			baseConfigurationReference = 45F32D01978F93FCB44E2C8D /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -457,7 +457,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F8719AAF40E3BD171EBA8BEF /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */;
+			baseConfigurationReference = D1E0D0CCB1C973501198B0E3 /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -481,7 +481,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C0DE122DF254F3D47E1870EB /* Pods-CargatorDriver.debug.xcconfig */;
+			baseConfigurationReference = 33B7B650E506B9DB790D4C46 /* Pods-CargatorDriver.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -510,7 +510,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C4F926537A476D30D73FD06B /* Pods-CargatorDriver.release.xcconfig */;
+			baseConfigurationReference = 200384D9C54C8A3DDE6EDE15 /* Pods-CargatorDriver.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
