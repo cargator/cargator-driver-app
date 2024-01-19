@@ -135,7 +135,7 @@ export const checkLocationPermission = async (dispatch: any) => {
         handleLocationPermission();
       });
     } else if (Platform.OS == 'ios') {
-      check(PERMISSIONS.IOS.LOCATION_ALWAYS).then(result => {
+      check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(result => {
         switch (result) {
           case RESULTS.GRANTED:
             console.log('The permission is granted');
@@ -180,7 +180,7 @@ export const requestLocationPermission = async (dispatch: any) => {
         locationPermission = 'granted';
       }
     } else if (Platform.OS == 'ios') {
-      locationPermission = await Geolocation.requestAuthorization('always');
+      locationPermission = await Geolocation.requestAuthorization('whenInUse');
     } else {
       console.log('requestLocationPermission :>> New OS/Platform.');
       return;

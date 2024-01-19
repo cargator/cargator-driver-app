@@ -13,7 +13,7 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {Appearance, SafeAreaView, StyleSheet} from 'react-native';
+import {Appearance, Platform, SafeAreaView, StyleSheet} from 'react-native';
 import {Provider, useDispatch, useSelector} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import LoginScreen from './src/pre-login/LoginScreen';
@@ -90,7 +90,7 @@ export const Routing = () => {
               name="LocationPermissionScreen"
               component={LocationPermissionScreen}
             />
-          ) : !gpsPermission ? (
+          ) : Platform.OS == 'android' && !gpsPermission ? (
             <Stack.Screen
               name="GPSPermissionScreen"
               component={GPSPermissionScreen}
