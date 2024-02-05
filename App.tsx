@@ -13,7 +13,14 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {Appearance, Platform, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {
+  Appearance,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {Provider, useDispatch, useSelector} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import LoginScreen from './src/pre-login/LoginScreen';
@@ -49,6 +56,16 @@ import RNFetchBlob from 'rn-fetch-blob';
 
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
+  const [versionNumber, setVersionNumber] = useState('');
+
+  useEffect(() => {
+    const getVersion = async () => {
+      const version = DeviceInfo.getVersion();
+      setVersionNumber(version);
+    };
+
+    getVersion();
+  }, []);
   const userImg = useSelector((store: any) => store.userImage.path);
   return (
     <DrawerContentScrollView {...props} contentcontainerstyle={{flex: 1}}>
@@ -63,6 +80,15 @@ const Appdrawercontent = (props: any) => {
           }}
           style={{flex: 1, justifyContent: 'flex-end'}}
         />
+        <DrawerItem
+          label={`Version ${versionNumber}`}
+          onPress={async () => {
+            // await RNFetchBlob.fs.unlink(`file://${userImg}`);
+            // await socketDisconnect();
+            // dispatch(removeUserData());
+          }}
+          style={{marginTop:'190%',marginLeft:'25%'}}
+        />
       </View>
     </DrawerContentScrollView>
   );
@@ -72,7 +98,7 @@ Appearance.setColorScheme('light');
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 const MapScreenDrawer = () => {
-  const [versionNumber, setVersionNumber] = useState("");
+  const [versionNumber, setVersionNumber] = useState('');
 
   useEffect(() => {
     const getVersion = async () => {
@@ -95,16 +121,6 @@ const MapScreenDrawer = () => {
       />
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
-      <Drawer.Screen
-        name="VersionScreen"
-        component={MapScreenDrawer}
-        options={{
-          drawerLabel: () => (
-            <View style={{flex: 1 ,alignItems: 'center', marginTop: '250%'}}>
-              <Text>{`Version ${versionNumber}`}</Text>
-            </View>
-          ),
-        }}/>
     </Drawer.Navigator>
   );
 };
