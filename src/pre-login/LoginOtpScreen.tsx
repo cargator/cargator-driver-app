@@ -148,7 +148,7 @@ const LoginOtpScreen = ({route}: any) => {
             <View style={styles.otpContainer}>
               <OTPInputView
                 style={styles.otpInput}
-                pinCount={6}
+                pinCount={4}
                 code={OTP}
                 onCodeChanged={code => {
                   setOTP(code);
