@@ -8,12 +8,12 @@
 import 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {Appearance, SafeAreaView, StyleSheet} from 'react-native';
+import {Appearance, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import {Provider, useDispatch, useSelector} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import LoginScreen from './src/pre-login/LoginScreen';
@@ -32,6 +32,7 @@ import GPSPermissionScreen from './src/components/GPSPermissionScreen';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import Profile from './src/post-login/Profile';
 import PreviousRides from './src/post-login/PreviousRides';
+import DeviceInfo from 'react-native-device-info';
 // import DestinationScreen from './src/components/DestinationScreen';
 // import LocationPermissionScreen from './src/components/LocationPermissionScreen';
 // import SplashScreen from './src/components/SplashScreen';
@@ -44,6 +45,16 @@ const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 const MapScreenDrawer = () => {
+  const [versionNumber, setVersionNumber] = useState("");
+
+  useEffect(() => {
+    const getVersion = async () => {
+      const version = DeviceInfo.getVersion();
+      setVersionNumber(version);
+    };
+
+    getVersion();
+  }, []);
   return (
     <Drawer.Navigator screenOptions={{headerShown: false}}>
       <Drawer.Screen
@@ -55,6 +66,16 @@ const MapScreenDrawer = () => {
       />
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
+      <Drawer.Screen
+        name="VersionScreen"
+        component={MapScreenDrawer}
+        options={{
+          drawerLabel: () => (
+            <View style={{flex: 1 ,alignItems: 'center', marginTop: '250%'}}>
+              <Text>{`Version ${versionNumber}`}</Text>
+            </View>
+          ),
+        }}/>
     </Drawer.Navigator>
   );
 };
