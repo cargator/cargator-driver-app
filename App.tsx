@@ -150,7 +150,7 @@ export const Routing = () => {
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="LoginScreen"
-          screenOptions={{headerShown: false}}>
+          screenOptions={{headerShown: false, orientation:'portrait'}}>
           {!locationPermission ? (
             <Stack.Screen
               name="LocationPermissionScreen"
