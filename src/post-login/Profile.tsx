@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
   },
-  date: {fontFamily: 'RobotoMono-Regular',marginTop: hp(5), color: '#BAB6B6'},
+  date: {fontFamily: 'RobotoMono-Regular',marginTop: hp(4), color: '#BAB6B6' ,fontWeight:'600'},
 });
 
 export default Profile;

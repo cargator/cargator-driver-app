@@ -68,29 +68,26 @@ const Appdrawercontent = (props: any) => {
   }, []);
   const userImg = useSelector((store: any) => store.userImage.path);
   return (
-    <DrawerContentScrollView {...props} contentcontainerstyle={{flex: 1}}>
-      <DrawerItemList {...props} style={{borderwidth: 1}} />
-      <View style={{flex: 1}}>
-        <DrawerItem
-          label="Logout"
-          onPress={async () => {
-            await RNFetchBlob.fs.unlink(`file://${userImg}`);
-            await socketDisconnect();
-            dispatch(removeUserData());
-          }}
-          style={{flex: 1, justifyContent: 'flex-end'}}
-        />
-        <DrawerItem
-          label={`Version ${versionNumber}`}
-          onPress={async () => {
-            // await RNFetchBlob.fs.unlink(`file://${userImg}`);
-            // await socketDisconnect();
-            // dispatch(removeUserData());
-          }}
-          style={{marginTop:'190%',marginLeft:'25%'}}
-        />
+    <View style={{flex: 1, height: '100%'}}>
+      <DrawerContentScrollView
+        {...props}
+        contentcontainerstyle={{flex: 1, position: 'relative'}}>
+        <DrawerItemList {...props} style={{borderwidth: 1}} />
+        <View style={{flex: 1}}>
+          <DrawerItem
+            label="Logout"
+            onPress={async () => {
+              await RNFetchBlob.fs.unlink(`file://${userImg}`);
+              await socketDisconnect();
+              dispatch(removeUserData());
+            }}
+          />
+        </View>
+      </DrawerContentScrollView>
+      <View style={{alignSelf: 'center', marginBottom: hp(1)}}>
+        <Text style={{fontWeight: '600'}}>{`Version ${versionNumber}`}</Text>
       </View>
-    </DrawerContentScrollView>
+    </View>
   );
 };
 
@@ -150,7 +147,7 @@ export const Routing = () => {
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="LoginScreen"
-          screenOptions={{headerShown: false, orientation:'portrait'}}>
+          screenOptions={{headerShown: false, orientation: 'portrait'}}>
           {!locationPermission ? (
             <Stack.Screen
               name="LocationPermissionScreen"
