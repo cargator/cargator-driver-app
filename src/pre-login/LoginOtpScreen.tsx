@@ -148,7 +148,7 @@ const LoginOtpScreen = ({route}: any) => {
             <View style={styles.otpContainer}>
               <OTPInputView
                 style={styles.otpInput}
-                pinCount={6}
+                pinCount={4}
                 code={OTP}
                 onCodeChanged={code => {
                   setOTP(code);
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   textEnterCode: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#747688',
     fontSize: wp(5),
     marginTop: hp(4),
@@ -225,6 +226,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   textCountryCode: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'black',
     fontSize: wp(5),
     alignSelf: 'flex-start',
@@ -235,6 +237,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   otpInput: {
+    fontFamily: 'RobotoMono-Regular',
     width: wp(50),
     height: hp(8.5),
   },
@@ -255,6 +258,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   resendOtpLinkText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#747688',
     fontSize: hp(2.2),
   },
@@ -273,6 +277,7 @@ const styles = StyleSheet.create({
     gap: wp(2),
   },
   continueBtnText: {
+    fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontSize: wp(4.5),
     fontWeight: '600',

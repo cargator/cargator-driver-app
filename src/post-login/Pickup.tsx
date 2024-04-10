@@ -131,6 +131,7 @@ const Pickup = ({
           <View style={styles.timer}>
             <Text
               style={{
+                fontFamily: 'RobotoMono-Regular',
                 color: 'black',
                 textAlign: 'center',
               }}>
@@ -144,7 +145,7 @@ const Pickup = ({
             <TouchableOpacity
               style={{flex: 1, justifyContent: 'center'}}
               onPress={() => setIsTimerRunning(!isTimerRunning)}>
-              <Text style={{textAlign: 'center', color: 'white'}}>
+              <Text style={{fontFamily: 'RobotoMono-Regular',textAlign: 'center', color: 'white'}}>
                 Toggle Timer
               </Text>
             </TouchableOpacity>
@@ -160,6 +161,7 @@ const Pickup = ({
             <View>
               <Text
                 style={{
+                  fontFamily: 'RobotoMono-Regular',
                   color: 'black',
                   fontSize: wp(5),
                   fontWeight: 'bold',

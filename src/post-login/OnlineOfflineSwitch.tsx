@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   insideCircleText: {
+    fontFamily: 'RobotoMono-Regular',
     textAlign: 'center',
   },
 });

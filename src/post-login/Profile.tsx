@@ -82,6 +82,18 @@ const Profile = (props: any) => {
         style={styles.header}
         onPress={() => props.navigation.toggleDrawer()}>
         <SidebarIcon />
+        <View
+          style={{
+            alignSelf: 'flex-start',
+            flexDirection: 'row',
+            flex: 1,
+            marginLeft: wp(2),
+            marginTop: hp(0.4),
+          }}>
+          <Text style={{fontSize: hp(3), fontFamily: 'RobotoMono-Regular'}}>
+            My Profile
+          </Text>
+        </View>
       </TouchableOpacity>
       {loading || isEmpty(driverDetails) ? (
         <LoaderComponent />
@@ -105,7 +117,7 @@ const Profile = (props: any) => {
                 <View style={styles.contentView}>
                   <Text style={styles.contentViewHeading}>Mobile Number</Text>
                   <Text style={styles.contentViewText}>
-                    +91 {driverDetails.mobileNumber}
+                    +{driverDetails.mobileNumber}
                   </Text>
                 </View>
                 <View style={styles.contentView}>
@@ -194,11 +206,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   contentViewHeading: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#9CA3AF',
     fontSize: hp(1.8),
     fontWeight: '500',
   },
   contentViewText: {
+    fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontSize: hp(2.2),
     fontWeight: '500',
@@ -210,7 +224,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
   },
-  date: {marginTop: hp(5), color: '#BAB6B6'},
+  date: {fontFamily: 'RobotoMono-Regular',marginTop: hp(4), color: '#BAB6B6' ,fontWeight:'600'},
 });
 
 export default Profile;

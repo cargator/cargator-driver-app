@@ -131,6 +131,7 @@ const styles = StyleSheet.create({
     marginLeft: wp(2),
   },
   textRiderName: {
+    fontFamily: 'RobotoMono-Regular',
     fontSize: wp(5),
     fontWeight: '900',
     color: 'black',
