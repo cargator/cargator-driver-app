@@ -22,7 +22,8 @@ import PhoneIcon from '../svg/PhoneIcon';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { login } from '../services/userservices';
 
-const countryCode = '+91';
+const initialCountryCode = '+91'; // Default country code
+const countryCodeList = ['+91']; // List of country codes
 
 const LoginScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
@@ -31,6 +32,8 @@ const LoginScreen = ({navigation}: any) => {
   const liveLocation = useSelector((store: any) => store.livelocation);
   const [isSendOtpClicked, setIsSendOtpClicked] = useState(false);
   const [isTextInputSelected, setIsTextInputSelected] = useState(false);
+  const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(initialCountryCode);
 
   const handlePhoneAndCodeView = () => {
     if (isTextInputSelected) {
@@ -39,6 +42,16 @@ const LoginScreen = ({navigation}: any) => {
       refTextInput.current?.focus();
     }
     setIsTextInputSelected(!isTextInputSelected);
+    setShowCountryCodeDropdown(false);
+  };
+
+  const toggleCountryCodeDropdown = () => {
+    setShowCountryCodeDropdown(!showCountryCodeDropdown);
+  };
+
+  const handleCountryCodeSelection = (code:any) => {
+    setSelectedCountryCode(code);
+    toggleCountryCodeDropdown();
   };
 
   const loginSchema = Yup.object().shape({
@@ -127,15 +140,35 @@ const LoginScreen = ({navigation}: any) => {
                   <Text style={styles.textContinue}>to continue</Text>
                 </View>
 
+                
+                <View style={styles.countryCodeView}>
+                  <TouchableOpacity
+                    onPress={toggleCountryCodeDropdown}>
+                    {/* <PhoneIcon /> */}
+                    <Text style={styles.mobileInputCountryCode}>
+                      {selectedCountryCode}
+                    </Text>
+                    <Text style={{ position: 'absolute', right: -17, bottom: -1, color: 'grey', fontSize: 22 }}>▼</Text>
+                  </TouchableOpacity>
+                </View>
+                {showCountryCodeDropdown && (
+                  <View style={styles.countryCodeDropdown}>
+                    {countryCodeList.map((code, index) => (
+                      <TouchableOpacity key={index} onPress={() => handleCountryCodeSelection(code)}>
+                        <Text style={code === selectedCountryCode ? { fontWeight: 'bold' } : {}}>{code}</Text>
+                      </TouchableOpacity>
+                    ))}
+                    </View>
+                )}
                 <View style={styles.mobileInputContainer}>
-                  <View
+                  {/* <View
                     style={styles.mobileInputView}
                     onTouchStart={handlePhoneAndCodeView}>
                     <PhoneIcon />
                     <Text style={styles.mobileInputCountryCode}>
                       {countryCode}
                     </Text>
-                  </View>
+                  </View> */}
 
                   {errors.mobileNumber && touched.mobileNumber && (
                     <Text style={styles.mobileInputErrorText}>
@@ -150,6 +183,7 @@ const LoginScreen = ({navigation}: any) => {
                     onBlur={handleBlur('mobileNumber')}
                     value={values.mobileNumber}
                     maxLength={10}
+                    onTouchStart={handlePhoneAndCodeView}
                   />
                 </View>
 
@@ -214,6 +248,8 @@ const styles = StyleSheet.create({
   mobileInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    width:wp(67),
+    marginLeft: wp(20)
   },
   mobileInputView: {
     zIndex: 1,
@@ -221,11 +257,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: wp(2),
     alignItems: 'center',
-  },
-  mobileInputCountryCode: {
-    fontFamily: 'RobotoMono-Regular',
-    fontSize: wp(4.5),
-    marginLeft: wp(0.5),
   },
   mobileInputErrorText: {
     fontFamily: 'RobotoMono-Regular',
@@ -242,8 +273,10 @@ const styles = StyleSheet.create({
     padding: wp(2),
     backgroundColor: 'white',
     fontSize: wp(4.5),
-    paddingLeft: wp(17),
+    paddingLeft: wp(8),
     flex: 1,
+    borderColor: 'grey',
+    borderWidth: 1,
   },
   buttonContainer: {
     justifyContent: 'center',
@@ -263,6 +296,38 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: wp(4.5),
     fontWeight: '600',
+  },
+  countryCodeDropdown: {
+    position: 'absolute',
+    bottom: hp(16.5),
+    width:wp(13),
+    left: wp(4),
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: 'white',
+    padding: 10,
+    borderRadius: 5,
+    textColor: "grey"
+  },
+  countryCodeView: {
+    height: hp(5.6),
+    width: wp(15),
+    zIndex: 1,
+    paddingTop: hp(0.3),
+    flexDirection: 'row',
+    position: 'absolute',
+    left: wp(3),
+    top: hp(10.3),
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'grey',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  mobileInputCountryCode: {
+    color: 'black',
+    fontSize: wp(5),
+    marginLeft: wp(1),
   },
 });
 

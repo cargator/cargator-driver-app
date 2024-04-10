@@ -94,6 +94,7 @@ const Appdrawercontent = (props: any) => {
 Appearance.setColorScheme('light');
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+
 const MapScreenDrawer = () => {
   const [versionNumber, setVersionNumber] = useState('');
 
