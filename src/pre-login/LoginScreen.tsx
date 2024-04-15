@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -20,10 +20,10 @@ import * as Yup from 'yup';
 import Toast from 'react-native-toast-message';
 import PhoneIcon from '../svg/PhoneIcon';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { login } from '../services/userservices';
+import { getcountryCodeAPI, login } from '../services/userservices';
 
-const initialCountryCode = '+91'; // Default country code
-const countryCodeList = ['+91']; // List of country codes
+const initialCountryCode = '+91'; // Default country code/
+const countryCodeList: any = []; // List of country codes
 
 const LoginScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
@@ -53,6 +53,26 @@ const LoginScreen = ({navigation}: any) => {
     setSelectedCountryCode(code);
     toggleCountryCodeDropdown();
   };
+
+  const getCountryCode = async () => {
+    try {
+      const res = await getcountryCodeAPI();
+      for (let i = 0; i < res.data.length; i++) {
+        countryCodeList.push(res.data[i].countryCode);
+      }
+      } catch (error: any) {
+        console.log(error);
+        Toast.show({
+          type: 'error',
+          text1: error.response.data.error,
+        });
+      }
+    }
+
+
+  useEffect(() => {
+      getCountryCode()
+    }, [])
 
   const loginSchema = Yup.object().shape({
     mobileNumber: Yup.string()
@@ -153,7 +173,7 @@ const LoginScreen = ({navigation}: any) => {
                 </View>
                 {showCountryCodeDropdown && (
                   <View style={styles.countryCodeDropdown}>
-                    {countryCodeList.map((code, index) => (
+                    {countryCodeList.map((code:any, index:any) => (
                       <TouchableOpacity key={index} onPress={() => handleCountryCodeSelection(code)}>
                         <Text style={code === selectedCountryCode ? { fontWeight: 'bold' } : {}}>{code}</Text>
                       </TouchableOpacity>

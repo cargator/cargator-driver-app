@@ -12,3 +12,7 @@ export const verifyOtp = (data: { otp: any; type: string; mobileNumber: any; }) 
 export const getPreSignedUrl = (data: { key: any; ContentType: string; type: string; }) =>{
     return customAxios.post('/presignedurl',data)
 }
+
+export const getcountryCodeAPI = () =>{
+    return customAxios.get('/getCountryCodeMobile');
+} 
