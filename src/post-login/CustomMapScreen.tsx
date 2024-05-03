@@ -90,7 +90,6 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       const res = await getBreakPointsAPI();
       setBreakPoints(res.data)
       setSliderButtonLoader(false)
-      console.log("res", res)
     } catch (error) {
       setSliderButtonLoader(false)
       console.log("error", error)

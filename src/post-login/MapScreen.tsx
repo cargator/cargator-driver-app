@@ -64,6 +64,7 @@ const MapScreen = ({navigation}: any) => {
   const documentsKey = useSelector((store: any) => store.userData.documentsKey);
   const userImg = useSelector((store: any) => store.userImage.path);
   const rideDetails = useSelector((store: any) => store.rideDetails);
+  console.log("rideDetails--------------",rideDetails.pickUpLocation)
   // const pendingPayment = useSelector((store: any) => store.pendingPayment);
 
   const dispatch = useDispatch();

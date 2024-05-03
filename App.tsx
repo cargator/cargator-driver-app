@@ -132,7 +132,6 @@ const MapScreenDrawer = () => {
     try {
       const res = await getDriverAppFlowAPI();
       setDriverAppFlow(res.data[0].applicationFLow)
-      console.log("------------", res.data[0].applicationFLow)
 
     } catch (error) {
       console.log("error", error)
