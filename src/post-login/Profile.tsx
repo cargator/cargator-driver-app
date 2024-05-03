@@ -56,6 +56,7 @@ const Profile = (props: any) => {
     } else {
       setDriverDetails([]);
     }
+    
   }, [isFocused]);
 
   const checkImageExists = async () => {
@@ -124,10 +125,7 @@ const Profile = (props: any) => {
                   <Text style={styles.contentViewHeading}>Vehicle Number</Text>
                   <Text style={styles.contentViewText}>
                     {driverDetails.vehicleNumber ?
-                      `${driverDetails.vehicleNumber.substring(0, 2)}{' '}
-                      ${driverDetails.vehicleNumber.substring(2, 4)}{' '}
-                      ${driverDetails.vehicleNumber.substring(4, 6)}{' '}
-                      ${driverDetails.vehicleNumber.substring(6)}`
+                      `${driverDetails.vehicleNumber.substring(0, 2)}${driverDetails.vehicleNumber.substring(2, 4)}${driverDetails.vehicleNumber.substring(4, 6)}${driverDetails.vehicleNumber.substring(6)}`
                       : 'N/A'
                     }
                   </Text>

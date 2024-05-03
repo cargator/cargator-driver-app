@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {configureStore, createSlice} from '@reduxjs/toolkit';
-import {persistReducer, persistStore} from 'redux-persist';
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+import { persistReducer, persistStore } from 'redux-persist';
 
 const persistConfig = {
   key: 'root',
@@ -26,8 +26,9 @@ const authSlice = createSlice({
       exists: false,
       path: '',
     },
+    driverPath: [],
+    rideStatus:'',
   },
-
   reducers: {
     setUserData: (state, action) => {
       state.userData = action.payload;
@@ -89,6 +90,12 @@ const authSlice = createSlice({
     setUserImgExists: (state, action) => {
       state.userImage = action.payload;
     },
+    setDriverPath: (state, action) => {
+      state.driverPath = action.payload;
+    },
+    setRideStatus: (state, action) => {
+      state.rideStatus = action.payload;
+    }
   },
 });
 
@@ -111,6 +118,8 @@ export const {
   setMessagesInRedux,
   setUnseenMessagesCountInRedux,
   setUserImgExists,
+  setDriverPath,
+  setRideStatus,
 } = authSlice.actions;
 
 const store = configureStore({

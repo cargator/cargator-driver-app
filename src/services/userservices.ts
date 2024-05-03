@@ -16,3 +16,19 @@ export const getPreSignedUrl = (data: { key: any; ContentType: string; type: str
 export const getcountryCodeAPI = () =>{
     return customAxios.get('/getCountryCodeMobile');
 } 
+
+
+export const getDriverAppFlowAPI = () =>{
+    return customAxios.get('/getAppFlowMobile');
+} 
+
+//  Custom Driver Rides API's
+
+export const createRides = (data:any) => {
+    return customAxios.post('/createRide',data)
+}
+
+export const upDateRideStatus = (data:any) =>{
+    console.log("upDateRideStatus called")
+    return customAxios.patch("/updateRide",data)
+}

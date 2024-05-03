@@ -94,7 +94,7 @@ const MapScreen = ({navigation}: any) => {
 
   const handleLogout = async () => {
     try {
-      await RNFetchBlob.fs.unlink(`file://${userImg}`);
+      // await RNFetchBlob.fs.unlink(`file://${userImg}`);
       await socketDisconnect();
       dispatch(removeUserData());
     } catch (err) {

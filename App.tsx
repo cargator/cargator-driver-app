@@ -6,9 +6,9 @@
  */
 
 import 'react-native-gesture-handler';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useEffect, useState} from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useEffect, useState } from 'react';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -21,13 +21,13 @@ import {
   Text,
   View,
 } from 'react-native';
-import {Provider, useDispatch, useSelector} from 'react-redux';
-import {PersistGate} from 'redux-persist/integration/react';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import LoginScreen from './src/pre-login/LoginScreen';
 import MapScreen from './src/post-login/MapScreen';
-import store, {persistor, removeUserData} from './src/redux/redux';
+import store, { persistor, removeUserData } from './src/redux/redux';
 import Toast from 'react-native-toast-message';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SplashScreen from 'react-native-splash-screen';
 import LoginOtpScreen from './src/pre-login/LoginOtpScreen';
 import {
@@ -45,8 +45,10 @@ import {
 import Profile from './src/post-login/Profile';
 import PreviousRides from './src/post-login/PreviousRides';
 import DeviceInfo from 'react-native-device-info';
-import {socketDisconnect} from './src/utils/socket';
+import { socketDisconnect } from './src/utils/socket';
 import RNFetchBlob from 'rn-fetch-blob';
+import CustomMapScreen from './src/post-login/CustomMapScreen';
+import { getDriverAppFlowAPI } from './src/services/userservices';
 // import DestinationScreen from './src/components/DestinationScreen';
 // import LocationPermissionScreen from './src/components/LocationPermissionScreen';
 // import SplashScreen from './src/components/SplashScreen';
@@ -68,12 +70,12 @@ const Appdrawercontent = (props: any) => {
   }, []);
   const userImg = useSelector((store: any) => store.userImage.path);
   return (
-    <View style={{flex: 1, height: '100%'}}>
+    <View style={{ flex: 1, height: '100%' }}>
       <DrawerContentScrollView
         {...props}
-        contentcontainerstyle={{flex: 1, position: 'relative'}}>
-        <DrawerItemList {...props} style={{borderwidth: 1}} />
-        <View style={{flex: 1}}>
+        contentcontainerstyle={{ flex: 1, position: 'relative' }}>
+        <DrawerItemList {...props} style={{ borderwidth: 1 }} />
+        <View style={{ flex: 1 }}>
           <DrawerItem
             label="Logout"
             onPress={async () => {
@@ -84,8 +86,8 @@ const Appdrawercontent = (props: any) => {
           />
         </View>
       </DrawerContentScrollView>
-      <View style={{alignSelf: 'center', marginBottom: hp(1)}}>
-        <Text style={{fontWeight: '600'}}>{`Version ${versionNumber}`}</Text>
+      <View style={{ alignSelf: 'center', marginBottom: hp(1) }}>
+        <Text style={{ fontWeight: '600' }}>{`Version ${versionNumber}`}</Text>
       </View>
     </View>
   );
@@ -95,8 +97,46 @@ Appearance.setColorScheme('light');
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
+//   const [versionNumber, setVersionNumber] = useState('');
+
+//   useEffect(() => {
+//     const getVersion = async () => {
+//       const version = DeviceInfo.getVersion();
+//       setVersionNumber(version);
+//     };
+
+//     getVersion();
+//   }, []);
+//   return (
+//     <Drawer.Navigator
+//       screenOptions={{headerShown: false}}
+//       drawerContent={props => <Appdrawercontent {...props} />}>
+//       <Drawer.Screen
+//         name="Home"
+//         component={MapScreen}
+//         // options={{
+//         //   drawerItemStyle: {display: 'none'},
+//         // }}
+//       />
+//       <Drawer.Screen name="Profile" component={Profile} />
+//       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
+//     </Drawer.Navigator>
+//   );
+// };
+
 const MapScreenDrawer = () => {
   const [versionNumber, setVersionNumber] = useState('');
+  const [driverAppFlow, setDriverAppFlow] = useState();
+
+  const getDriverAppFlow = async () => {
+    try {
+      const res = await getDriverAppFlowAPI();
+      setDriverAppFlow(res.data[0].applicationFLow)
+
+    } catch (error) {
+      console.log("error", error)
+    }
+  }
 
   useEffect(() => {
     const getVersion = async () => {
@@ -105,18 +145,30 @@ const MapScreenDrawer = () => {
     };
 
     getVersion();
+    getDriverAppFlow();
   }, []);
   return (
     <Drawer.Navigator
-      screenOptions={{headerShown: false}}
+      screenOptions={{ headerShown: false }}
       drawerContent={props => <Appdrawercontent {...props} />}>
-      <Drawer.Screen
-        name="Home"
-        component={MapScreen}
+      {driverAppFlow === "default" ? (
+        <Drawer.Screen
+          name="Home"
+          component={MapScreen}
         // options={{
         //   drawerItemStyle: {display: 'none'},
         // }}
+        />
+      ) : (
+        <Drawer.Screen
+        name="Home"
+        component={CustomMapScreen}
+      // options={{
+      //   drawerItemStyle: {display: 'none'},
+      // }}
       />
+      )
+      }
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
     </Drawer.Navigator>
@@ -144,11 +196,11 @@ export const Routing = () => {
   }, []);
 
   return (
-    <SafeAreaProvider style={{backgroundColor: '#ffffff'}}>
+    <SafeAreaProvider style={{ backgroundColor: '#ffffff' }}>
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="LoginScreen"
-          screenOptions={{headerShown: false, orientation: 'portrait'}}>
+          screenOptions={{ headerShown: false, orientation: 'portrait' }}>
           {!locationPermission ? (
             <Stack.Screen
               name="LocationPermissionScreen"
