@@ -15,29 +15,9 @@ import SidebarIcon from '../svg/SidebarIcon';
 import SlideButton from 'rn-slide-button';
 import { heightPercentageToDP, widthPercentageToDP } from 'react-native-responsive-screen';
 import { isEmpty as _isEmpty } from 'lodash';
-import { createRides, upDateRideStatus } from '../services/userservices';
+import { createRides, getBreakPointsAPI, upDateRideStatus } from '../services/userservices';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 
-
-
-const breakPoints = 
-  [
-    {
-      breakingPointName:"Base Out"
-    },
-    {
-      breakingPointName:"Pickup Patient"
-    },
-    {
-      breakingPointName:"Arrive Hospital"
-    },
-    {
-      breakingPointName:"Leave Hospital"
-    },
-    {
-      breakingPointName:"Base In"
-    },
-  ]
 
 const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const userId = useSelector((store: any) => store.userId);
@@ -71,6 +51,7 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
   const [region, setRegion] = useState<any>({});
   const mapRef = useRef<any>(null);
+  const [breakPoints, setBreakPoints] = useState<any>([]);
   const [slideCount, setSlideCount] = useState<number>(0);
   const [buttonText, setButtonText] = useState<any>("Base out");
   const [rideId, setRideId] = useState<any>('');
@@ -102,6 +83,19 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const updatePath = (newCoords: any) => {
     setPath((prevPath: any) => [...prevPath, newCoords]);
   };
+
+  const getBreakspoints = async () => {
+    try {
+      setSliderButtonLoader(true)
+      const res = await getBreakPointsAPI();
+      setBreakPoints(res.data)
+      setSliderButtonLoader(false)
+      console.log("res", res)
+    } catch (error) {
+      setSliderButtonLoader(false)
+      console.log("error", error)
+    }
+  }
 
 
   const emitLiveLocation = () => {
@@ -151,6 +145,7 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       setLoading(false);
     }
   };
+
 
   const getCurrentPosition = useCallback(async () => {
     try {
@@ -333,6 +328,10 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       handleUpdateRide()
     }
   }
+
+  useEffect(() => {
+    getBreakspoints();
+  }, [])
 
   useEffect(() => {
     if (rideStatus === Number('0')) {

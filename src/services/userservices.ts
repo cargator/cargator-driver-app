@@ -19,8 +19,14 @@ export const getcountryCodeAPI = () =>{
 
 
 export const getDriverAppFlowAPI = () =>{
+    console.log("object")
     return customAxios.get('/getAppFlowMobile');
 } 
+
+// breakpoint api
+export const getBreakPointsAPI = () =>{
+    return customAxios.get('/get-breaking-points-mobile');
+}
 
 //  Custom Driver Rides API's
 
