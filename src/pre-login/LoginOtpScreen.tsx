@@ -138,7 +138,7 @@ const LoginOtpScreen = ({route}: any) => {
         <View style={styles.bottomContainer}>
           <View>
             <Text style={styles.textEnterCode}>
-              Enter the 6 digit code sent to
+              Enter the 4 digit code sent to
             </Text>
             <Text style={styles.textCountryCode}>
               {/* {route.params.formattedMobileNumber} */}
