@@ -25,7 +25,7 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import LoginScreen from './src/pre-login/LoginScreen';
 import MapScreen from './src/post-login/MapScreen';
-import store, { persistor, removeUserData } from './src/redux/redux';
+import store, { persistor, removeRideDetails, removeUserData, setDriverAppFlow, setRideDetails } from './src/redux/redux';
 import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SplashScreen from 'react-native-splash-screen';
@@ -125,18 +125,10 @@ const Drawer = createDrawerNavigator();
 // };
 
 const MapScreenDrawer = () => {
+  const dispatch = useDispatch();
   const [versionNumber, setVersionNumber] = useState('');
-  const [driverAppFlow, setDriverAppFlow] = useState();
-
-  const getDriverAppFlow = async () => {
-    try {
-      const res = await getDriverAppFlowAPI();
-      setDriverAppFlow(res.data[0].applicationFLow)
-
-    } catch (error) {
-      console.log("error", error)
-    }
-  }
+  const driverAppFlow = useSelector((store: any) => store.driverAppFlow);
+  console.log("from redux 1",driverAppFlow)
 
   useEffect(() => {
     const getVersion = async () => {
@@ -144,8 +136,22 @@ const MapScreenDrawer = () => {
       setVersionNumber(version);
     };
 
-    getVersion();
+    const getDriverAppFlow = async () => {
+      try {
+        const res = await getDriverAppFlowAPI();
+        console.log("-from api--------",res.data[0].applicationFLow)
+        if (driverAppFlow !== res.data[0].applicationFLow) {
+          console.log("hello")
+          dispatch(removeRideDetails());
+          dispatch(setDriverAppFlow(res.data[0].applicationFLow))
+        }
+      } catch (error) {
+        console.log("error", error)
+      }
+    }
     getDriverAppFlow();
+
+    getVersion();
   }, []);
   return (
     <Drawer.Navigator
@@ -161,12 +167,12 @@ const MapScreenDrawer = () => {
         />
       ) : (
         <Drawer.Screen
-        name="Home"
-        component={CustomMapScreen}
-      // options={{
-      //   drawerItemStyle: {display: 'none'},
-      // }}
-      />
+          name="Home"
+          component={CustomMapScreen}
+        // options={{
+        //   drawerItemStyle: {display: 'none'},
+        // }}
+        />
       )
       }
       <Drawer.Screen name="Profile" component={Profile} />
@@ -182,15 +188,20 @@ export const Routing = () => {
   const locationPermission = useSelector(
     (store: any) => store.locationPermission,
   );
+  const driverAppFlow = useSelector((store: any) => store.driverAppFlow);
+  console.log("from redux2+++++++-",driverAppFlow)
 
   // console.log({gpsPermission, locationPermission});
   // const infoVisible = useSelector((store: any) => store.infoVisible);
   // const userId = useSelector((store: any) => store.userId);
+  const [hello, setHello]  = useState<any>("");
 
   useEffect(() => {
     // do stuff while splash screen is shown
     // After having done stuff (such as async tasks) hide the splash screen
+   
     SplashScreen.hide();
+
     requestLocationPermission(dispatch);
     checkLocationPermission(dispatch);
   }, []);

@@ -64,7 +64,7 @@ const MapScreen = ({navigation}: any) => {
   const documentsKey = useSelector((store: any) => store.userData.documentsKey);
   const userImg = useSelector((store: any) => store.userImage.path);
   const rideDetails = useSelector((store: any) => store.rideDetails);
-  console.log("rideDetails--------------",rideDetails.pickUpLocation)
+  const driverAppFlow = useSelector((store: any) => store.driverAppFlow);
   // const pendingPayment = useSelector((store: any) => store.pendingPayment);
 
   const dispatch = useDispatch();
@@ -420,17 +420,21 @@ const MapScreen = ({navigation}: any) => {
       } else if (body?.data) {
         console.log('ride-status event ELSE-IF :>> ', body.data.message);
         rideData = body.data;
+        console.log("12345678998765432",rideData)
       }
 
       if (rideData) {
         // if (rideData.status != rideDetails.status) {
+          if(rideData.rideType !== "custom"){
         dispatch(setRideDetails(rideData));
-        // }
+         
+          // }
 
         const chatMessages = rideData.chatMessages;
         const reversedMessages = [...chatMessages].reverse();
         setMessages(reversedMessages);
         setUnseenMessagesCount(rideData.driverUnreadMessagesCount);
+      }
       }
     });
   };

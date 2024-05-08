@@ -28,6 +28,7 @@ const authSlice = createSlice({
     },
     driverPath: [],
     rideStatus:'',
+    driverAppFlow:'',
   },
   reducers: {
     setUserData: (state, action) => {
@@ -95,6 +96,9 @@ const authSlice = createSlice({
     },
     setRideStatus: (state, action) => {
       state.rideStatus = action.payload;
+    },
+    setDriverAppFlow: (state, action) => {
+      state.driverAppFlow = action.payload;
     }
   },
 });
@@ -120,6 +124,7 @@ export const {
   setUserImgExists,
   setDriverPath,
   setRideStatus,
+  setDriverAppFlow,
 } = authSlice.actions;
 
 const store = configureStore({

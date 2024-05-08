@@ -9,7 +9,7 @@ import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import { StyleSheet, View, PermissionsAndroid, Text, TouchableOpacity, Dimensions, Image, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { Toast } from 'react-native-toast-message/lib/src/Toast';
-import { removeUserData, setDriverPath, setLocationPermission, setRideDetails, setRideStatus } from '../redux/redux';
+import { removeRideDetails, removeUserData, setDriverPath, setLocationPermission, setRideDetails, setRideStatus } from '../redux/redux';
 import customAxios from '../services/appservices';
 import SidebarIcon from '../svg/SidebarIcon';
 import SlideButton from 'rn-slide-button';
@@ -253,9 +253,11 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       console.log("object--------",res.data)
       setLoading(false)
       if (slideCount >= breakPoints.length - 1) {
+        console.log("i am coming")
         setIsRideStarted(false)
         setIsReachedDrop(false)
         setPath([]);
+        dispatch(removeRideDetails())
         dispatch(setRideStatus(''))
         dispatch(setDriverPath([]))
         setSlideCount(0)
