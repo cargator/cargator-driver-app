@@ -393,7 +393,7 @@ const MapScreen = ({navigation}: any) => {
   // 'ride-status' event called when driver has ongoing-ride.
   const rideStatusListener = () => {
     socketInstance.on('ride-status', async (message: any) => {
-      // console.log(`ride-status event body :>> `, message);
+      console.log(`ride-status event body :>> `, message);
       let body = parseSocketMessage(message);
       console.log(`ride-status event >> message :>> `, body.message);
 
@@ -420,7 +420,6 @@ const MapScreen = ({navigation}: any) => {
       } else if (body?.data) {
         console.log('ride-status event ELSE-IF :>> ', body.data.message);
         rideData = body.data;
-        console.log("12345678998765432",rideData)
       }
 
       if (rideData) {

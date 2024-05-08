@@ -253,7 +253,6 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       console.log("object--------",res.data)
       setLoading(false)
       if (slideCount >= breakPoints.length - 1) {
-        console.log("i am coming")
         setIsRideStarted(false)
         setIsReachedDrop(false)
         setPath([]);

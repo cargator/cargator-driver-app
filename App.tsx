@@ -136,21 +136,6 @@ const MapScreenDrawer = () => {
       setVersionNumber(version);
     };
 
-    const getDriverAppFlow = async () => {
-      try {
-        const res = await getDriverAppFlowAPI();
-        console.log("-from api--------",res.data[0].applicationFLow)
-        if (driverAppFlow !== res.data[0].applicationFLow) {
-          console.log("hello")
-          dispatch(removeRideDetails());
-          dispatch(setDriverAppFlow(res.data[0].applicationFLow))
-        }
-      } catch (error) {
-        console.log("error", error)
-      }
-    }
-    getDriverAppFlow();
-
     getVersion();
   }, []);
   return (
@@ -194,11 +179,25 @@ export const Routing = () => {
   // console.log({gpsPermission, locationPermission});
   // const infoVisible = useSelector((store: any) => store.infoVisible);
   // const userId = useSelector((store: any) => store.userId);
-  const [hello, setHello]  = useState<any>("");
 
   useEffect(() => {
     // do stuff while splash screen is shown
     // After having done stuff (such as async tasks) hide the splash screen
+
+    const getDriverAppFlow = async () => {
+      try {
+        const res = await getDriverAppFlowAPI();
+        console.log("-from api--------",res.data[0].applicationFLow)
+        if (driverAppFlow !== res.data[0].applicationFLow) {
+          console.log("hello")
+          dispatch(removeRideDetails());
+          dispatch(setDriverAppFlow(res.data[0].applicationFLow))
+        }
+      } catch (error) {
+        console.log("error", error)
+      }
+    }
+    getDriverAppFlow();
    
     SplashScreen.hide();
 
