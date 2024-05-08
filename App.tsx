@@ -188,7 +188,7 @@ export const Routing = () => {
       try {
         const res = await getDriverAppFlowAPI();
         console.log("-from api--------",res.data[0].applicationFLow)
-        if (driverAppFlow !== res.data[0].applicationFLow) {
+        if ((driverAppFlow !== res.data[0].applicationFLow) || (!driverAppFlow)) {
           console.log("hello")
           dispatch(removeRideDetails());
           dispatch(setDriverAppFlow(res.data[0].applicationFLow))
