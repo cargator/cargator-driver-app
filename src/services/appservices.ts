@@ -5,7 +5,7 @@ const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
   // // baseURL: `http://192.168.1.153:3001`,
   // baseURL: `https://9f7d-182-48-208-72.ngrok-free.app`
-  baseURL: `https://cg-delta-mtepodzz4a-as.a.run.app`,
+  baseURL: `https://api-delta.cargator.org/`,
 });
 
 customAxios.interceptors.request.use(
