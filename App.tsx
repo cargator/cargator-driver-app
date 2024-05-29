@@ -49,6 +49,7 @@ import { socketDisconnect } from './src/utils/socket';
 import RNFetchBlob from 'rn-fetch-blob';
 import CustomMapScreen from './src/post-login/CustomMapScreen';
 import { getDriverAppFlowAPI } from './src/services/userservices';
+import PetPujaScreen from './src/post-login/PetPujaScreen';
 // import DestinationScreen from './src/components/DestinationScreen';
 // import LocationPermissionScreen from './src/components/LocationPermissionScreen';
 // import SplashScreen from './src/components/SplashScreen';
@@ -150,10 +151,18 @@ const MapScreenDrawer = () => {
         //   drawerItemStyle: {display: 'none'},
         // }}
         />
-      ) : (
+      ) : driverAppFlow === "custom" ?(
         <Drawer.Screen
           name="Home"
           component={CustomMapScreen}
+        // options={{
+        //   drawerItemStyle: {display: 'none'},
+        // }}
+        />
+      ) :(
+        <Drawer.Screen
+          name="Home"
+          component={PetPujaScreen}
         // options={{
         //   drawerItemStyle: {display: 'none'},
         // }}
