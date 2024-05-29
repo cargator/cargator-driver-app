@@ -1,4 +1,4 @@
-package com.codeb.cargatordeltadriver;
+package com.codeb.cargatordriver;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

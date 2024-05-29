@@ -73,9 +73,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.codeb.cargatordeltadriver"
+    namespace "com.codeb.cargatordriver"
     defaultConfig {
-        applicationId "com.codeb.cargatordeltadriver"
+        applicationId "com.codeb.cargatordriver"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 30
