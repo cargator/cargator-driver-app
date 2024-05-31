@@ -5,7 +5,7 @@ const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
   // // baseURL: `http://192.168.1.153:3001`,
   // baseURL: `https://9f7d-182-48-208-72.ngrok-free.app`
-  baseURL: `http://192.168.1.57:3001`,
+  baseURL: `http://192.168.1.34:3001`,
   // baseURL: `https://api-delta.cargator.org/`,
 });
 

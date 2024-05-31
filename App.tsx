@@ -219,6 +219,7 @@ export const Routing = () => {
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="LoginScreen"
+          // initialRouteName="PetPujaScreen"
           screenOptions={{ headerShown: false, orientation: 'portrait' }}>
           {!locationPermission ? (
             <Stack.Screen
@@ -232,6 +233,8 @@ export const Routing = () => {
             />
           ) : !loginToken ? (
             <>
+              <Stack.Screen name="PetPujaScreen" component={PetPujaScreen} />
+
               <Stack.Screen name="LoginScreen" component={LoginScreen} />
               <Stack.Screen name="LoginOtpScreen" component={LoginOtpScreen} />
             </>
