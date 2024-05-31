@@ -899,11 +899,11 @@ const MapScreen = ({navigation}: any) => {
                         </View>
                       </View>
 
-                      <View style={styles.availableRidesButtonsView}>
+                      {/* <View style={styles.availableRidesButtonsView}>
                         <Pressable
                           onPress={() => {
                             onRejectRide(availableRides[0]);
-                          }}>
+                          }}>r
                           <RejectRideIcon />
                         </Pressable>
 
@@ -919,7 +919,7 @@ const MapScreen = ({navigation}: any) => {
                           }}>
                           <Text style={styles.textStyle}>Accept</Text>
                         </Pressable>
-                      </View>
+                      </View> */}
                     </View>
                   </View>
                 )}
