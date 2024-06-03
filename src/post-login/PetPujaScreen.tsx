@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react'
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from 'react-native-maps';
@@ -7,6 +8,7 @@ import {
 } from 'react-native-responsive-screen';
 import { countBy, size } from 'lodash';
 import MapViewDirections from 'react-native-maps-directions';
+import GetLocation from 'react-native-get-location'
 
 
 
@@ -15,6 +17,9 @@ const PetPujaScreen = () => {
 
   const order={
     "_id": {
+
+
+      
       "$oid": "664c7f805b628602bcc587f4"
     },
     "order_details": {
@@ -27,16 +32,16 @@ const PetPujaScreen = () => {
     "pickup_details": {
       "name": "HO Demo - Sumit Bhatiya - Delivery Integration",
       "contact_number": "1234567890",
-      "latitude": 1,
-      "longitude": 1,
+      "latitude": 19.16835878564917, 
+      "longitude": 72.96088330018131,
       "address": "ahmedabad",
       "city": "Ahmedabad"
     },
     "drop_details": {
       "name": "demo",
       "contact_number": "1234567890",
-      "latitude": 23.022505,
-      "longitude": 72.5713621,
+      "latitude": 19.168486125810627, 
+      "longitude": 72.95657688815858,
       "address": "Ahmedabad,Demo, Gujarat,Ahmedabad",
       "city": "Ahmedabad"
     },
@@ -72,15 +77,31 @@ const PetPujaScreen = () => {
   const setNewOrder=()=>{
     console.log("set");
     setHavingOrder(prev => !prev)
-   
   }
+
+
+function getCurrentLocation(){
+  GetLocation.getCurrentPosition({
+    enableHighAccuracy: true,
+    timeout: 1000,
+  })
+  .then(location => {
+    console.log("Get loc function");
+    
+    console.log(location);
+  })
+  .catch(error => {
+    const { code, message } = error;
+    console.warn(code, message);
+  })
+}
 
 
   const mapRef = useRef<any>(null);
   const [region, setRegion] = useState<any>({});
   const [isRideStarted, setIsRideStarted] = useState<boolean>(false);
   const [path, setNewPath] = useState<any>([]);
-  const GOOGLE_MAPS_APIKEY="..."
+  const GOOGLE_MAPS_APIKEY='..'
   const [mylocation, setMyLocation] = useState({
     latitude: 19.165131064505033,
     longitude: 72.96577142466332,
@@ -157,63 +178,13 @@ const PetPujaScreen = () => {
           longitudeDelta: region.longitudeDelta || 0.0121,
         }}
         mapPadding={{ top: 200, right: 50, left: 20, bottom: 30 }}>
-        {!isRideStarted && <Marker coordinate={mylocation} />}
-        {isRideStarted && (
-          <Marker
-            identifier="dropLocationMarker"
-            coordinate={path.length > 0 ? path[path.length - 1] : mylocation}
-            icon={require('../svg/images/driverLiveLocation.png')}
-            // imageStyle={{ width: wp(100), height: hp(100) }}
-            rotation={heading - 50 || 0}
-            anchor={{ x: 0.5, y: 0.5 }}
-            zIndex={5}
-          />
-        )}
-            {isRideStarted && path.length > 0 && (
-            <Marker
-              identifier="dropLocationMarker"
-              coordinate={path[0]}
-              icon={require('../svg/images/startPoint.png')}
-              anchor={{ x: 0.5, y: 0.5 }}
-              zIndex={1}
-            />
-          )}
-          {
-          path.map((point:any, index:any) => {
-              // console.log("points",point)
-              return (
-                point?.label === 'hospitalised' ? (
-                  <Marker
-                    key={index}
-                    identifier="dropLocationMarker"
-                    coordinate={{ "latitude": point.latitude, "longitude": point.longitude }}
-                    icon={require('../svg/images/hospital.png')}
-                    // imageStyle={{ width: wp(100), height: hp(100) }}
-                    zIndex={1}
-                  />
-                ) : null
-
-              );
-            })
-          }
-          <Polyline
-    coordinates={[mylocation,destination]}
-    strokeColor="yellow" // fallback for when `strokeColors` is not supported by the map-provider
-    strokeColors={[
-      '#7F0000',
-      '#00000000', // no color, creates a "long" gradient between the previous and next coordinate
-      '#B24112',
-      '#E5845C',
-      '#238C23',
-      '#7F0000',
-    ]}
-    strokeWidth={6}
-  />
-  {/* <MapViewDirections
+         <Marker coordinate={mylocation} />
+         <Marker coordinate={destination} />
+  { <MapViewDirections
     origin={mylocation}
     destination={destination}
     apikey={GOOGLE_MAPS_APIKEY}
-  /> */}
+  /> }
       </MapView> 
        
        }
@@ -277,4 +248,3 @@ const styles = StyleSheet.create({
 );
 
 export default PetPujaScreen;
-
