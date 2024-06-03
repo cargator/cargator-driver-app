@@ -101,7 +101,7 @@ function getCurrentLocation(){
   const [region, setRegion] = useState<any>({});
   const [isRideStarted, setIsRideStarted] = useState<boolean>(false);
   const [path, setNewPath] = useState<any>([]);
-  const GOOGLE_MAPS_APIKEY='..'
+  const GOOGLE_MAPS_APIKEY='ftretetr567tgjy7oyu'
   const [mylocation, setMyLocation] = useState({
     latitude: 19.165131064505033,
     longitude: 72.96577142466332,
