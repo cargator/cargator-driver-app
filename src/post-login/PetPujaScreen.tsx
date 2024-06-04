@@ -12,61 +12,12 @@ import GetLocation from 'react-native-get-location'
 import { getSocketInstance, socketDisconnect } from '../utils/socket';
 import { useSelector } from 'react-redux';
 
-const order = {
-  "_id": {
-    "$oid": "664c7f805b628602bcc587f4"
-  },
-  "order_details": {
-    "vendor_order_id": "411563121716194267",
-    "order_total": 240,
-    "paid": false,
-    "order_source": "POS",
-    "customer_orderId": ""
-  },
-  "pickup_details": {
-    "name": "HO Demo - Sumit Bhatiya - Delivery Integration",
-    "contact_number": "1234567890",
-    "latitude": 19.16835878564917,
-    "longitude": 72.96088330018131,
-    "address": "ahmedabad",
-    "city": "Ahmedabad"
-  },
-  "drop_details": {
-    "name": "demo",
-    "contact_number": "1234567890",
-    "latitude": 19.168486125810627,
-    "longitude": 72.95657688815858,
-    "address": "Ahmedabad,Demo, Gujarat,Ahmedabad",
-    "city": "Ahmedabad"
-  },
-  "order_items": [
-    {
-      "id": "90",
-      "name": "Chicken Lollypop",
-      "quantity": 1,
-      "price": 120,
-      "_id": {
-        "$oid": "664c7f805b628602bcc587f5"
-      }
-    },
-    {
-      "id": "91",
-      "name": "Chicken Fry",
-      "quantity": 1,
-      "price": 120,
-      "_id": {
-        "$oid": "664c7f805b628602bcc587f6"
-      }
-    }
-  ],
-  "createdAt": {
-    "$date": "2024-05-21T11:03:28.612Z"
-  },
-  "updatedAt": {
-    "$date": "2024-05-21T11:03:28.612Z"
-  },
-  "__v": 0
-}
+const flow = [
+  { flowName: "Reached PickUp Location" },
+  { flowName: "Order PickUped" },
+  { flowName: "Reached Destination" },
+  { flowName: "Order Delivered" },
+]
 
 export let socketInstance: any;
 const PetPujaScreen = () => {
@@ -75,62 +26,38 @@ const PetPujaScreen = () => {
   const [availableOrders, setAvailableOrders] = useState<any>([])
   const mapRef = useRef<any>(null);
   const [region, setRegion] = useState<any>({});
-  const [isRideStarted, setIsRideStarted] = useState<boolean>(false);
   const [path, setNewPath] = useState<any>([]);
-  const GOOGLE_MAPS_APIKEY = 'ftretetr567tgjy7oyu'
   const [mylocation, setMyLocation] = useState({
-    latitude: 19.165131064505033,
-    longitude: 72.96577142466332,
+    latitude: 19.165061,
+    longitude: 72.965545,
   });
 
   const [destination, setDestination] = useState({
-    latitude: order.pickup_details.latitude,
-    longitude: order.pickup_details.longitude
+    latitude: 0,
+    longitude: 0,
   })
+
+  const [pickUpLocation, setPickUpLocation] = useState({
+    latitude: 0,
+    longitude: 0,
+  })
+
   const [heading, setHeading] = useState<any>(0)
   const [buttonText, setButtonText] = useState<any>("Reached Pickup Location");
   const [pickup, newpickup] = useState()
+  const [acceptOrder, setAcceptOrder] = useState<boolean>(false)
 
-
-  const [havingOrder, setHavingOrder] = useState(true)
-  const setNewOrder = () => {
-    console.log("set");
-    setHavingOrder(prev => !prev)
-  }
-
-
-
-  const parseSocketMessage = (message: any) => {
+  const handleAcceptOrder = async (order: any) => {
     try {
-      return JSON.parse(message);
-    } catch (error) {
-      console.log(`parseSocketMessage error :>> `, error);
-    }
-  };
-
-  const status = () => {
-    console.log("hi");
-
-    if (buttonText == 'Reached Pickup Location') {
-      setButtonText('Order Pickuped')
-      setMyLocation(destination)
-      setDestination({
-        latitude: order.drop_details.latitude,
-        longitude: order.drop_details.longitude
-      })
-    }
-    else if (buttonText == 'Order Pickuped') {
-      setButtonText('Reach Destination')
-    }
-    else if (buttonText == 'Reach Destination') {
-      setButtonText('Order Delivered')
-    }
-    else {
-      setNewOrder();
-      setButtonText('Reached Pickup Location')
+      setPickUpLocation({latitude:order.pickup_details.latitud, longitude:order.pickup_details.longitude})
+      setDestination({latitude:order.drop_details.latitude, longitude:order.drop_details.longitude})
+    } catch (error:any) {
+      console.log("error :>>", error)
     }
   }
-  const  checkSocket = async() => {
+
+
+  const checkSocket = async () => {
     socketInstance = await getSocketInstance(loginToken);
     startSocketListeners();
   }
@@ -159,7 +86,7 @@ const PetPujaScreen = () => {
         });
       });
 
-    }catch(err : any){
+    } catch (err: any) {
       console.log("error :", err)
     }
   }
@@ -171,21 +98,21 @@ const PetPujaScreen = () => {
 
   return (
     <>
-      {havingOrder && <View style={styles.container} id='orderBlock' >
-        <TouchableOpacity onPress={setNewOrder}>
-          <Text>Order Id : {order._id.$oid}</Text>
-          <Text>Name :{order.drop_details.name}</Text>
-          <Text>Pickup :{order.pickup_details.address}</Text>
-          <Text>Drop :{order.drop_details.address}</Text>
-          <Text>Total Bill:{order.order_details.order_total}</Text>
-        </TouchableOpacity>
-      </View>
+      {!acceptOrder &&
+        <View style={styles.container} id='orderBlock'>
+          {availableOrders.map((order: any, index: number) => (
+            <TouchableOpacity key={index} style={styles.orderItem} onPress={() => handleAcceptOrder(order)}>
+              <Text>Order ID: {order.order_details.vendor_order_id}</Text>
+              <Text>Order Price: {order.order_details.order_total}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       }
-      {!havingOrder && <MapView provider={PROVIDER_GOOGLE} style={styles.map}
+      {acceptOrder && <MapView provider={PROVIDER_GOOGLE} style={styles.map}
         ref={mapRef}
         initialRegion={{
-          latitude: order.pickup_details.latitude,
-          longitude: order.pickup_details.longitude,
+          latitude: 19.165061,
+          longitude: 72.965545,
           latitudeDelta: 0.0122,
           longitudeDelta: 0.0121,
         }}
@@ -198,15 +125,15 @@ const PetPujaScreen = () => {
         mapPadding={{ top: 200, right: 50, left: 20, bottom: 30 }}>
         <Marker coordinate={mylocation} />
         <Marker coordinate={destination} />
-        {<MapViewDirections
+        {/* {<MapViewDirections
           origin={mylocation}
           destination={destination}
-          apikey={GOOGLE_MAPS_APIKEY}
-        />}
+          // apikey={GOOGLE_MAPS_APIKEY}
+        />} */}
       </MapView>
 
       }
-      {!havingOrder &&
+      {acceptOrder &&
         <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: hp(1), }}>
           {/* <TouchableOpacity onPress={status}> */}
           <SlideButton
@@ -218,7 +145,7 @@ const PetPujaScreen = () => {
             autoReset={true}
             sliderWidth={50}
 
-            onReachedToEnd={status}
+            // onReachedToEnd={status}
             // onSlideSuccess={handleSlide}
             containerStyle={{ backgroundColor: '#3A5299', color: 'red' }}
             thumbStyle={{ backgroundColor: 'white' }}
@@ -243,26 +170,28 @@ const PetPujaScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'yellow', // Optional: set a background color if needed
-    height: 1,
+    backgroundColor: '#b4b4b4',
     width: '80%',
     marginLeft: '10%',
-    marginTop: '5%',
-    marginBottom: '150%',
+    marginTop: '20%',
+    marginBottom: '15%',
     borderWidth: 2,
     borderColor: 'black',
     borderRadius: 10,
-    padding: '2%'
+    padding: '2%',
+  },
+  orderItem: {
+    padding: 16,
+    marginVertical: 8,
+    backgroundColor: '#3cb371',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
   },
   map: {
-    // marginTop: heightPercentageToDP(10),
     width: '100%',
     height: '90%',
-    // marginBottom: widthPercentageToDP(40)
-  }
-}
-
-
-);
+  },
+});
 
 export default PetPujaScreen;
