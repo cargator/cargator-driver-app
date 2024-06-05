@@ -9,3 +9,5 @@ export const getRideHistory = (userId: any)=>{
 export const userDetails = (id: any) =>{
     return customAxios.get(`/getDriverById/${id}`)
 }
+
+

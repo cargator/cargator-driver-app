@@ -38,3 +38,19 @@ export const upDateRideStatus = (data:any) =>{
     console.log("upDateRideStatus called")
     return customAxios.patch("/updateRide",data)
 }
+
+
+//petPuja API ----------------------
+
+export const getOrdersAPI = () => {
+    return customAxios.get('/get-new-orders')
+}
+
+
+export const orderAcceptAPI = (order: any) => {
+    return customAxios.post('/order-accept',order)
+}
+
+export const updateOrderAPI = (data: any) => {
+    return customAxios.post('/order-update',data)
+}
