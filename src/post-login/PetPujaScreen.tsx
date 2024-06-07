@@ -494,7 +494,7 @@ const PetPujaScreen = () => {
       setPickUpLocation({ latitude: orderDetails.response.pickup_details.latitude, longitude: orderDetails.response.pickup_details.longitude })
       setDestination({ latitude: orderDetails.response.drop_details.latitude, longitude: orderDetails.response.drop_details.longitude })
       console.log(">>>>>>>>>>>>>>>>>>>", { latitude: orderDetails.response.drop_details.latitude, longitude: orderDetails.response.drop_details.longitude })
-    } else if (orderStatus === flow.length - 1) {
+    } else if (orderStatus > flow.length - 1) {
       console.log("hiiiiiiiiiii-2")
       setAcceptOrder(false)
       setPath([])
@@ -507,8 +507,8 @@ const PetPujaScreen = () => {
     } else if (orderStatus > Number('0')) {
       console.log("hiiiiiiiiiii-3")
       setAcceptOrder(true)
-      setSlideCount(orderStatus + 1);
-      setButtonText(flow[orderStatus + 1]?.flowName);
+      setSlideCount(orderStatus );
+      setButtonText(flow[orderStatus]?.flowName);
       setOrderId(orderDetails.response._id)
       setPath(orderDetails.driverDataFromCurrLocationToPickup.coords)
       setPickUpLocation({ latitude: orderDetails.response.pickup_details.latitude, longitude: orderDetails.response.pickup_details.longitude })
