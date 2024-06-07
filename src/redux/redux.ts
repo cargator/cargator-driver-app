@@ -29,6 +29,8 @@ const authSlice = createSlice({
     driverPath: [],
     rideStatus:'',
     driverAppFlow:'',
+    orderDetails: {},
+    orderStatus: '',
   },
   reducers: {
     setUserData: (state, action) => {
@@ -48,6 +50,7 @@ const authSlice = createSlice({
         exists: false,
         path: '',
       };
+      state.orderDetails = {};
     },
     setPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
@@ -99,8 +102,17 @@ const authSlice = createSlice({
     },
     setDriverAppFlow: (state, action) => {
       state.driverAppFlow = action.payload;
+    },
+    setOrderDetails: (state, action) => {
+      state.orderDetails = action.payload;
+    },
+    removeOrderDetails: state => {
+      state.orderDetails = {};
+    },
+    setOrderStatus: (state, action) => {
+      state.orderStatus = action.payload;
     }
-  },
+  }, 
 });
 
 const persistedReducer = persistReducer(persistConfig, authSlice.reducer);
@@ -125,6 +137,9 @@ export const {
   setDriverPath,
   setRideStatus,
   setDriverAppFlow,
+  setOrderDetails,
+  setOrderStatus,
+  removeOrderDetails,
 } = authSlice.actions;
 
 const store = configureStore({
