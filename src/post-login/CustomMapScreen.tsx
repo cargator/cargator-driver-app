@@ -187,6 +187,8 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const handleBaseOut= async() => {
     try {
+      console.log("inside handle baseout>>>>>>");
+      
       setLoading(true);
       setPath([]);
       dispatch(setDriverPath([]));
@@ -197,6 +199,8 @@ const CustomMapScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       }
       console.log("object")
       const res = await createRides(data)
+      console.log(">>>>>>>>>>>>>>>>>>>>", res.data);
+      
       setLoading(false);
       Toast.show({
         type: 'success',

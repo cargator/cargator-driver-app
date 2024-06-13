@@ -307,12 +307,14 @@ const MapScreen = ({navigation}: any) => {
   }, [rideDetails, isRideStarted]);
 
   const onAcceptRide = (ride: any) => {
+    console.log("inside accept ride function >>>>>>>>>>>>");
+    
     setLoading(true);
     socketInstance?.emit('ride-accept', {id: ride._id.toString()});
     setAvailableRides((allRides: any[]) =>
       allRides.filter(ele => ele._id != ride._id),
     );
-    // console.log('ride-accept emiited');
+    console.log('ride-accept emiited');
   };
 
   const onRejectRide = (ride: any) => {
@@ -899,11 +901,11 @@ const MapScreen = ({navigation}: any) => {
                         </View>
                       </View>
 
-                      {/* <View style={styles.availableRidesButtonsView}>
+                      <View style={styles.availableRidesButtonsView}>
                         <Pressable
                           onPress={() => {
                             onRejectRide(availableRides[0]);
-                          }}>r
+                          }}>
                           <RejectRideIcon />
                         </Pressable>
 
@@ -919,7 +921,7 @@ const MapScreen = ({navigation}: any) => {
                           }}>
                           <Text style={styles.textStyle}>Accept</Text>
                         </Pressable>
-                      </View> */}
+                      </View>
                     </View>
                   </View>
                 )}
