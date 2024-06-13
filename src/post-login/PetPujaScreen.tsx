@@ -852,10 +852,10 @@ const PetPujaScreen = ({ navigation }: any) => {
       )}
       {availableOrders.length > 0 &&
         <View style={styles.orderView}>
-          <Text>availableOrders[0].order_details.vendor_order_id</Text>
-          <Text>availableOrders[0].pickup_details.name</Text>
-          <Text>availableOrders[0].drop_details.name</Text>
-          <Text>availableOrders[0].order_items[0].name</Text>
+          <Text>{availableOrders[0].order_details.vendor_order_id}</Text>
+          <Text>{availableOrders[0].pickup_details.name}</Text>
+          <Text>{availableOrders[0].drop_details.name}</Text>
+          <Text>{availableOrders[0].order_items[0].name}</Text>
         </View>
       }
     </>
