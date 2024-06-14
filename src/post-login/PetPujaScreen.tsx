@@ -678,6 +678,9 @@ import { removeUserData } from '../redux/redux';
 import customAxios from '../services/appservices';
 import OfflineIcon from '../svg/OfflineIcon';
 import BlurMap from '../svg/BlurMap';
+import { Button } from 'react-native-elements';
+import Spinner from 'react-native-spinkit';
+
 
 export let socketInstance: any;
 
@@ -697,6 +700,7 @@ const PetPujaScreen = ({ navigation }: any) => {
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<any>([])
+  const [popup, setPopup] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -891,12 +895,74 @@ const PetPujaScreen = ({ navigation }: any) => {
 
       {isDriverOnline && (
         <View style={styles.onlineModelView}>
-          <Text style={styles.offlineModalHeaderText}>Hello {userData.firstName.split(' ')[0]}!</Text>
+          {/* <Text style={styles.offlineModalHeaderText}>Hello {userData.firstName.split(' ')[0]}!</Text>
           <View style={styles.mapView}>
             <View style={styles.searchOrderView} >
               <Text style={{ fontSize: 25, fontWeight: '400', color: '#333333' }}>Searching for Order...</Text>
             </View>
             <BlurMap />
+          </View> */}
+          <Text style={styles.boldText}>
+            We're finding a order for You
+          </Text>
+          <Text style={styles.holdOntext}>
+            Kindly hold on for a second
+          </Text>
+          <View
+            style={{
+              marginTop: hp(10),
+            }}>
+            {popup ? (
+              <View>
+                <View
+                  style={{
+                    padding: 20,
+                    backgroundColor: '#fff',
+                    borderRadius: 10,
+                    elevation: 2, // for Android shadow
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 2,
+                    alignItems: 'center',
+                  }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Roboto Mono',
+                      marginBottom: 20,
+                      fontSize: 16,
+                      textAlign: 'center',
+                    }}>
+                    Order cancelled by customer
+                  </Text>
+                  {/* <Button title="OK" onPress={handleCancelRide} /> */}
+                </View>
+              </View>
+            ) : (
+              <>
+                <Spinner
+                  isVisible={true}
+                  type="Pulse"
+                  color="#9999cc"
+                  style={styles.ParentSpinner}
+                  size={wp(60)}
+                />
+                <Spinner
+                  isVisible={true}
+                  type="Pulse"
+                  color='#118F5E'
+                  size={wp(40)}
+                  style={styles.ChildSpinner}
+                />
+                  <Spinner
+                  isVisible={true}
+                  type="Pulse"
+                  color='#118F5E'
+                  size={wp(40)}
+                  style={styles.ChildSpinner}
+                />
+              </>
+            )}
           </View>
         </View>
       )}
@@ -1161,6 +1227,31 @@ const styles = StyleSheet.create({
     left: 10,
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  boldText: {
+    fontFamily: 'Roboto Mono',
+    marginTop: hp(10),
+    fontSize: hp(2.5),
+    fontWeight: '600',
+    textAlign: 'center',
+    color: '#212121',
+  },
+  holdOntext: {
+    fontFamily: 'Roboto Mono',
+    marginTop: hp(1),
+    fontSize: hp(2),
+    fontWeight: '500',
+    textAlign: 'center',
+    color: '#464E5F',
+  },
+  ParentSpinner: {
+    alignSelf: 'center',
+    position: 'relative',
+  },
+  ChildSpinner: {
+    alignSelf: 'center',
+    position: 'absolute',
+    marginTop: hp(5),
   },
 });
 
