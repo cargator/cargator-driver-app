@@ -662,7 +662,7 @@
 // export default PetPujaScreen;
 
 import React, { useEffect, useRef, useState } from 'react'
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Animated } from 'react-native';
 import {
   heightPercentageToDP,
   heightPercentageToDP as hp,
@@ -684,6 +684,9 @@ const PetPujaScreen = ({ navigation }: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
+  const userData = useSelector((store: any) => store.userData);
+
+
 
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
@@ -845,7 +848,7 @@ const PetPujaScreen = ({ navigation }: any) => {
               }}
               onPress={() => setIsProfileModal(!isProfileModal)}>
               <Text style={styles.profileIconText}>
-                D{/* {userData.firstName[0].toUpperCase()} */}
+                {userData.firstName[0].toUpperCase()}
               </Text>
             </TouchableOpacity>
           </View>
@@ -861,7 +864,70 @@ const PetPujaScreen = ({ navigation }: any) => {
       }
       {!isDriverOnline && (
         <View style={styles.offlineModalView}>
-          
+          <Text style={styles.offlineModalHeaderText}>Hello {userData.firstName.split(' ')[0]}!</Text>
+          {/* Today Model View */}
+          <View style={styles.todayModalView}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>My Progress</Text>
+              <Text style={{ fontSize: 18, marginLeft: wp(26), marginTop: hp(0.5), textAlign: 'right' }}>Today</Text>
+            </View>
+            <View style={styles.circleModel}>
+              <View style={styles.circle}>
+                <Text>Earning</Text>
+                <Text>0</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Login Hours</Text>
+                <Text>0.00</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Orders</Text>
+                <Text>0</Text>
+              </View>
+            </View>
+          </View>
+          {/* Week Model View */}
+          <View style={styles.todayModalView}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>My Progress</Text>
+              <Text style={{ fontSize: 18, marginLeft: wp(26), marginTop: hp(0.5), textAlign: 'right' }}>This Week</Text>
+            </View>
+            <View style={styles.circleModel}>
+              <View style={styles.circle}>
+                <Text>Earning</Text>
+                <Text>0</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Login Hours</Text>
+                <Text>0.00</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Orders</Text>
+                <Text>0</Text>
+              </View>
+            </View>
+          </View>
+          {/* Month Model View */}
+          <View style={styles.todayModalView}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>My Progress</Text>
+              <Text style={{ fontSize: 18, marginLeft: wp(26), marginTop: hp(0.5), textAlign: 'right' }}>This Month</Text>
+            </View>
+            <View style={styles.circleModel}>
+              <View style={styles.circle}>
+                <Text>Earning</Text>
+                <Text>0</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Login Hours</Text>
+                <Text>0.00</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Orders</Text>
+                <Text>0</Text>
+              </View>
+            </View>
+          </View>
         </View>
       )}
 
@@ -911,7 +977,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: wp(2),
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
   },
   profileIcon: {
     width: wp(8),
@@ -998,15 +1064,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   offlineModalView: {
-    backgroundColor: 'white',
+    backgroundColor: '#F5FFFB',
     height: hp(95),
     width: wp(100),
     shadowOpacity: wp(0.25),
     shadowRadius: wp(4),
     elevation: hp(5),
-    alignItems: 'center',
     alignSelf: 'center',
-    justifyContent: 'center',
     gap: hp(2.5),
     position: 'absolute',
     marginTop: hp(6.5)
@@ -1015,8 +1079,10 @@ const styles = StyleSheet.create({
     fontFamily: 'RobotoMono-Regular',
     color: '#212121',
     fontWeight: '500',
-    fontSize: wp(5.5),
+    fontSize: wp(7),
     textAlign: 'center',
+    marginTop: hp(1.5)
+    // position:'absolute'
   },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
@@ -1025,6 +1091,36 @@ const styles = StyleSheet.create({
     fontSize: wp(4.5),
     textAlign: 'center',
   },
+  todayModalView: {
+    backgroundColor: 'white',
+    width: wp(95),
+    alignSelf: 'center',
+    height: hp(25),
+    // justifyContent:'space-between'
+  },
+  circleModel: { 
+    flexDirection: 'row', 
+    alignItems: 'center' ,
+    justifyContent:'space-around',
+    flex:1
+  },
+  circle: {
+    width: 90,
+    height: 90,
+    borderRadius: 50,
+    backgroundColor: 'white',
+    borderColor: '#28DA95',
+    borderTopWidth:2,
+    borderLeftWidth:0.5,
+    borderRightWidth:0.5,
+    borderBottomWidth:0.2,
+
+    // borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // marginLeft: wp(3),
+    // marginTop: hp(3)
+  }
 
 });
 
