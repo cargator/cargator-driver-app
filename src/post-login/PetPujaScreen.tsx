@@ -1,4 +1,3 @@
-
 // // import React, { useEffect, useRef, useState } from 'react'
 // // import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 // // import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from 'react-native-maps';
@@ -42,7 +41,6 @@
 // //     longitude: 0,
 // //   })
 
-
 // //   const [buttonText, setButtonText] = useState<any>("Reached Pickup Location");
 // //   const [pickup, newpickup] = useState()
 // //   const [acceptOrder, setAcceptOrder] = useState<boolean>(false)
@@ -59,7 +57,6 @@
 // //       console.log("error :>>", error)
 // //     }
 // //   }
-
 
 // //   const checkSocket = async () => {
 // //     socketInstance = await getSocketInstance(loginToken);
@@ -106,7 +103,6 @@
 
 // //     }
 // //   }
-
 
 // //   useEffect(() => {
 // //     checkSocket()
@@ -177,8 +173,6 @@
 // //           {/* </TouchableOpacity> */}
 // //         </View>}
 
-
-
 // //     </>
 // //   );
 
@@ -211,10 +205,6 @@
 // // });
 
 // // export default PetPujaScreen;
-
-
-
-
 
 // import React, { useCallback, useEffect, useRef, useState } from 'react'
 // import { StyleSheet, View, Text, TouchableOpacity, Image, PermissionsAndroid } from 'react-native';
@@ -291,7 +281,6 @@
 //     longitude: 0,
 //   })
 
-
 //   const getNewOrders = async () => {
 //     try {
 //       const orders = await getOrdersAPI();
@@ -355,7 +344,6 @@
 //       console.log(`emitLiveLocation error :>> `, error);
 //     }
 //   };
-
 
 //   const getCurrentPosition = useCallback(async () => {
 //     try {
@@ -470,7 +458,6 @@
 //     }
 //   }
 
-
 //   useEffect(() => {
 //     getNewOrders();
 //     intervalId = setInterval(getNewOrders, 10000);
@@ -519,7 +506,6 @@
 //       console.log(">>>>>>>>>>>>>>>>>>>1", { latitude: orderDetails.response.drop_details.latitude, longitude: orderDetails.response.drop_details.longitude })
 //     }
 //   }, [getCurrentPosition])
-
 
 //   return (
 //     <>
@@ -620,8 +606,6 @@
 //           {/* </TouchableOpacity> */}
 //         </View>}
 
-
-
 //     </>
 //   );
 
@@ -661,8 +645,8 @@
 
 // export default PetPujaScreen;
 
-import React, { useEffect, useRef, useState } from 'react'
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import {
   heightPercentageToDP,
   heightPercentageToDP as hp,
@@ -670,17 +654,19 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import SidebarIcon from '../svg/SidebarIcon';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
-import { isEmpty as _isEmpty } from 'lodash';
-import { getSocketInstance, socketDisconnect } from '../utils/socket';
-import { removeUserData } from '../redux/redux';
+import {isEmpty as _isEmpty} from 'lodash';
+import {getSocketInstance, socketDisconnect} from '../utils/socket';
+import {removeUserData} from '../redux/redux';
 import customAxios from '../services/appservices';
 import OfflineIcon from '../svg/OfflineIcon';
+import OffLineScreen from './petPoojaComponent/offLineScreen';
+import OnLineScreen from './petPoojaComponent/onLineScreen';
 
 export let socketInstance: any;
 
-const PetPujaScreen = ({ navigation }: any) => {
+const PetPujaScreen = ({navigation}: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
@@ -689,10 +675,10 @@ const PetPujaScreen = ({ navigation }: any) => {
   const isFirstRender = useRef(true);
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
-  const [orderAccept, setOrderAccept] = useState<boolean>(false)
+  const [orderAccept, setOrderAccept] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
-  const [availableOrders, setAvailableOrders] = useState<any>([])
+  const [availableOrders, setAvailableOrders] = useState<any>([]);
 
   const handleLogout = async () => {
     try {
@@ -718,12 +704,14 @@ const PetPujaScreen = ({ navigation }: any) => {
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
-        console.log(">>>>>>>>>>>", orders);
+        console.log('>>>>>>>>>>>', orders);
 
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
-            const orderExists = prev.some((existingOrder: any) => existingOrder._id === order._id);
+            const orderExists = prev.some(
+              (existingOrder: any) => existingOrder._id === order._id,
+            );
             // If the order doesn't exist, add it to the array
             if (!orderExists) {
               return [...prev, order];
@@ -731,14 +719,13 @@ const PetPujaScreen = ({ navigation }: any) => {
             // If the order exists, return the previous state without changes
             return prev;
           });
-        })
+        });
         // console.log(" ========== msg =========", orders);
-      })
+      });
     } catch (error) {
       console.log(error);
-
     }
-  }
+  };
 
   const driverStatusToggle = async (event: boolean) => {
     try {
@@ -851,24 +838,30 @@ const PetPujaScreen = ({ navigation }: any) => {
           </View>
         </View>
       )}
-      {availableOrders.length > 0 &&
-        <View style={styles.orderView}>
-          <Text>{availableOrders[0].order_details.vendor_order_id}</Text>
-          <Text>{availableOrders[0].pickup_details.name}</Text>
-          <Text>{availableOrders[0].drop_details.name}</Text>
-          <Text>{availableOrders[0].order_items[0].name}</Text>
-        </View>
-      }
-      {!isDriverOnline && (
-        <View style={styles.offlineModalView}>
-          
-        </View>
-      )}
+      {
+        availableOrders.length > 0 && (
+          <View style={styles.orderView}>
+            <Text>{availableOrders[0].order_details.vendor_order_id}</Text>
+            <Text>{availableOrders[0].pickup_details.name}</Text>
+            <Text>{availableOrders[0].drop_details.name}</Text>
+            <Text>{availableOrders[0].order_items[0].name}</Text>
+          </View>
+        )
 
+        // {availableOrders.length > 0 &&
+        //   availableOrders.map((element:any,index:number)=>{
+        //      return(
+        //       <OrderScreen key={index} ele={element}/>
+        //      )}
+        // )
+      }
+      {!isDriverOnline && <View style={styles.offlineModalView}></View>}
+      <Text style={styles.name}>Hello Deepak</Text>
+      {!isDriverOnline && <OffLineScreen />}
+      {isDriverOnline && <OnLineScreen />}
     </>
   );
-
-}
+};
 
 const styles = StyleSheet.create({
   mainView: {
@@ -1009,7 +1002,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: hp(2.5),
     position: 'absolute',
-    marginTop: hp(6.5)
+    marginTop: hp(6.5),
   },
   offlineModalHeaderText: {
     fontFamily: 'RobotoMono-Regular',
@@ -1025,7 +1018,14 @@ const styles = StyleSheet.create({
     fontSize: wp(4.5),
     textAlign: 'center',
   },
-
+  name: {
+    paddingTop: '10%',
+    paddingBottom: '10%',
+    fontSize: 28,
+    color: 'black',
+    textAlign: 'center',
+    backgroundColor: '#f5f5f5',
+  },
 });
 
 export default PetPujaScreen;
