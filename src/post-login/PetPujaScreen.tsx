@@ -677,6 +677,7 @@ import { getSocketInstance, socketDisconnect } from '../utils/socket';
 import { removeUserData } from '../redux/redux';
 import customAxios from '../services/appservices';
 import OfflineIcon from '../svg/OfflineIcon';
+import BlurMap from '../svg/BlurMap';
 
 export let socketInstance: any;
 
@@ -819,49 +820,6 @@ const PetPujaScreen = ({ navigation }: any) => {
         </View>
       )}
 
-      {!orderAccept && (
-        <View style={styles.headerBar}>
-          <View>
-            <TouchableOpacity
-              onPress={() => {
-                // console.log('SideBarIcon pressed!');
-                navigation.toggleDrawer();
-              }}>
-              <SidebarIcon />
-            </TouchableOpacity>
-          </View>
-
-          {/* {isDriverOnline && !assignedRide && ( */}
-          {_isEmpty(orderDetails) && (
-            <OnlineOfflineSwitch
-              isDriverOnline={isDriverOnline}
-              driverStatusToggle={driverStatusToggle}
-            />
-          )}
-
-          <View style={styles.profileIcon}>
-            <TouchableOpacity
-              hitSlop={{
-                left: widthPercentageToDP(10),
-                right: widthPercentageToDP(5),
-                top: heightPercentageToDP(2),
-              }}
-              onPress={() => setIsProfileModal(!isProfileModal)}>
-              <Text style={styles.profileIconText}>
-                {userData.firstName[0].toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-      {availableOrders.length > 0 &&
-        <View style={styles.orderView}>
-          <Text>{availableOrders[0].order_details.vendor_order_id}</Text>
-          <Text>{availableOrders[0].pickup_details.name}</Text>
-          <Text>{availableOrders[0].drop_details.name}</Text>
-          <Text>{availableOrders[0].order_items[0].name}</Text>
-        </View>
-      }
       {!isDriverOnline && (
         <View style={styles.offlineModalView}>
           <Text style={styles.offlineModalHeaderText}>Hello {userData.firstName.split(' ')[0]}!</Text>
@@ -931,6 +889,61 @@ const PetPujaScreen = ({ navigation }: any) => {
         </View>
       )}
 
+      {isDriverOnline && (
+        <View style={styles.onlineModelView}>
+          <Text style={styles.offlineModalHeaderText}>Hello {userData.firstName.split(' ')[0]}!</Text>
+          <View style={styles.mapView}>
+            <View style={styles.searchOrderView} >
+              <Text style={{ fontSize: 25, fontWeight: '400', color: '#333333' }}>Searching for Order...</Text>
+            </View>
+            <BlurMap />
+          </View>
+        </View>
+      )}
+
+      {!orderAccept && (
+        <View style={styles.headerBar}>
+          <View>
+            <TouchableOpacity
+              onPress={() => {
+                // console.log('SideBarIcon pressed!');
+                navigation.toggleDrawer();
+              }}>
+              <SidebarIcon />
+            </TouchableOpacity>
+          </View>
+
+          {/* {isDriverOnline && !assignedRide && ( */}
+          {_isEmpty(orderDetails) && (
+            <OnlineOfflineSwitch
+              isDriverOnline={isDriverOnline}
+              driverStatusToggle={driverStatusToggle}
+            />
+          )}
+
+          <View style={styles.profileIcon}>
+            <TouchableOpacity
+              hitSlop={{
+                left: widthPercentageToDP(10),
+                right: widthPercentageToDP(5),
+                top: heightPercentageToDP(2),
+              }}
+              onPress={() => setIsProfileModal(!isProfileModal)}>
+              <Text style={styles.profileIconText}>
+                {userData.firstName[0].toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      {availableOrders.length > 0 &&
+        <View style={styles.orderView}>
+          <Text>{availableOrders[0].order_details.vendor_order_id}</Text>
+          <Text>{availableOrders[0].pickup_details.name}</Text>
+          <Text>{availableOrders[0].drop_details.name}</Text>
+          <Text>{availableOrders[0].order_items[0].name}</Text>
+        </View>
+      }
     </>
   );
 
@@ -1081,8 +1094,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: wp(7),
     textAlign: 'center',
-    marginTop: hp(1.5)
-    // position:'absolute'
   },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
@@ -1092,17 +1103,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   todayModalView: {
+    flex: 1,
     backgroundColor: 'white',
     width: wp(95),
     alignSelf: 'center',
     height: hp(25),
-    // justifyContent:'space-between'
   },
-  circleModel: { 
-    flexDirection: 'row', 
-    alignItems: 'center' ,
-    justifyContent:'space-around',
-    flex:1
+  circleModel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    flex: 1
   },
   circle: {
     width: 90,
@@ -1110,18 +1121,47 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: 'white',
     borderColor: '#28DA95',
-    borderTopWidth:2,
-    borderLeftWidth:0.5,
-    borderRightWidth:0.5,
-    borderBottomWidth:0.2,
-
-    // borderWidth: 1,
+    borderTopWidth: 2,
+    borderLeftWidth: 0.5,
+    borderRightWidth: 0.5,
+    borderBottomWidth: 0.2,
     justifyContent: 'center',
     alignItems: 'center',
-    // marginLeft: wp(3),
-    // marginTop: hp(3)
-  }
-
+  },
+  onlineModelView: {
+    backgroundColor: '#F5FFFB',
+    height: hp(95),
+    width: wp(100),
+    shadowOpacity: wp(0.25),
+    shadowRadius: wp(4),
+    elevation: hp(5),
+    alignSelf: 'center',
+    gap: hp(2.5),
+    position: 'absolute',
+    marginTop: hp(6.5)
+  },
+  mapView: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    width: wp(95),
+    alignSelf: 'center',
+    marginVertical: hp(25),
+    bottom: hp(7)
+  },
+  searchOrderView: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 25,
+    width: wp(60),
+    height: hp(10),
+    position: 'absolute',
+    zIndex: 1,
+    top: 10,
+    left: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
 });
 
 export default PetPujaScreen;
