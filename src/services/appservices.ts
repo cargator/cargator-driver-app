@@ -5,7 +5,7 @@ const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
   // // baseURL: `http://192.168.1.153:3001`,
   // baseURL: `https://a90c-182-48-215-1.ngrok-free.app`
-  baseURL: `http://192.168.0.138:3001`,
+  baseURL: `https://0ce9-182-48-209-140.ngrok-free.app`,
   // baseURL: `https://api.cargator.org/`,
 });
 

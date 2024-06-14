@@ -676,6 +676,7 @@ import { isEmpty as _isEmpty } from 'lodash';
 import { getSocketInstance, socketDisconnect } from '../utils/socket';
 import { removeUserData } from '../redux/redux';
 import customAxios from '../services/appservices';
+import OfflineIcon from '../svg/OfflineIcon';
 
 export let socketInstance: any;
 
@@ -717,8 +718,8 @@ const PetPujaScreen = ({ navigation }: any) => {
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
-        console.log(">>>>>>>>>>>",orders);
-        
+        console.log(">>>>>>>>>>>", orders);
+
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
@@ -858,6 +859,12 @@ const PetPujaScreen = ({ navigation }: any) => {
           <Text>{availableOrders[0].order_items[0].name}</Text>
         </View>
       }
+      {!isDriverOnline && (
+        <View style={styles.offlineModalView}>
+          
+        </View>
+      )}
+
     </>
   );
 
@@ -990,7 +997,35 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 4,
   },
-  
+  offlineModalView: {
+    backgroundColor: 'white',
+    height: hp(95),
+    width: wp(100),
+    shadowOpacity: wp(0.25),
+    shadowRadius: wp(4),
+    elevation: hp(5),
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    gap: hp(2.5),
+    position: 'absolute',
+    marginTop: hp(6.5)
+  },
+  offlineModalHeaderText: {
+    fontFamily: 'RobotoMono-Regular',
+    color: '#212121',
+    fontWeight: '500',
+    fontSize: wp(5.5),
+    textAlign: 'center',
+  },
+  offlineModalBodyText: {
+    fontFamily: 'RobotoMono-Regular',
+    color: '#464E5F',
+    fontWeight: '500',
+    fontSize: wp(4.5),
+    textAlign: 'center',
+  },
+
 });
 
 export default PetPujaScreen;
