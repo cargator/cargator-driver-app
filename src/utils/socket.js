@@ -11,7 +11,7 @@ function socketConnection(token) {
       // `https://api.cargator.org/?token=${token}`,
       // `https://0ce9-182-48-209-140.ngrok-free.app?token=${token}`,
       // `https://a90c-182-48-215-1.ngrok-free.app?token=${token}`,
-      `http://192.168.1.59:3001?token=${token}`,
+      `http://192.168.1.33:3001?token=${token}`,
       {transports: ['websocket']},
     );
 

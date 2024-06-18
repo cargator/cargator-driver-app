@@ -663,10 +663,85 @@ import customAxios from '../services/appservices';
 import OfflineIcon from '../svg/OfflineIcon';
 import OffLineScreen from './petPoojaComponent/offLineScreen';
 import OnLineScreen from './petPoojaComponent/onLineScreen';
+import { FlatList } from 'react-native-gesture-handler';
+import OrderScreen from './petPoojaComponent/OrderScreen';
 
 export let socketInstance: any;
 
 const PetPujaScreen = ({navigation}: any) => {
+
+  const allOrder=[{
+    "_id": {
+      "$oid": "666bee02a823137b14d84a8c"
+    },
+    "Time":"10-min",
+    "Distance":"2-kms",
+    "Earning":2000,
+    "order_details": {
+      "vendor_order_id": "411563121716194007",
+      "order_total": 250,
+      "paid": false,
+      "order_source": "POS",
+      "customer_orderId": ""
+    },
+    "status": "DELIVERED",
+    "pickup_details": {
+      "name": "HO Demo - Sumit Bhatiya - Delivery Integration",
+      "contact_number": "1234567890",
+      "latitude": 19.172141,
+      "longitude": 72.956832,
+      "address": "ahmedabad",
+      "city": "mumbai"
+    },
+    "drop_details": {
+      "name": "demo",
+      "contact_number": "1234567890",
+      "latitude": 19.037489,
+      "longitude": 73.022133,
+      "address": "Ahmedabad,Demo, Gujarat,Ahmedabad",
+      "city": "Ahmedabad"
+    },
+    "order_items": [
+      {
+        "id": "90",
+        "name": "Chicken Lollypop",
+        "quantity": 1,
+        "price": 120,
+        "_id": {
+          "$oid": "666bee02a823137b14d84a8d"
+        }
+      },
+      {
+        "id": "91",
+        "name": "Chicken Fry",
+        "quantity": 1,
+        "price": 120,
+        "_id": {
+          "$oid": "666bee02a823137b14d84a8e"
+        }
+      }
+    ],
+    "statusUpdates": [
+      {
+        "status": "DELIVERED",
+        "time": {
+          "$date": "2024-06-14T07:20:28.759Z"
+        },
+        "_id": {
+          "$oid": "666bef3c626c8745f0b0db8c"
+        }
+      }
+    ],
+    "createdAt": {
+      "$date": "2024-06-14T07:15:14.731Z"
+    },
+    "updatedAt": {
+      "$date": "2024-06-14T07:20:28.760Z"
+    },
+    "__v": 0
+  }]
+
+
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
@@ -719,6 +794,9 @@ const PetPujaScreen = ({navigation}: any) => {
             // If the order exists, return the previous state without changes
             return prev;
           });
+          setAvailableOrders(allOrder);
+          console.log(availableOrders);
+          
         });
         // console.log(" ========== msg =========", orders);
       });
@@ -838,27 +916,33 @@ const PetPujaScreen = ({navigation}: any) => {
           </View>
         </View>
       )}
-      {
-        availableOrders.length > 0 && (
-          <View style={styles.orderView}>
-            <Text>{availableOrders[0].order_details.vendor_order_id}</Text>
-            <Text>{availableOrders[0].pickup_details.name}</Text>
-            <Text>{availableOrders[0].drop_details.name}</Text>
-            <Text>{availableOrders[0].order_items[0].name}</Text>
-          </View>
-        )
 
-        // {availableOrders.length > 0 &&
-        //   availableOrders.map((element:any,index:number)=>{
-        //      return(
-        //       <OrderScreen key={index} ele={element}/>
-        //      )}
-        // )
+      {
+        availableOrders.length > 0 && 
+        // ( <View style={styles.orderView}>
+        //     <Text>{availableOrders[0].order_details.vendor_order_id}</Text>
+        //     <Text>{availableOrders[0].pickup_details.name}</Text>
+        //     <Text>{availableOrders[0].drop_details.name}</Text>
+        //     <Text>{availableOrders[0].order_items[0].name}</Text>
+        //   </View> )
+        <TouchableOpacity>
+          {availableOrders.map((order:any)=>{
+            // <OrderScreen order={order}/>
+          })}
+        </TouchableOpacity>
       }
+
       {!isDriverOnline && <View style={styles.offlineModalView}></View>}
       <Text style={styles.name}>Hello Deepak</Text>
       {!isDriverOnline && <OffLineScreen />}
-      {isDriverOnline && <OnLineScreen />}
+      {isDriverOnline && allOrder.length===0 && <OnLineScreen />}
+      {isDriverOnline && allOrder.length!==0 && (
+
+        <TouchableOpacity>
+           {/* <OrderScreen allOrder={allOrder}/> */}
+           <OrderScreen order={allOrder[0]}/>
+        </TouchableOpacity>
+      )}
     </>
   );
 };
