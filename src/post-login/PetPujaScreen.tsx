@@ -674,7 +674,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
 import { isEmpty as _isEmpty } from 'lodash';
 import { getSocketInstance, socketDisconnect } from '../utils/socket';
-import { removeUserData } from '../redux/redux';
+import { removeUserData, setOrderDetails } from '../redux/redux';
 import customAxios from '../services/appservices';
 import OfflineIcon from '../svg/OfflineIcon';
 import BlurMap from '../svg/BlurMap';
@@ -685,6 +685,76 @@ import Spinner from 'react-native-spinkit';
 export let socketInstance: any;
 
 const PetPujaScreen = ({ navigation }: any) => {
+  const allOrder=[{
+    "_id": {
+      "$oid": "666bee02a823137b14d84a8c"
+    },
+    "Time":"10-min",
+    "Distance":"2-kms",
+    "Earning":2000,
+    "order_details": {
+      "vendor_order_id": "411563121716194007",
+      "order_total": 250,
+      "paid": false,
+      "order_source": "POS",
+      "customer_orderId": ""
+    },
+    "status": "DELIVERED",
+    "pickup_details": {
+      "name": "HO Demo - Sumit Bhatiya - Delivery Integration",
+      "contact_number": "1234567890",
+      "latitude": 19.172141,
+      "longitude": 72.956832,
+      "address": "ahmedabad",
+      "city": "mumbai"
+    },
+    "drop_details": {
+      "name": "demo",
+      "contact_number": "1234567890",
+      "latitude": 19.037489,
+      "longitude": 73.022133,
+      "address": "Ahmedabad,Demo, Gujarat,Ahmedabad",
+      "city": "Ahmedabad"
+    },
+    "order_items": [
+      {
+        "id": "90",
+        "name": "Chicken Lollypop",
+        "quantity": 1,
+        "price": 120,
+        "_id": {
+          "$oid": "666bee02a823137b14d84a8d"
+        }
+      },
+      {
+        "id": "91",
+        "name": "Chicken Fry",
+        "quantity": 1,
+        "price": 120,
+        "_id": {
+          "$oid": "666bee02a823137b14d84a8e"
+        }
+      }
+    ],
+    "statusUpdates": [
+      {
+        "status": "DELIVERED",
+        "time": {
+          "$date": "2024-06-14T07:20:28.759Z"
+        },
+        "_id": {
+          "$oid": "666bef3c626c8745f0b0db8c"
+        }
+      }
+    ],
+    "createdAt": {
+      "$date": "2024-06-14T07:15:14.731Z"
+    },
+    "updatedAt": {
+      "$date": "2024-06-14T07:20:28.760Z"
+    },
+    "__v": 0
+  }]
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
@@ -740,6 +810,7 @@ const PetPujaScreen = ({ navigation }: any) => {
             return prev;
           });
         })
+        setAvailableOrders(allOrder);
         // console.log(" ========== msg =========", orders);
       })
     } catch (error) {
@@ -751,6 +822,7 @@ const PetPujaScreen = ({ navigation }: any) => {
   const driverStatusToggle = async (event: boolean) => {
     try {
       setLoading(true);
+      console.log("asdfghjk");
       setIsDriverOnline(event);
       if (!event) {
         setAvailableOrders([]);
@@ -766,12 +838,71 @@ const PetPujaScreen = ({ navigation }: any) => {
       setLoading(false);
     }
   };
+  
+  const acceptOrder = async () => {
+
+    dispatch(setOrderDetails({}))
+    // dispatch(setOrderDetails({
+    //   orderId: "411563121716194007",
+    //   driverLocation: {
+    //     latitude: 19.172141,
+    //     longitude: 72.956832
+    //   },
+    //   pickUpDetails: {
+    //     name: "HO Demo - Sumit Bhatiya - Delivery Integration",
+    //     contact_number: "1234567890",
+    //     latitude: "19.172141",
+    //     longitude: "72.956832",
+    //     address: "ahmedabad",
+    //     city: "mumbai"
+    //   }
+    // }))
+
+    console.log(" dipatched");
+    
+
+    const orderData = {
+      orderId: orderDetails,
+      driverLocation: {
+
+      },
+      pickUpDetails: ""
+    }
+    socketInstance.emit('accept-order',{
+      message: 'Driver sent Hi msg',
+      driverId: userData._id,
+      orderData
+    })
+    socketInstance.on('accept-order-response', (body: any) => {
+      console.log(`accept-order-response :>> `, body);
+      setLoading(true);
+      body = JSON.parse(body);
+      dispatch(setOrderDetails(body.data))
+      setLoading(false);
+    });
+  }
+
+  const rejectOrder = async () => {
+    try {
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const startChatListener = () => {
+    console.log("start chat with bc", isDriverOnline);
+    if(isDriverOnline) {
+      console.log("i am here");
+      acceptOrder();
+    }
+  }
 
   const startSocketListeners = () => {
     newOrdersListener();
     // rideAcceptResponseListener();
     // rideStatusListener();
-    // startChatListener();
+    startChatListener();
     // checkDriver();
   };
 
@@ -836,15 +967,15 @@ const PetPujaScreen = ({ navigation }: any) => {
             <View style={styles.circleModel}>
               <View style={styles.circle}>
                 <Text>Earning</Text>
-                <Text>0</Text>
+                <Text style={{ fontWeight: 'bold' }}>12345</Text>
               </View>
               <View style={styles.circle}>
                 <Text>Login Hours</Text>
-                <Text>0.00</Text>
+                <Text style={{ fontWeight: 'bold' }}>0.00</Text>
               </View>
               <View style={styles.circle}>
                 <Text>Orders</Text>
-                <Text>0</Text>
+                <Text style={{ fontWeight: 'bold' }}>0</Text>
               </View>
             </View>
           </View>
