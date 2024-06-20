@@ -1,17 +1,23 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 const ProgressItem = ({ label, value }: { label: string, value: string }) => {
   return (
     <View style={styles.progressItem}>
       <Svg height="100" width="100">
+        <Defs>
+          <LinearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="10%" stopColor="#00cc66" stopOpacity="1" />
+            <Stop offset="50%" stopColor="#00cc66" stopOpacity="0.2" />
+          </LinearGradient>
+        </Defs>
         <Circle
           cx="50"
           cy="50"
           r="48"
-          stroke="#00cc66"
-          strokeWidth="2"
+          stroke="url(#grad)"
+          strokeWidth="1.2"
           fill="none"
         />
       </Svg>
@@ -22,17 +28,17 @@ const ProgressItem = ({ label, value }: { label: string, value: string }) => {
 };
 
 const OffLineScreen = () => {
+  
     return (
         // < >
         <View style={{height:'100%'}}>
         
-        <View style={styles.container}>
+        <View style={[styles.container]}>
 
        
 
           <View style={styles.headerContainer}>
-            <Text style={styles.header}>My Progress</Text>
-            <Text style={styles.subHeader}>Today</Text>
+            <Text style={styles.header}>Today Progress</Text>
           </View>
           <View style={styles.progressItems}>
             <ProgressItem label="Earning" value="0" />
@@ -43,8 +49,7 @@ const OffLineScreen = () => {
 
         <View style={styles.container}>
           <View style={styles.headerContainer}>
-            <Text style={styles.header}>My Progress</Text>
-            <Text style={styles.subHeader}>This Week</Text>
+            <Text style={styles.header}>This Week Progress</Text>
           </View>
           <View style={styles.progressItems}>
             <ProgressItem label="Earning" value="0" />
@@ -55,8 +60,7 @@ const OffLineScreen = () => {
 
         <View style={styles.container}>
           <View style={styles.headerContainer}>
-            <Text style={styles.header}>My Progress</Text>
-            <Text style={styles.subHeader}>This Month</Text>
+            <Text style={styles.header}>This Month Progress</Text>
           </View>
           <View style={styles.progressItems}>
             <ProgressItem label="Earning" value="0" />
@@ -74,7 +78,7 @@ const OffLineScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.25,
+    flex:0.2,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
@@ -85,27 +89,21 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '80%',
+    width: '90%',
     marginVertical: 20,
   },
   header: {
-    fontSize: 24,
+    fontSize: 20,
     // marginBottom: 20,
-    color:'black',
-   
+    color:'black',  
   },
-  subHeader: {
-    marginTop:'4%',
-    fontSize: 12,
-    color: 'grey',
-    
-  },
+
   progressItems: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     // alignItems: 'center',
     height:'80%',
-    width: '90%',
+    width: '95%',
     // paddingBottom:'40%'
    
   },
@@ -115,16 +113,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-
   },
   label: {
     position: 'absolute',
     top: 1,
-    textAlign: 'center',
+    // textAlign: 'center',
   },
   value: {
     // position: 'absolute',
-    bottom: 40,
+    bottom: 50,
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',

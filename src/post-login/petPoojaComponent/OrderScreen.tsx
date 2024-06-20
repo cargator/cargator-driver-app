@@ -32,12 +32,12 @@ const ProgressItem = ({label, value}: {label: string; value: string}) => {
 
 const OrderScreen = ({order}: any) => {
   useEffect(() => {
-    console.log(order);
+    // console.log(order);
   });
 
   return (
     <>
-      <View style={{height: '25%'}}></View>
+      <View style={{height: '32%',backgroundColor:'#F5FFFB'}}></View>
       <View style={styles.container}>
         <View style={styles.order}>
           <Text>Order ID:</Text>

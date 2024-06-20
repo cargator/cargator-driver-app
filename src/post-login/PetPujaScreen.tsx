@@ -794,8 +794,7 @@ const PetPujaScreen = ({navigation}: any) => {
             // If the order exists, return the previous state without changes
             return prev;
           });
-          setAvailableOrders(allOrder);
-          console.log(availableOrders);
+          // setAvailableOrders(availableOrders);
           
         });
         // console.log(" ========== msg =========", orders);
@@ -934,14 +933,19 @@ const PetPujaScreen = ({navigation}: any) => {
 
       {!isDriverOnline && <View style={styles.offlineModalView}></View>}
       <Text style={styles.name}>Hello Deepak</Text>
-      {!isDriverOnline && <OffLineScreen />}
-      {isDriverOnline && allOrder.length===0 && <OnLineScreen />}
-      {isDriverOnline && allOrder.length!==0 && (
+      {!isDriverOnline && <OffLineScreen/>}
+      {isDriverOnline && availableOrders.length===0 && (
+       <View>
+          {/* <OnLineScreen/> */}
+          <OrderScreen order={allOrder  [0]}/>
+       </View>
+      )}
+      {isDriverOnline && availableOrders.length===10000 && (
 
-        <TouchableOpacity>
-           {/* <OrderScreen allOrder={allOrder}/> */}
-           <OrderScreen order={allOrder[0]}/>
-        </TouchableOpacity>
+        // <TouchableOpacity>
+           <OrderScreen order={availableOrders[0]}/>
+        // </TouchableOpacity>
+        // <OnLineScreen/>
       )}
     </>
   );
@@ -1103,12 +1107,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   name: {
-    paddingTop: '10%',
-    paddingBottom: '10%',
-    fontSize: 28,
+    paddingTop: '5%',
+    paddingBottom: '5%',
+    fontSize: 24,
     color: 'black',
     textAlign: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F5FFFB',
   },
 });
 
