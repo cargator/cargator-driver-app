@@ -1,5 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, Animated, Pressable } from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Pressable,
+  ImageBackground,
+} from 'react-native';
 import {
   heightPercentageToDP,
   heightPercentageToDP as hp,
@@ -7,22 +15,23 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import SidebarIcon from '../svg/SidebarIcon';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
-import { isEmpty as _isEmpty } from 'lodash';
-import { getSocketInstance, socketDisconnect } from '../utils/socket';
-import { removeOrderDetails, removeUserData, setOrderDetails } from '../redux/redux';
+import {isEmpty as _isEmpty} from 'lodash';
+import {getSocketInstance, socketDisconnect} from '../utils/socket';
+import {
+  removeOrderDetails,
+  removeUserData,
+  setOrderDetails,
+} from '../redux/redux';
 import customAxios from '../services/appservices';
 import RejectRideIcon from '../svg/RejectRideIcon';
-import Spinner from 'react-native-spinkit';
 import Toast from 'react-native-toast-message';
-
-
+import Spinner from '../svg/spinner';
 
 export let socketInstance: any;
 
-const PetPujaScreen = ({ navigation }: any) => {
-
+const PetPujaScreen = ({navigation}: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
@@ -32,11 +41,11 @@ const PetPujaScreen = ({ navigation }: any) => {
   const isFirstRender = useRef(true);
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
-  const [orderAccept, setOrderAccept] = useState<boolean>(false)
+  const [orderAccept, setOrderAccept] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
-  const [availableOrders, setAvailableOrders] = useState<any>([])
-  const [popup, setPopup] = useState(false);
+  const [availableOrders, setAvailableOrders] = useState<any>([]);
+  const [orderStarted, setOrderStarted] = useState<boolean>(false)
 
   const handleLogout = async () => {
     try {
@@ -86,6 +95,7 @@ const PetPujaScreen = ({ navigation }: any) => {
       } else {
         if (body.driverId && body.order) {
           dispatch(setOrderDetails(body.order));
+          setOrderStarted(true)
           // setPath(body.ride.driverPathToPickUp);
           // setMessages(body.ride.chatMessages);
         }
@@ -106,12 +116,14 @@ const PetPujaScreen = ({ navigation }: any) => {
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
-        console.log(">>>>>>>>>>>", orders);
+        console.log('>>>>>>>>>>>', orders);
 
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
-            const orderExists = prev.some((existingOrder: any) => existingOrder._id === order._id);
+            const orderExists = prev.some(
+              (existingOrder: any) => existingOrder._id === order._id,
+            );
             // If the order doesn't exist, add it to the array
             if (!orderExists) {
               return [...prev, order];
@@ -119,20 +131,19 @@ const PetPujaScreen = ({ navigation }: any) => {
             // If the order exists, return the previous state without changes
             return prev;
           });
-        })
+        });
         // setAvailableOrders(allOrder);
         // console.log(" ========== msg =========", orders);
-      })
+      });
     } catch (error) {
       console.log(error);
-
     }
-  }
+  };
 
   const driverStatusToggle = async (event: boolean) => {
     try {
       setLoading(true);
-      console.log("asdfghjk");
+      console.log('asdfghjk');
       setIsDriverOnline(event);
       if (!event) {
         setAvailableOrders([]);
@@ -150,10 +161,10 @@ const PetPujaScreen = ({ navigation }: any) => {
   };
 
   const onAcceptOrder = (order: any) => {
-    console.log("inside accept ride function >>>>>>>>>>>>");
+    console.log('inside accept ride function >>>>>>>>>>>>');
 
     setLoading(true);
-    socketInstance?.emit('accept-order', { id: order._id.toString() });
+    socketInstance?.emit('accept-order', {id: order._id.toString()});
     setAvailableOrders((availableOrders: any[]) =>
       availableOrders.filter((ele: any) => ele._id != order._id),
     );
@@ -168,16 +179,16 @@ const PetPujaScreen = ({ navigation }: any) => {
   // }
 
   const startChatListener = () => {
-    console.log("start chat with bc", isDriverOnline);
+    console.log('start chat with bc', isDriverOnline);
     if (isDriverOnline) {
-      console.log("i am here");
+      console.log('i am here');
       // acceptOrder();
     }
-  }
+  };
 
   const startSocketListeners = () => {
     newOrdersListener();
-    orderAcceptResponseListener()
+    orderAcceptResponseListener();
     // rideStatusListener();
     startChatListener();
     // checkDriver();
@@ -208,192 +219,301 @@ const PetPujaScreen = ({ navigation }: any) => {
       )}
 
       <View>
-      {deleteModal && (
-        <View style={styles.deleteContainer}>
-          <View style={styles.modalContainer}>
-            {deleteModal && (
-              <View style={styles.modalContent}>
-                <Text style={styles.modalText1}>
-                  Are you sure you want to delete?
+        {deleteModal && (
+          <View style={styles.deleteContainer}>
+            <View style={styles.modalContainer}>
+              {deleteModal && (
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalText1}>
+                    Are you sure you want to delete?
+                  </Text>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={handleDelete}>
+                      <Text style={styles.buttonText}>Yes</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={() => setDeleteModal(false)}>
+                      <Text style={styles.buttonText}>No</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {!isDriverOnline && (
+          <View style={styles.offlineModalView}>
+            <Text style={styles.offlineModalHeaderText}>
+              Hello {userData.firstName.split(' ')[0]}!
+            </Text>
+            {/* Today Model View */}
+            <View style={styles.todayModalView}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                  My Progress
                 </Text>
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={handleDelete}>
-                    <Text style={styles.buttonText}>Yes</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => setDeleteModal(false)}>
-                    <Text style={styles.buttonText}>No</Text>
-                  </TouchableOpacity>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    marginLeft: wp(26),
+                    marginTop: hp(0.5),
+                    textAlign: 'right',
+                  }}>
+                  Today
+                </Text>
+              </View>
+              <View style={styles.circleModel}>
+                <View style={styles.circle}>
+                  <Text>Earning</Text>
+                  <Text style={{fontWeight: 'bold'}}>12345</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Login Hours</Text>
+                  <Text style={{fontWeight: 'bold'}}>0.00</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Orders</Text>
+                  <Text style={{fontWeight: 'bold'}}>0</Text>
                 </View>
               </View>
-            )}
-          </View>
-        </View>
-      )}
-
-      {!isDriverOnline && (
-        <View style={styles.offlineModalView}>
-          <Text style={styles.offlineModalHeaderText}>Hello {userData.firstName.split(' ')[0]}!</Text>
-          {/* Today Model View */}
-          <View style={styles.todayModalView}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>My Progress</Text>
-              <Text style={{ fontSize: 18, marginLeft: wp(26), marginTop: hp(0.5), textAlign: 'right' }}>Today</Text>
             </View>
-            <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <Text>Earning</Text>
-                <Text style={{ fontWeight: 'bold' }}>12345</Text>
+            {/* Week Model View */}
+            <View style={styles.todayModalView}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                  My Progress
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    marginLeft: wp(26),
+                    marginTop: hp(0.5),
+                    textAlign: 'right',
+                  }}>
+                  This Week
+                </Text>
               </View>
-              <View style={styles.circle}>
-                <Text>Login Hours</Text>
-                <Text style={{ fontWeight: 'bold' }}>0.00</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Orders</Text>
-                <Text style={{ fontWeight: 'bold' }}>0</Text>
-              </View>
-            </View>
-          </View>
-          {/* Week Model View */}
-          <View style={styles.todayModalView}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>My Progress</Text>
-              <Text style={{ fontSize: 18, marginLeft: wp(26), marginTop: hp(0.5), textAlign: 'right' }}>This Week</Text>
-            </View>
-            <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <Text>Earning</Text>
-                <Text>0</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Login Hours</Text>
-                <Text>0.00</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Orders</Text>
-                <Text>0</Text>
+              <View style={styles.circleModel}>
+                <View style={styles.circle}>
+                  <Text>Earning</Text>
+                  <Text>0</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Login Hours</Text>
+                  <Text>0.00</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Orders</Text>
+                  <Text>0</Text>
+                </View>
               </View>
             </View>
-          </View>
-          {/* Month Model View */}
-          <View style={styles.todayModalView}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>My Progress</Text>
-              <Text style={{ fontSize: 18, marginLeft: wp(26), marginTop: hp(0.5), textAlign: 'right' }}>This Month</Text>
-            </View>
-            <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <Text>Earning</Text>
-                <Text>0</Text>
+            {/* Month Model View */}
+            <View style={styles.todayModalView}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                  My Progress
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    marginLeft: wp(26),
+                    marginTop: hp(0.5),
+                    textAlign: 'right',
+                  }}>
+                  This Month
+                </Text>
               </View>
-              <View style={styles.circle}>
-                <Text>Login Hours</Text>
-                <Text>0.00</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Orders</Text>
-                <Text>0</Text>
+              <View style={styles.circleModel}>
+                <View style={styles.circle}>
+                  <Text>Earning</Text>
+                  <Text>0</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Login Hours</Text>
+                  <Text>0.00</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Orders</Text>
+                  <Text>0</Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {isDriverOnline && (
-        <View style={styles.onlineModelView}>
-          {/* <Text style={styles.offlineModalHeaderText}>Hello {userData.firstName.split(' ')[0]}!</Text>
-          <View style={styles.mapView}>
-            <View style={styles.searchOrderView} >
-              <Text style={{ fontSize: 25, fontWeight: '400', color: '#333333' }}>Searching for Order...</Text>
+        {isDriverOnline && _isEmpty(orderDetails) && _isEmpty(availableOrders) &&(
+          <View style={styles.offlineModalView}>
+            <Text style={styles.offlineModalHeaderText}>
+              Hello {userData.firstName.split(' ')[0]}!
+            </Text>
+            {/* Searching for Order */}
+            <View style={styles.SearchingModalView}>
+              <ImageBackground
+                source={require('../images/map.png')} // Replace 'path_to_your_image' with the actual path or URL of your image
+                style={{
+                  width: wp(95),
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: hp(8),
+                }} // Adjust the width and height according to your image dimensions
+              >
+                <View style={styles.spinnerContainer}>
+                  <Spinner visible={true} />
+                </View>
+                <View style={styles.SearchingModalViewChild}>
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontFamily: 'RobotoMono-Regular',
+                      fontSize: wp(4),
+                      fontWeight: 'bold',
+                      color:'#333333'
+                    }}>
+                    Searching for Order ...
+                  </Text>
+                </View>
+              </ImageBackground>
             </View>
-            <BlurMap />
-          </View> */}
-          <Text style={styles.boldText}>
-            We're finding a order for You
-          </Text>
-          <Text style={styles.holdOntext}>
-            Kindly hold on for a second
-          </Text>
-        </View>
-      )}
-
-
-      {_isEmpty(orderDetails) && availableOrders[0] && (
-        <View
-          key={`order_${0 + 1}`}
-          style={[styles.modalView, { opacity: 2 }]}>
-          <View style={styles.availableRidesModal}>
-
-
-            <View style={styles.availableRidesButtonsView}>
-              <Pressable
-                onPress={() => {
-                  // onRejectRide(availableOrders[0]);
-                }}>
-                <RejectRideIcon />
-              </Pressable>
-
-              <Pressable
-                // style={[
-                //   styles.button,
-                //   styles.buttonAccept,
-                //   {flex: 1},
-                // ]}
-                style={styles.availableRidesAcceptButton}
-                onPress={() => {
-                  onAcceptOrder(availableOrders[0]);
-                }}>
-                <Text style={styles.textStyle}>Accept</Text>
-              </Pressable>
+            {/* Today Model View */}
+            <View style={styles.todayModalView}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                  My Progress
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    marginLeft: wp(26),
+                    marginTop: hp(0.5),
+                    textAlign: 'right',
+                  }}>
+                  Today
+                </Text>
+              </View>
+              <View style={styles.circleModel}>
+                <View style={styles.circle}>
+                  <Text>Earning</Text>
+                  <Text style={{fontWeight: 'bold'}}>12345</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Login Hours</Text>
+                  <Text style={{fontWeight: 'bold'}}>0.00</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Orders</Text>
+                  <Text style={{fontWeight: 'bold'}}>0</Text>
+                </View>
+              </View>
+            </View>
+            {/* Week Model View */}
+            <View style={styles.todayModalView}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                  My Progress
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    marginLeft: wp(26),
+                    marginTop: hp(0.5),
+                    textAlign: 'right',
+                  }}>
+                  This Week
+                </Text>
+              </View>
+              <View style={styles.circleModel}>
+                <View style={styles.circle}>
+                  <Text>Earning</Text>
+                  <Text>0</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Login Hours</Text>
+                  <Text>0.00</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Orders</Text>
+                  <Text>0</Text>
+                </View>
+              </View>
+            </View>
+            {/* Month Model View */}
+            <View style={styles.todayModalView}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                  My Progress
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    marginLeft: wp(26),
+                    marginTop: hp(0.5),
+                    textAlign: 'right',
+                  }}>
+                  This Month
+                </Text>
+              </View>
+              <View style={styles.circleModel}>
+                <View style={styles.circle}>
+                  <Text>Earning</Text>
+                  <Text>0</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Login Hours</Text>
+                  <Text>0.00</Text>
+                </View>
+                <View style={styles.circle}>
+                  <Text>Orders</Text>
+                  <Text>0</Text>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {!orderAccept && (
-        <View style={styles.headerBar}>
-          <View>
-            <TouchableOpacity
-              onPress={() => {
-                // console.log('SideBarIcon pressed!');
-                navigation.toggleDrawer();
-              }}>
-              <SidebarIcon />
-            </TouchableOpacity>
+        {_isEmpty(orderDetails) && availableOrders[0] && (
+          <View key={`order_${0 + 1}`} style={[styles.modalView, {opacity: 2}]}>
+            <View style={styles.availableRidesModal}>
+              <View style={styles.availableRidesButtonsView}>
+                <Pressable
+                  onPress={() => {
+                    // onRejectRide(availableOrders[0]);
+                  }}>
+                  <RejectRideIcon />
+                </Pressable>
+
+                <Pressable
+                  // style={[
+                  //   styles.button,
+                  //   styles.buttonAccept,
+                  //   {flex: 1},
+                  // ]}
+                  style={styles.availableRidesAcceptButton}
+                  onPress={() => {
+                    onAcceptOrder(availableOrders[0]);
+                  }}>
+                  <Text style={styles.textStyle}>Accept</Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
+        )}
 
-          {/* {isDriverOnline && !assignedRide && ( */}
-          {_isEmpty(orderDetails) && (
-            <OnlineOfflineSwitch
-              isDriverOnline={isDriverOnline}
-              driverStatusToggle={driverStatusToggle}
-            />
-          )}
-
-          <View style={styles.profileIcon}>
-            <TouchableOpacity
-              hitSlop={{
-                left: widthPercentageToDP(10),
-                right: widthPercentageToDP(5),
-                top: heightPercentageToDP(2),
-              }}
-              onPress={() => setIsProfileModal(!isProfileModal)}>
-              <Text style={styles.profileIconText}>
-                {userData.firstName[0].toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+       
       </View>
     </>
   );
-
-}
+};
 
 const styles = StyleSheet.create({
   mainView: {
@@ -532,7 +652,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     gap: hp(2.5),
     position: 'absolute',
-    marginTop: hp(6.5)
+    marginTop: hp(6.5),
   },
   offlineModalHeaderText: {
     fontFamily: 'RobotoMono-Regular',
@@ -548,6 +668,35 @@ const styles = StyleSheet.create({
     fontSize: wp(4.5),
     textAlign: 'center',
   },
+  SearchingModalView: {
+    // flex: 1,
+    backgroundColor: 'white',
+    width: wp(95),
+    alignSelf: 'center',
+    height: hp(15),
+    alignItems: 'center',
+    justifyContent: 'center',
+    // verticalAlign:'center'
+  },
+  SearchingModalViewChild: {
+    width: wp(50),
+    height: hp(5),
+    backgroundColor: '#FFFFFF',
+    position: 'absolute',
+    borderRadius: 20,
+    justifyContent:'center',
+    top: '50%',
+    left: '50%',
+    transform: [{translateX: -23}, {translateY: 80}], // Adjust the translation to center the spinner
+    // Adjust the translateX and translateY values if the spinner size is different
+  },
+  spinnerContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{translateX: 24}, {translateY: 5}], // Adjust the translation to center the spinner
+    // Adjust the translateX and translateY values if the spinner size is different
+  },
   todayModalView: {
     flex: 1,
     backgroundColor: 'white',
@@ -559,7 +708,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    flex: 1
+    flex: 1,
   },
   circle: {
     width: 90,
@@ -584,7 +733,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     gap: hp(2.5),
     position: 'absolute',
-    marginTop: hp(6.5)
+    marginTop: hp(6.5),
   },
   mapView: {
     flex: 1,
@@ -594,7 +743,7 @@ const styles = StyleSheet.create({
     width: wp(95),
     alignSelf: 'center',
     marginVertical: hp(25),
-    bottom: hp(7)
+    bottom: hp(7),
   },
   searchOrderView: {
     backgroundColor: '#FFFFFF',
@@ -606,7 +755,7 @@ const styles = StyleSheet.create({
     top: 10,
     left: 10,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   boldText: {
     fontFamily: 'Roboto Mono',
@@ -650,8 +799,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    alignSelf:'center',
-    marginTop: hp(20)
+    alignSelf: 'center',
+    marginTop: hp(20),
   },
   availableRidesModal: {
     gap: hp(2),
@@ -680,3 +829,40 @@ const styles = StyleSheet.create({
 });
 
 export default PetPujaScreen;
+
+
+// {!orderAccept && (
+//   <View style={styles.headerBar}>
+//     <View>
+//       <TouchableOpacity
+//         onPress={() => {
+//           // console.log('SideBarIcon pressed!');
+//           navigation.toggleDrawer();
+//         }}>
+//         <SidebarIcon />
+//       </TouchableOpacity>
+//     </View>
+
+//     {/* {isDriverOnline && !assignedRide && ( */}
+//     {_isEmpty(orderDetails) && (
+//       <OnlineOfflineSwitch
+//         isDriverOnline={isDriverOnline}
+//         driverStatusToggle={driverStatusToggle}
+//       />
+//     )}
+
+//     <View style={styles.profileIcon}>
+//       <TouchableOpacity
+//         hitSlop={{
+//           left: widthPercentageToDP(10),
+//           right: widthPercentageToDP(5),
+//           top: heightPercentageToDP(2),
+//         }}
+//         onPress={() => setIsProfileModal(!isProfileModal)}>
+//         <Text style={styles.profileIconText}>
+//           {userData.firstName[0].toUpperCase()}
+//         </Text>
+//       </TouchableOpacity>
+//     </View>
+//   </View>
+// )}
