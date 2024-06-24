@@ -7,6 +7,8 @@ import {
   Animated,
   Pressable,
   ImageBackground,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import {
   heightPercentageToDP,
@@ -17,35 +19,61 @@ import {
 import SidebarIcon from '../svg/SidebarIcon';
 import {useDispatch, useSelector} from 'react-redux';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
-import {isEmpty as _isEmpty} from 'lodash';
+import {isEmpty as _isEmpty, orderBy} from 'lodash';
 import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import {
   removeOrderDetails,
   removeUserData,
+  setDriverPath,
   setOrderDetails,
+  setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
 import RejectRideIcon from '../svg/RejectRideIcon';
 import Toast from 'react-native-toast-message';
 import Spinner from '../svg/spinner';
+import OrderScreen from './petPoojaComponent/OrderScreen';
+import SlideButton from 'rn-slide-button';
+import {Circle, Svg} from 'react-native-svg';
+import callLogo from '../svg/callLogo';
+import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 
 export let socketInstance: any;
+
+const SliderText = [
+  {flowName: 'ACCEPT ORDER'},
+  {flowName: 'ARRIVED'},
+  {flowName: 'DISPATCHED'},
+  {flowName: 'ARRIVED_CUSTOMER_DOORSTEP'},
+  {flowName: 'DELIVERED'},
+];
 
 const PetPujaScreen = ({navigation}: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
+  const orderStatus = useSelector((store: any) => store.orderStatus);
+  console.log('orderStatus>>>>>>>>>', orderStatus);
 
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
+  const mapRef = useRef<any>(null);
+  const [region, setRegion] = useState<any>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
   const [orderAccept, setOrderAccept] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<any>([]);
-  const [orderStarted, setOrderStarted] = useState<boolean>(false)
+  const [orderStarted, setOrderStarted] = useState<boolean>(false);
+  const [slideCount, setSlideCount] = useState<any>(0);
+  const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
+  const [path, setPath] = useState<any>([]);
+  const [mylocation, setMyLocation] = useState({
+    latitude: 19.16541,
+    longitude: 72.96529,
+  });
 
   const handleLogout = async () => {
     try {
@@ -76,47 +104,29 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
-  const orderAcceptResponseListener = () => {
-    socketInstance.on('accept-order-response', (message: any) => {
-      console.log('ride-accept-response event :>> ', message);
-      // setLoading(true);
-      let body = parseSocketMessage(message);
-      console.log('accept-order-response event :>> ', message.message);
-
-      if (body.driverId && body.driverId.toString() != userId) {
-        setAvailableOrders((orders: any) =>
-          orders.filter((order: any) => order._id != body.order._id),
-        );
-        Toast.show({
-          type: 'error',
-          text1: 'Order not available !',
-          visibilityTime: 5000,
-        });
+  const driverStatusToggle = async (event: boolean) => {
+    try {
+      setLoading(true);
+      setIsDriverOnline(event);
+      if (!event) {
+        setAvailableOrders([]);
+        await socketDisconnect();
       } else {
-        if (body.driverId && body.order) {
-          dispatch(setOrderDetails(body.order));
-          setOrderStarted(true)
-          // setPath(body.ride.driverPathToPickUp);
-          // setMessages(body.ride.chatMessages);
-        }
+        socketInstance = await getSocketInstance(loginToken);
+        startSocketListeners();
+        // emitLiveLocation();
       }
-
-      if (body?.status == 404) {
-        Toast.show({
-          type: 'error',
-          text1: 'Order not available !',
-          visibilityTime: 5000,
-        });
-        dispatch(removeOrderDetails());
-      }
+    } catch (error) {
+      console.log(`driverStatusToggle error :>> `, error);
+    } finally {
       setLoading(false);
-    });
+    }
   };
 
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
-        console.log('>>>>>>>>>>>', orders);
+        // console.log('>>>>>>>>>>>', orders);
 
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
@@ -140,57 +150,156 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
-  const driverStatusToggle = async (event: boolean) => {
-    try {
-      setLoading(true);
-      console.log('asdfghjk');
-      setIsDriverOnline(event);
-      if (!event) {
-        setAvailableOrders([]);
-        await socketDisconnect();
-      } else {
-        socketInstance = await getSocketInstance(loginToken);
-        startSocketListeners();
-        // emitLiveLocation();
-      }
-    } catch (error) {
-      console.log(`driverStatusToggle error :>> `, error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const onAcceptOrder = (order: any) => {
-    console.log('inside accept ride function >>>>>>>>>>>>');
-
+    // console.log('inside accept ride function >>>>>>>>>>>>', order._id);
     setLoading(true);
     socketInstance?.emit('accept-order', {id: order._id.toString()});
     setAvailableOrders((availableOrders: any[]) =>
       availableOrders.filter((ele: any) => ele._id != order._id),
     );
+    setLoading(false);
     console.log('ride-accept emiited');
   };
-  // const rejectOrder = async () => {
-  //   try {
 
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
+  const orderAcceptResponseListener = () => {
+    socketInstance.on('accept-order-response', (message: any) => {
+      // console.log('ride-accept-response event :>> ', message);
+      setLoading(true);
+      let body = parseSocketMessage(message);
+      // console.log('accept-order-response event :>> ', message.message);
+
+      if (body.driverId && body.driverId.toString() != userId) {
+        setAvailableOrders((orders: any) =>
+          orders.filter((order: any) => order._id != body.order._id.toString()),
+        );
+        setLoading(false);
+        Toast.show({
+          type: 'error',
+          text1: 'Order not available !',
+          visibilityTime: 5000,
+        });
+      } else {
+        if (body.driverId && body.order) {
+          dispatch(setOrderDetails(body.order));
+          setOrderStarted(true);
+          setPath(body.path.coords);
+          setButtonText(SliderText[slideCount + 1].flowName);
+          setSlideCount(slideCount + 1);
+          dispatch(setOrderStatus(slideCount));
+          setLoading(false);
+          Toast.show({
+            type: 'error',
+            text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
+            visibilityTime: 5000,
+          });
+        }
+      }
+
+      if (body?.status == 404) {
+        Toast.show({
+          type: 'error',
+          text1: 'Order not available !',
+          visibilityTime: 5000,
+        });
+        dispatch(removeOrderDetails());
+      }
+      setLoading(false);
+    });
+  };
+
+  const updateOrderStatus = async () => {
+    try {
+      console.log('inside updateorder status');
+
+      setLoading(true);
+      const status = {
+        id: orderDetails._id,
+        status: SliderText[slideCount].flowName,
+      };
+      socketInstance?.emit('update-order-status', status);
+      if (slideCount >= SliderText.length - 1) {
+        setOrderStarted(false);
+        setPath([]);
+        dispatch(removeOrderDetails());
+        dispatch(setOrderStatus(''));
+        dispatch(setDriverPath([]));
+        setSlideCount(0);
+        setButtonText('ACCEPT ORDER');
+        return;
+      }
+      setSlideCount(slideCount + 1);
+      setButtonText(SliderText[slideCount + 1].flowName);
+      dispatch(setOrderStatus(slideCount));
+    } catch (error) {
+      console.log('Error', error);
+    }
+  };
+
+  const orderStatusListener = async () => {
+    socketInstance.on('order-update-response', (message: any) => {
+      setLoading(true);
+      let body = parseSocketMessage(message);
+      // console.log('order-update-response>>>>>>>', body.order);
+      if (body.status === 405) {
+        Toast.show({
+          type: 'error',
+          text1: 'Order cancelled by customer!',
+          visibilityTime: 5000,
+        });
+        setOrderStarted(false);
+        setPath([]);
+        dispatch(removeOrderDetails());
+        setSlideCount(0);
+        setButtonText('ACCEPT ORDER');
+        return;
+      } else {
+        if (body.order.status === 'DISPATCHED') {
+          dispatch(setDriverPath(body.path.coords));
+          setPath(body.path.coords);
+        }
+        Toast.show({
+          type: 'error',
+          text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
+          visibilityTime: 5000,
+        });
+      }
+    });
+  };
+
+  const onRejectOrder = async () => {
+    try {
+      setAvailableOrders([]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleEndReached = async () => {
+    try {
+      if (slideCount === 0) {
+        console.log('slideCount == 0', slideCount);
+        onAcceptOrder(availableOrders[0]);
+      } else if (slideCount >= 1) {
+        console.log('slideCount >= 2', slideCount);
+        updateOrderStatus();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const startChatListener = () => {
     console.log('start chat with bc', isDriverOnline);
     if (isDriverOnline) {
-      console.log('i am here');
       // acceptOrder();
     }
   };
 
   const startSocketListeners = () => {
+    orderStatusListener();
     newOrdersListener();
     orderAcceptResponseListener();
-    // rideStatusListener();
-    startChatListener();
+    // startChatListener();
     // checkDriver();
   };
 
@@ -218,306 +327,573 @@ const PetPujaScreen = ({navigation}: any) => {
         </View>
       )}
 
-      <View>
-        {deleteModal && (
-          <View style={styles.deleteContainer}>
-            <View style={styles.modalContainer}>
-              {deleteModal && (
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalText1}>
-                    Are you sure you want to delete?
+      {deleteModal && (
+        <View style={styles.deleteContainer}>
+          <View style={styles.modalContainer}>
+            {deleteModal && (
+              <View style={styles.modalContent}>
+                <Text style={styles.modalText1}>
+                  Are you sure you want to delete?
+                </Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={handleDelete}>
+                    <Text style={styles.buttonText}>Yes</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setDeleteModal(false)}>
+                    <Text style={styles.buttonText}>No</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
+      {
+        <View style={styles.headerBar}>
+          <View>
+            <TouchableOpacity
+              onPress={() => {
+                // console.log('SideBarIcon pressed!');
+                navigation.toggleDrawer();
+              }}>
+              <SidebarIcon />
+            </TouchableOpacity>
+          </View>
+
+          {/* {isDriverOnline && !assignedRide && ( */}
+          {_isEmpty(orderDetails) && (
+            <OnlineOfflineSwitch
+              isDriverOnline={isDriverOnline}
+              driverStatusToggle={driverStatusToggle}
+            />
+          )}
+
+          <View style={styles.profileIcon}>
+            <TouchableOpacity
+              hitSlop={{
+                left: widthPercentageToDP(10),
+                right: widthPercentageToDP(5),
+                top: heightPercentageToDP(2),
+              }}
+              onPress={() => setIsProfileModal(!isProfileModal)}>
+              <Text style={styles.profileIconText}>
+                {userData.firstName[0].toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      }
+
+      {!isDriverOnline && (
+        <View style={styles.offlineModalView}>
+          <Text style={styles.offlineModalHeaderText}>
+            Hello {userData.firstName.split(' ')[0]}!
+          </Text>
+          {/* Today Model View */}
+          <View style={styles.todayModalView}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                Today Progress
+              </Text>
+            </View>
+            <View style={styles.circleModel}>
+              <View style={styles.circle}>
+                <Text>Earning</Text>
+                <Text style={{fontWeight: 'bold'}}>12345</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Login Hours</Text>
+                <Text style={{fontWeight: 'bold'}}>0.00</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Orders</Text>
+                <Text style={{fontWeight: 'bold'}}>0</Text>
+              </View>
+            </View>
+          </View>
+          {/* Week Model View */}
+          <View style={styles.todayModalView}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                This Week Progress
+              </Text>
+            </View>
+            <View style={styles.circleModel}>
+              <View style={styles.circle}>
+                <Text>Earning</Text>
+                <Text>0</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Login Hours</Text>
+                <Text>0.00</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Orders</Text>
+                <Text>0</Text>
+              </View>
+            </View>
+          </View>
+          {/* Month Model View */}
+          <View style={styles.todayModalView}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                This Month Progress
+              </Text>
+            </View>
+            <View style={styles.circleModel}>
+              <View style={styles.circle}>
+                <Text>Earning</Text>
+                <Text>0</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Login Hours</Text>
+                <Text>0.00</Text>
+              </View>
+              <View style={styles.circle}>
+                <Text>Orders</Text>
+                <Text>0</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+      <View style={styles.container}>
+        {isDriverOnline &&
+          _isEmpty(orderDetails) &&
+          _isEmpty(availableOrders) &&
+          !orderStarted && (
+            <View style={styles.offlineModalView}>
+              <Text style={styles.offlineModalHeaderText}>
+                Hello {userData.firstName.split(' ')[0]}!
+              </Text>
+              {/* Searching for Order */}
+              <View style={styles.SearchingModalView}>
+                <ImageBackground
+                  source={require('../images/map.png')} // Replace 'path_to_your_image' with the actual path or URL of your image
+                  style={{
+                    width: wp(95),
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: hp(8),
+                  }} // Adjust the width and height according to your image dimensions
+                >
+                  <View style={styles.spinnerContainer}>
+                    <Spinner visible={true} />
+                  </View>
+                  <View style={styles.SearchingModalViewChild}>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        fontFamily: 'RobotoMono-Regular',
+                        fontSize: wp(4),
+                        fontWeight: 'bold',
+                        color: '#333333',
+                      }}>
+                      Searching for Order ...
+                    </Text>
+                  </View>
+                </ImageBackground>
+              </View>
+              {/* Today Model View */}
+              <View style={styles.todayModalView}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text
+                    style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                    Today Progress
                   </Text>
-                  <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={handleDelete}>
-                      <Text style={styles.buttonText}>Yes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={() => setDeleteModal(false)}>
-                      <Text style={styles.buttonText}>No</Text>
-                    </TouchableOpacity>
+                </View>
+                <View style={styles.circleModel}>
+                  <View style={styles.circle}>
+                    <Text>Earning</Text>
+                    <Text style={{fontWeight: 'bold'}}>12345</Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <Text>Login Hours</Text>
+                    <Text style={{fontWeight: 'bold'}}>0.00</Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <Text>Orders</Text>
+                    <Text style={{fontWeight: 'bold'}}>0</Text>
                   </View>
                 </View>
-              )}
-            </View>
-          </View>
-        )}
-
-        {!isDriverOnline && (
-          <View style={styles.offlineModalView}>
-            <Text style={styles.offlineModalHeaderText}>
-              Hello {userData.firstName.split(' ')[0]}!
-            </Text>
-            {/* Today Model View */}
-            <View style={styles.todayModalView}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                  My Progress
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    marginLeft: wp(26),
-                    marginTop: hp(0.5),
-                    textAlign: 'right',
-                  }}>
-                  Today
-                </Text>
               </View>
-              <View style={styles.circleModel}>
-                <View style={styles.circle}>
-                  <Text>Earning</Text>
-                  <Text style={{fontWeight: 'bold'}}>12345</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Login Hours</Text>
-                  <Text style={{fontWeight: 'bold'}}>0.00</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Orders</Text>
-                  <Text style={{fontWeight: 'bold'}}>0</Text>
-                </View>
-              </View>
-            </View>
-            {/* Week Model View */}
-            <View style={styles.todayModalView}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                  My Progress
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    marginLeft: wp(26),
-                    marginTop: hp(0.5),
-                    textAlign: 'right',
-                  }}>
-                  This Week
-                </Text>
-              </View>
-              <View style={styles.circleModel}>
-                <View style={styles.circle}>
-                  <Text>Earning</Text>
-                  <Text>0</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Login Hours</Text>
-                  <Text>0.00</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Orders</Text>
-                  <Text>0</Text>
-                </View>
-              </View>
-            </View>
-            {/* Month Model View */}
-            <View style={styles.todayModalView}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                  My Progress
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    marginLeft: wp(26),
-                    marginTop: hp(0.5),
-                    textAlign: 'right',
-                  }}>
-                  This Month
-                </Text>
-              </View>
-              <View style={styles.circleModel}>
-                <View style={styles.circle}>
-                  <Text>Earning</Text>
-                  <Text>0</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Login Hours</Text>
-                  <Text>0.00</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Orders</Text>
-                  <Text>0</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {isDriverOnline && _isEmpty(orderDetails) && _isEmpty(availableOrders) &&(
-          <View style={styles.offlineModalView}>
-            <Text style={styles.offlineModalHeaderText}>
-              Hello {userData.firstName.split(' ')[0]}!
-            </Text>
-            {/* Searching for Order */}
-            <View style={styles.SearchingModalView}>
-              <ImageBackground
-                source={require('../images/map.png')} // Replace 'path_to_your_image' with the actual path or URL of your image
-                style={{
-                  width: wp(95),
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: hp(8),
-                }} // Adjust the width and height according to your image dimensions
-              >
-                <View style={styles.spinnerContainer}>
-                  <Spinner visible={true} />
-                </View>
-                <View style={styles.SearchingModalViewChild}>
+              {/* Week Model View */}
+              <View style={styles.todayModalView}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text
-                    style={{
-                      textAlign: 'center',
-                      fontFamily: 'RobotoMono-Regular',
-                      fontSize: wp(4),
-                      fontWeight: 'bold',
-                      color:'#333333'
-                    }}>
-                    Searching for Order ...
+                    style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                    This Week Progress
                   </Text>
                 </View>
-              </ImageBackground>
-            </View>
-            {/* Today Model View */}
-            <View style={styles.todayModalView}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                  My Progress
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    marginLeft: wp(26),
-                    marginTop: hp(0.5),
-                    textAlign: 'right',
-                  }}>
-                  Today
-                </Text>
-              </View>
-              <View style={styles.circleModel}>
-                <View style={styles.circle}>
-                  <Text>Earning</Text>
-                  <Text style={{fontWeight: 'bold'}}>12345</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Login Hours</Text>
-                  <Text style={{fontWeight: 'bold'}}>0.00</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Orders</Text>
-                  <Text style={{fontWeight: 'bold'}}>0</Text>
+                <View style={styles.circleModel}>
+                  <View style={styles.circle}>
+                    <Text>Earning</Text>
+                    <Text>0</Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <Text>Login Hours</Text>
+                    <Text>0.00</Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <Text>Orders</Text>
+                    <Text>0</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-            {/* Week Model View */}
-            <View style={styles.todayModalView}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                  My Progress
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    marginLeft: wp(26),
-                    marginTop: hp(0.5),
-                    textAlign: 'right',
-                  }}>
-                  This Week
-                </Text>
-              </View>
-              <View style={styles.circleModel}>
-                <View style={styles.circle}>
-                  <Text>Earning</Text>
-                  <Text>0</Text>
+              {/* Month Model View */}
+              <View style={styles.todayModalView}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text
+                    style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                    This Month Progress
+                  </Text>
                 </View>
-                <View style={styles.circle}>
-                  <Text>Login Hours</Text>
-                  <Text>0.00</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Orders</Text>
-                  <Text>0</Text>
+                <View style={styles.circleModel}>
+                  <View style={styles.circle}>
+                    <Text>Earning</Text>
+                    <Text>0</Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <Text>Login Hours</Text>
+                    <Text>0.00</Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <Text>Orders</Text>
+                    <Text>0</Text>
+                  </View>
                 </View>
               </View>
             </View>
-            {/* Month Model View */}
-            <View style={styles.todayModalView}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                  My Progress
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    marginLeft: wp(26),
-                    marginTop: hp(0.5),
-                    textAlign: 'right',
-                  }}>
-                  This Month
-                </Text>
-              </View>
-              <View style={styles.circleModel}>
-                <View style={styles.circle}>
-                  <Text>Earning</Text>
-                  <Text>0</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Login Hours</Text>
-                  <Text>0.00</Text>
-                </View>
-                <View style={styles.circle}>
-                  <Text>Orders</Text>
-                  <Text>0</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        )}
+          )}
 
-        {_isEmpty(orderDetails) && availableOrders[0] && (
+        {_isEmpty(orderDetails) && availableOrders[0] && !orderStarted && (
+          // <View>
+          //   <OrderScreen />
+          // </View>
           <View key={`order_${0 + 1}`} style={[styles.modalView, {opacity: 2}]}>
-            <View style={styles.availableRidesModal}>
-              <View style={styles.availableRidesButtonsView}>
-                <Pressable
-                  onPress={() => {
-                    // onRejectRide(availableOrders[0]);
-                  }}>
-                  <RejectRideIcon />
-                </Pressable>
-
-                <Pressable
-                  // style={[
-                  //   styles.button,
-                  //   styles.buttonAccept,
-                  //   {flex: 1},
-                  // ]}
-                  style={styles.availableRidesAcceptButton}
-                  onPress={() => {
-                    onAcceptOrder(availableOrders[0]);
-                  }}>
-                  <Text style={styles.textStyle}>Accept</Text>
-                </Pressable>
+            {/* orderId Text */}
+            <View style={{top: wp(3)}}>
+              <Text
+                style={{
+                  fontFamily: 'Roboto Mono',
+                  fontSize: hp(2.5),
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  color: '#212121',
+                }}>
+                Order Id : {availableOrders[0].order_details?.vendor_order_id}
+              </Text>
+            </View>
+            {/* Circul data */}
+            <View style={styles.circleModel}>
+              <View style={styles.circle}>
+                <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
+                <Text
+                  style={{fontWeight: '600', color: '#000000', fontSize: 15}}>
+                  12345{'₹'}
+                </Text>
               </View>
+            </View>
+            <View style={styles.text}>
+              <View
+                style={{
+                  width: wp(30),
+                  height: hp(4),
+                  backgroundColor: '#F5FFFB',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 15,
+                }}>
+                <Text>Time : {1}-HRS.</Text>
+              </View>
+              <View
+                style={{
+                  width: wp(38),
+                  height: hp(4),
+                  backgroundColor: '#F5FFFB',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 15,
+                }}>
+                <Text>Distance :{15}-KM.</Text>
+              </View>
+            </View>
+            <View style={{alignItems: 'center', marginTop: '5%'}}>
+              <Text>
+                <Image source={require('../images/cart.png')} /> Pickup Location
+              </Text>
+              <Text style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                {availableOrders[0].pickup_details.address}
+              </Text>
+            </View>
+            {/* SliderButton */}
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'flex-end',
+                marginBottom: hp(0),
+              }}>
+              <SlideButton
+                width={290}
+                height={50}
+                animationDuration={180}
+                autoResetDelay={1080}
+                animation={true}
+                autoReset={true}
+                borderRadius={15}
+                sliderWidth={50}
+                icon={
+                  <Image
+                    source={require('../svg/Arrow.png')}
+                    style={styles.thumbImage}
+                  />
+                } // Adjust width and height as needed
+                onReachedToEnd={handleEndReached}
+                containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
+                underlayStyle={{backgroundColor: 'Red'}}
+                title={buttonText}
+                slideDirection="right"></SlideButton>
+
+              <SlideButton
+                width={290}
+                height={50}
+                borderRadius={15}
+                animationDuration={180}
+                autoResetDelay={1080}
+                animation={true}
+                autoReset={true}
+                sliderWidth={50}
+                icon={
+                  <Image
+                    source={require('../svg/Arrow.png')}
+                    style={styles.thumbImage}
+                  />
+                } // Adjust width and height as needed
+                onReachedToEnd={onRejectOrder}
+                containerStyle={{backgroundColor: '#FFFFFF', color: 'red'}}
+                underlayStyle={{backgroundColor: 'Red'}}
+                title="Reject Order"
+                titleStyle={{color: 'red'}}
+                slideDirection="right">
+                <Text style={{color: 'red', fontSize: 18}}>hiiiiiiitejas</Text>
+              </SlideButton>
             </View>
           </View>
         )}
 
-       
+        {/* // If order Accepted */}
+        {orderStarted && !_isEmpty(orderDetails) && (
+          <View>
+            {/* order Details card */}
+            {slideCount <= 2 && (
+              <View style={styles.orderDetailsCard1}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    left: wp(7),
+                    top: hp(2),
+                  }}>
+                  <Text style={{color: '#828282'}}>
+                    {/* <Image source={require('../images/Rupay.png')} /> */}
+                    {'₹'} {'Earning'}
+                  </Text>
+                  <Text style={{right: wp(10)}}>
+                    Order ID:{' '}
+                    <Text
+                      style={{
+                        fontFamily: 'RobotoMono-Regular',
+                        fontWeight: '700',
+                        color: '#118F5E',
+                        fontSize: 15,
+                      }}>
+                      {orderDetails?.order_details.vendor_order_id}
+                    </Text>
+                  </Text>
+                </View>
+                <View style={{left: wp(10), top: hp(2)}}>
+                  <Text
+                    style={{
+                      color: '#000000',
+                      fontFamily: 'RobotoMono-Regular',
+                      fontWeight: '700',
+                      fontSize: 16,
+                    }}>
+                    {200}
+                    {'₹'}
+                  </Text>
+                </View>
+                <View style={styles.line} />
+                <View style={{alignItems: 'center', top: hp(6)}}>
+                  <Text>
+                    <Image source={require('../images/cart.png')} /> Pickup Food
+                  </Text>
+                  <Text
+                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                    {orderDetails?.pickup_details?.address}
+                  </Text>
+                </View>
+              </View>
+            )}
+            {slideCount > 2 && (
+              <View style={styles.orderDetailsCard2}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    left: wp(7),
+                    top: hp(2),
+                  }}>
+                  <Text style={{color: '#828282'}}>
+                    {/* <Image source={require('../images/Rupay.png')} /> */}
+                    {'₹'} {'Earning'}
+                  </Text>
+                  <Text style={{right: wp(10)}}>
+                    Order ID:{' '}
+                    <Text
+                      style={{
+                        fontFamily: 'RobotoMono-Regular',
+                        fontWeight: '700',
+                        color: '#118F5E',
+                        fontSize: 15,
+                      }}>
+                      {orderDetails?.order_details?.vendor_order_id}
+                    </Text>
+                  </Text>
+                </View>
+                <View style={{left: wp(10), top: hp(2)}}>
+                  <Text
+                    style={{
+                      color: '#000000',
+                      fontFamily: 'RobotoMono-Regular',
+                      fontWeight: '700',
+                      fontSize: 16,
+                    }}>
+                    {200}
+                    {'₹'}
+                  </Text>
+                </View>
+                <View style={styles.line} />
+                <View style={{alignItems: 'center', top: hp(6)}}>
+                  <Text>
+                    <Image source={require('../images/cart.png')} /> Food Drop
+                    Location
+                  </Text>
+                  <Text
+                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                    {orderDetails?.drop_details?.address}
+                  </Text>
+                </View>
+                <View style={styles.line1} />
+                <View style={styles.contactNumber}>
+                  {/* <callLogo /> */}
+                  <Image source={require('../images/callicon.png')} />
+                  <Text style={{color: '#333333'}}>
+                    {' '}
+                    +91 {orderDetails.drop_details.contact_number}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={styles.map}
+              ref={mapRef}
+              initialRegion={{
+                latitude: 19.165061,
+                longitude: 72.965545,
+                latitudeDelta: 0.0122,
+                longitudeDelta: 0.0121,
+              }}
+              region={{
+                latitude: region.latitude || mylocation.latitude,
+                longitude: region.longitude || mylocation.longitude,
+                latitudeDelta: region.latitudeDelta || 0.0122,
+                longitudeDelta: region.longitudeDelta || 0.0121,
+              }}
+              mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
+              <Marker
+                identifier="myLocationMarker"
+                coordinate={mylocation}
+                icon={require('../images/MapDriverIcon.png')}
+              />
+
+              {slideCount <= 2 && (
+                <Marker
+                  identifier="pickUpLocationMarker"
+                  coordinate={{
+                    latitude: orderDetails?.pickup_details?.latitude,
+                    longitude: orderDetails?.pickup_details?.longitude,
+                  }}
+                  icon={require('../images/MapPickupDropLocationIcon.png')}
+                />
+              )}
+              {slideCount > 2 && (
+                <Marker
+                  identifier="pickUpLocationMarker"
+                  coordinate={{
+                    latitude: orderDetails?.drop_details?.latitude,
+                    longitude: orderDetails?.drop_details?.longitude,
+                  }}
+                  icon={require('../images/MapPickupDropLocationIcon.png')}
+                />
+              )}
+
+              <Polyline
+                coordinates={path}
+                strokeColor={'#404080'}
+                strokeWidth={4}
+              />
+            </MapView>
+            {/* slider Button */}
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'flex-end',
+                bottom: hp(3),
+              }}>
+              <SlideButton
+                width={290}
+                height={50}
+                animationDuration={180}
+                autoResetDelay={1080}
+                animation={true}
+                autoReset={true}
+                borderRadius={15}
+                sliderWidth={50}
+                icon={
+                  <Image
+                    source={require('../svg/Arrow.png')}
+                    style={styles.thumbImage}
+                  />
+                } // Adjust width and height as needed
+                onReachedToEnd={handleEndReached}
+                containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
+                underlayStyle={{backgroundColor: 'Red'}}
+                title={buttonText}
+                slideDirection="right"></SlideButton>
+            </View>
+          </View>
+        )}
       </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  mainView: {
+  container: {
     flex: 1,
+    backgroundColor: 'transparent',
+    padding: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteContainer: {
     display: 'flex',
@@ -634,14 +1010,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  orderView: {
-    padding: 16,
-    marginVertical: 8,
-    backgroundColor: '#3cb371',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 4,
-  },
   offlineModalView: {
     backgroundColor: '#F5FFFB',
     height: hp(95),
@@ -684,7 +1052,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     position: 'absolute',
     borderRadius: 20,
-    justifyContent:'center',
+    justifyContent: 'center',
     top: '50%',
     left: '50%',
     transform: [{translateX: -23}, {translateY: 80}], // Adjust the translation to center the spinner
@@ -711,8 +1079,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   circle: {
-    width: 90,
-    height: 90,
+    width: 95,
+    height: 95,
     borderRadius: 50,
     backgroundColor: 'white',
     borderColor: '#28DA95',
@@ -720,149 +1088,95 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0.5,
     borderRightWidth: 0.5,
     borderBottomWidth: 0.2,
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
-  },
-  onlineModelView: {
-    backgroundColor: '#F5FFFB',
-    height: hp(95),
-    width: wp(100),
-    shadowOpacity: wp(0.25),
-    shadowRadius: wp(4),
-    elevation: hp(5),
-    alignSelf: 'center',
-    gap: hp(2.5),
-    position: 'absolute',
-    marginTop: hp(6.5),
-  },
-  mapView: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 20,
-    width: wp(95),
-    alignSelf: 'center',
-    marginVertical: hp(25),
-    bottom: hp(7),
-  },
-  searchOrderView: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 25,
-    width: wp(60),
-    height: hp(10),
-    position: 'absolute',
-    zIndex: 1,
-    top: 10,
-    left: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  boldText: {
-    fontFamily: 'Roboto Mono',
-    marginTop: hp(10),
-    fontSize: hp(2.5),
-    fontWeight: '600',
-    textAlign: 'center',
-    color: '#212121',
-  },
-  holdOntext: {
-    fontFamily: 'Roboto Mono',
-    marginTop: hp(1),
-    fontSize: hp(2),
-    fontWeight: '500',
-    textAlign: 'center',
-    color: '#464E5F',
-  },
-  ParentSpinner: {
-    alignSelf: 'center',
-    position: 'relative',
-  },
-  ChildSpinner: {
-    alignSelf: 'center',
-    position: 'absolute',
-    marginTop: hp(5),
   },
   modalView: {
-    margin: hp(2),
-    // width: wp(50),
-    backgroundColor: 'white',
-    borderRadius: wp(5),
-    padding: wp(4),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: wp(0),
-      height: hp(2),
-    },
-    shadowOpacity: wp(0.25),
-    shadowRadius: wp(4),
-    elevation: hp(5),
-    flexDirection: 'row',
+    flex: 1,
+    width: wp(100),
+    height: hp(60),
+    backgroundColor: '#FFFFFF',
+    marginTop: hp(35),
+    borderTopRightRadius: 25,
+    borderTopLeftRadius: 25,
+    alignItems: 'center',
     justifyContent: 'center',
-    position: 'absolute',
-    alignSelf: 'center',
-    marginTop: hp(20),
   },
-  availableRidesModal: {
-    gap: hp(2),
+  thumbImage: {
+    width: widthPercentageToDP(18),
+    height: widthPercentageToDP(18),
+    borderRadius: widthPercentageToDP(30),
+    resizeMode: 'cover',
+    marginTop: wp(1),
   },
-  availableRidesButtonsView: {
-    // flexDirection: 'row',
+  text: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 70,
   },
-  availableRidesAcceptButton: {
-    borderRadius: hp(1),
-    padding: hp(2),
-    width: wp(40),
-    margin: wp(2),
-    backgroundColor: '#50CD89',
-    borderColor: '#50CD89',
-    borderWidth: wp(0.4),
+  map: {
+    // flex:1,
+    // backgroundColor: '#F5FFFB',
+    height: hp(95),
+    width: wp(100),
+    // shadowOpacity: wp(0.25),
+    // shadowRadius: wp(4),
+    // elevation: hp(5),
+    // alignSelf: 'center',
+    // gap: hp(2.5),
+    // position: 'absolute',
+    // marginTop: hp(6.5),
+    // alignItems: 'center',
+    // justifyContent: 'center',
+  },
+  orderDetailsCard1: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+    width: wp(95),
+    alignSelf: 'center',
+    height: hp(20),
+    zIndex: 4,
+    position: 'absolute',
+    marginTop: wp(3),
+    borderRadius: 20,
   },
-  textStyle: {
-    fontFamily: 'RobotoMono-Regular',
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
+  orderDetailsCard2: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    width: wp(95),
+    alignSelf: 'center',
+    height: hp(30),
+    zIndex: 4,
+    position: 'absolute',
+    marginTop: wp(3),
+    borderRadius: 20,
+  },
+  line: {
+    borderBottomColor: '#E5E7EB',
+    borderBottomWidth: 1,
+    width: '90%',
+    left: wp(5),
+    top: hp(4),
+  },
+  line1: {
+    borderBottomColor: '#E5E7EB',
+    borderBottomWidth: 1,
+    width: '90%',
+    left: wp(5),
+    top: hp(10),
+  },
+  contactNumber: {
+    flexDirection: 'row',
+    width: wp(45),
+    height: hp(5),
+    backgroundColor: '#F5FFFB',
+    borderRadius: 20,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: hp(12),
   },
 });
 
 export default PetPujaScreen;
-
-
-// {!orderAccept && (
-//   <View style={styles.headerBar}>
-//     <View>
-//       <TouchableOpacity
-//         onPress={() => {
-//           // console.log('SideBarIcon pressed!');
-//           navigation.toggleDrawer();
-//         }}>
-//         <SidebarIcon />
-//       </TouchableOpacity>
-//     </View>
-
-//     {/* {isDriverOnline && !assignedRide && ( */}
-//     {_isEmpty(orderDetails) && (
-//       <OnlineOfflineSwitch
-//         isDriverOnline={isDriverOnline}
-//         driverStatusToggle={driverStatusToggle}
-//       />
-//     )}
-
-//     <View style={styles.profileIcon}>
-//       <TouchableOpacity
-//         hitSlop={{
-//           left: widthPercentageToDP(10),
-//           right: widthPercentageToDP(5),
-//           top: heightPercentageToDP(2),
-//         }}
-//         onPress={() => setIsProfileModal(!isProfileModal)}>
-//         <Text style={styles.profileIconText}>
-//           {userData.firstName[0].toUpperCase()}
-//         </Text>
-//       </TouchableOpacity>
-//     </View>
-//   </View>
-// )}
