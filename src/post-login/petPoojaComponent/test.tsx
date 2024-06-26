@@ -66,14 +66,16 @@ const HistoryPage = (props: any) => {
   >([]); // Specify the type explicitly
   const [page, setPage] = useState<number>(1);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+
   const fetchHistory = async (page: number) => {
     try {
       setLoading(page === 1);
       setIsLoadingMore(page !== 1);
+      // Simulate API response delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      //  API call
+      // Replace this with actual API call
       const data = prev; // Use mock data for demonstration
-      setHistoryData(data);
+      setHistoryData(prevData => (page === 1 ? data : [...prevData, ...data]));
       setLoading(false);
       setIsLoadingMore(false);
     } catch (error) {
@@ -82,7 +84,6 @@ const HistoryPage = (props: any) => {
       setIsLoadingMore(false);
     }
   };
-
 
   useEffect(() => {
     fetchHistory(page);
@@ -115,14 +116,11 @@ const HistoryPage = (props: any) => {
             marginLeft: wp(2),
             marginTop: hp(0.4),
           }}>
-      
+          <Text style={{fontSize: hp(3), fontFamily: 'RobotoMono-Regular'}}>
+            My History
+          </Text>
         </View>
       </TouchableOpacity>
-      <View style={{alignItems:'center',backgroundColor:'yellow'}}>
-      <Text style={{fontSize: 18, fontFamily: 'RobotoMono-Regular'}}>
-            Order History
-      </Text>
-      </View>
       {loading ? (
         <LoaderComponent />
       ) : (
@@ -146,7 +144,6 @@ const HistoryPage = (props: any) => {
               onEndReached={handleLoadMore}
               onEndReachedThreshold={0.5}
               ListFooterComponent={renderFooter}
-              showsVerticalScrollIndicator={false}
             />
           </View>
         </>

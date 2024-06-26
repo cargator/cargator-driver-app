@@ -394,11 +394,11 @@ const PetPujaScreen = ({navigation}: any) => {
         <View style={styles.headerBar}>
           <View>
             <TouchableOpacity
-              onPress={() => {
+              onPress={() => {   
                 // console.log('SideBarIcon pressed!');
                 navigation.toggleDrawer();
               }}>
-              <SidebarIcon />
+              <SidebarIcon /> 
             </TouchableOpacity>
           </View>
 
@@ -408,7 +408,7 @@ const PetPujaScreen = ({navigation}: any) => {
               isDriverOnline={isDriverOnline}
               driverStatusToggle={driverStatusToggle}
             />
-          )}
+          )} 
 
           <View style={styles.profileIcon}>
             <TouchableOpacity
@@ -991,8 +991,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: wp(2),
-    backgroundColor: '#FFFFFF',
+    // padding: wp(2),
+    backgroundColor: '#FFFFFF',//============================================
+    paddingBottom:'15%'
   },
   profileIcon: {
     width: wp(8),
