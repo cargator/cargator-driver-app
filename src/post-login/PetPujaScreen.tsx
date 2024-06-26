@@ -9,6 +9,7 @@ import {
   ImageBackground,
   Image,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import {
   heightPercentageToDP,
@@ -34,6 +35,7 @@ import Toast from 'react-native-toast-message';
 import Spinner from '../svg/spinner';
 import OrderScreen from './petPoojaComponent/OrderScreen';
 import SlideButton from 'rn-slide-button';
+import Navigate from '../svg/Navigate';
 import {Circle, Svg} from 'react-native-svg';
 import callLogo from '../svg/callLogo';
 import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
@@ -54,7 +56,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
   const orderStatus = useSelector((store: any) => store.orderStatus);
-  console.log('orderStatus>>>>>>>>>', orderStatus);
+  const DriverPath = useSelector((store: any) => store.driverPath);
 
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
@@ -62,7 +64,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [region, setRegion] = useState<any>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
-  const [orderAccept, setOrderAccept] = useState<boolean>(false);
+  const [driverStatus, setDriverStatus] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<any>([]);
@@ -123,11 +125,21 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
+  const navigateToGoogleMaps = ({latitude, longitude}: any) => {
+    const url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${latitude},${longitude}`;
+    Linking.openURL(url).then(supported => {
+      if (supported) {
+        return Linking.openURL(url);
+      } else {
+        console.log('navigateToGoogleMaps ---- No ELSE-CASE provided !');
+      }
+    });
+  };
+
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
         // console.log('>>>>>>>>>>>', orders);
-
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
@@ -142,8 +154,6 @@ const PetPujaScreen = ({navigation}: any) => {
             return prev;
           });
         });
-        // setAvailableOrders(allOrder);
-        // console.log(" ========== msg =========", orders);
       });
     } catch (error) {
       console.log(error);
@@ -154,11 +164,12 @@ const PetPujaScreen = ({navigation}: any) => {
     // console.log('inside accept ride function >>>>>>>>>>>>', order._id);
     setLoading(true);
     socketInstance?.emit('accept-order', {id: order._id.toString()});
-    setAvailableOrders((availableOrders: any[]) =>
-      availableOrders.filter((ele: any) => ele._id != order._id),
-    );
+    // setAvailableOrders((availableOrders: any[]) =>
+    //   availableOrders.filter((ele: any) => ele._id != order._id),
+    // );
+    setAvailableOrders([]);
     setLoading(false);
-    console.log('ride-accept emiited');
+    console.log('order-accept emiited');
   };
 
   const orderAcceptResponseListener = () => {
@@ -181,11 +192,13 @@ const PetPujaScreen = ({navigation}: any) => {
       } else {
         if (body.driverId && body.order) {
           dispatch(setOrderDetails(body.order));
+          dispatch(setDriverPath(body.path.coords));
           setOrderStarted(true);
           setPath(body.path.coords);
           setButtonText(SliderText[slideCount + 1].flowName);
           setSlideCount(slideCount + 1);
           dispatch(setOrderStatus(slideCount));
+          // setDriverStatus(true)
           setLoading(false);
           Toast.show({
             type: 'error',
@@ -209,12 +222,12 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const updateOrderStatus = async () => {
     try {
-      console.log('inside updateorder status');
+      console.log('inside updateorder status', slideCount);
 
       setLoading(true);
       const status = {
         id: orderDetails._id,
-        status: SliderText[slideCount].flowName,
+        status: SliderText[slideCount]?.flowName,
       };
       socketInstance?.emit('update-order-status', status);
       if (slideCount >= SliderText.length - 1) {
@@ -225,6 +238,7 @@ const PetPujaScreen = ({navigation}: any) => {
         dispatch(setDriverPath([]));
         setSlideCount(0);
         setButtonText('ACCEPT ORDER');
+        setAvailableOrders([]);
         return;
       }
       setSlideCount(slideCount + 1);
@@ -277,10 +291,8 @@ const PetPujaScreen = ({navigation}: any) => {
   const handleEndReached = async () => {
     try {
       if (slideCount === 0) {
-        console.log('slideCount == 0', slideCount);
         onAcceptOrder(availableOrders[0]);
       } else if (slideCount >= 1) {
-        console.log('slideCount >= 2', slideCount);
         updateOrderStatus();
       }
     } catch (error) {
@@ -309,6 +321,31 @@ const PetPujaScreen = ({navigation}: any) => {
     }
     isFirstRender.current = false;
   }, [isDriverOnline]);
+
+  useEffect(() => {
+    // driverSocketConnection();
+    if (orderStatus === Number('0')) {
+      setOrderStarted(true);
+      setPath(DriverPath);
+      setSlideCount(orderStatus + 1);
+      setButtonText(SliderText[orderStatus + 1]?.flowName);
+      setAvailableOrders(orderDetails);
+    } else if (orderStatus === SliderText.length - 1) {
+      setOrderStarted(false);
+      setPath([]);
+      dispatch(removeOrderDetails());
+      dispatch(setOrderStatus(''));
+      setButtonText(SliderText[0]?.flowName);
+      dispatch(setDriverPath([]));
+      setSlideCount(0);
+    } else if (orderStatus > Number('0')) {
+      setOrderStarted(true);
+      setPath(DriverPath);
+      setSlideCount(orderStatus + 1);
+      setButtonText(SliderText[orderStatus + 1]?.flowName);
+      setAvailableOrders(orderDetails);
+    }
+  }, []);
 
   return (
     <>
@@ -463,6 +500,9 @@ const PetPujaScreen = ({navigation}: any) => {
         </View>
       )}
       <View style={styles.container}>
+        {/* <Text style={styles.offlineModalHeaderText}>
+          Hello {userData.firstName.split(' ')[0]}!
+        </Text> */}
         {isDriverOnline &&
           _isEmpty(orderDetails) &&
           _isEmpty(availableOrders) &&
@@ -697,14 +737,10 @@ const PetPujaScreen = ({navigation}: any) => {
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    left: wp(7),
+                    // left: wp(7),
                     top: hp(2),
                   }}>
-                  <Text style={{color: '#828282'}}>
-                    {/* <Image source={require('../images/Rupay.png')} /> */}
-                    {'₹'} {'Earning'}
-                  </Text>
-                  <Text style={{right: wp(10)}}>
+                  <Text style={{left:wp(6)}}>
                     Order ID:{' '}
                     <Text
                       style={{
@@ -713,11 +749,15 @@ const PetPujaScreen = ({navigation}: any) => {
                         color: '#118F5E',
                         fontSize: 15,
                       }}>
-                      {orderDetails?.order_details.vendor_order_id}
+                      {orderDetails?.order_details.vendor_order_id.slice(-6)}
                     </Text>
                   </Text>
+                  <Text style={{color: '#828282',right:wp(6)}}>
+                    {/* <Image source={require('../images/Rupay.png')} /> */}
+                    {'₹'} {'Earning'}
+                  </Text>
                 </View>
-                <View style={{left: wp(10), top: hp(2)}}>
+                <View style={{ top: hp(2),alignSelf:'flex-end',alignItems:'center',right:wp(6),width:wp(15)}}>
                   <Text
                     style={{
                       color: '#000000',
@@ -743,18 +783,14 @@ const PetPujaScreen = ({navigation}: any) => {
             )}
             {slideCount > 2 && (
               <View style={styles.orderDetailsCard2}>
-                <View
+                 <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    left: wp(7),
+                    // left: wp(7),
                     top: hp(2),
                   }}>
-                  <Text style={{color: '#828282'}}>
-                    {/* <Image source={require('../images/Rupay.png')} /> */}
-                    {'₹'} {'Earning'}
-                  </Text>
-                  <Text style={{right: wp(10)}}>
+                  <Text style={{left:wp(6)}}>
                     Order ID:{' '}
                     <Text
                       style={{
@@ -763,11 +799,15 @@ const PetPujaScreen = ({navigation}: any) => {
                         color: '#118F5E',
                         fontSize: 15,
                       }}>
-                      {orderDetails?.order_details?.vendor_order_id}
+                      {orderDetails?.order_details.vendor_order_id.slice(-6)}
                     </Text>
                   </Text>
+                  <Text style={{color: '#828282',right:wp(6)}}>
+                    {/* <Image source={require('../images/Rupay.png')} /> */}
+                    {'₹'} {'Earning'}
+                  </Text>
                 </View>
-                <View style={{left: wp(10), top: hp(2)}}>
+                <View style={{ top: hp(2),alignSelf:'flex-end',alignItems:'center',right:wp(6),width:wp(15)}}>
                   <Text
                     style={{
                       color: '#000000',
@@ -852,12 +892,32 @@ const PetPujaScreen = ({navigation}: any) => {
                 strokeWidth={4}
               />
             </MapView>
+
+            <TouchableOpacity
+              style={styles.directionButton}
+              onPress={() =>
+                navigateToGoogleMaps(
+                  slideCount <= 2
+                    ? {
+                        latitude: orderDetails.pickup_details.latitude,
+                        longitude: orderDetails.pickup_details.longitude,
+                      }
+                    : {
+                        latitude: orderDetails.drop_details.latitude,
+                        longitude: orderDetails.drop_details.longitude,
+                      },
+                )
+              }>
+              <Navigate />
+              {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
+            </TouchableOpacity>
+
             {/* slider Button */}
             <View
               style={{
                 flex: 1,
                 justifyContent: 'flex-end',
-                bottom: hp(3),
+                bottom: hp(6),
               }}>
               <SlideButton
                 width={290}
@@ -1176,6 +1236,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     top: hp(12),
+  },
+  directionButton: {
+    bottom: hp(15),
+    marginRight: wp(5),
+    alignSelf: 'flex-end',
+    transform: [{rotate: '315deg'}],
   },
 });
 

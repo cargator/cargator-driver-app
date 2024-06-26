@@ -8,7 +8,7 @@ function socketConnection(token) {
   return new Promise((resolve, reject) => {
     socket = io.connect(
       // `https://api.cargator.org/?token=${token}`,
-      `https://2f4b-182-48-208-50.ngrok-free.app?token=${token}`,
+      `https://f931-182-48-210-235.ngrok-free.app?token=${token}`,
       // `https://a90c-182-48-215-1.ngrok-free.app?token=${token}`,
       {transports: ['websocket']},
     );
