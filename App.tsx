@@ -50,6 +50,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import CustomMapScreen from './src/post-login/CustomMapScreen';
 import { getDriverAppFlowAPI } from './src/services/userservices';
 import PetPujaScreen from './src/post-login/PetPujaScreen';
+import HistoryPage from './src/post-login/petPoojaComponent/HistoryPage';
 // import DestinationScreen from './src/components/DestinationScreen';
 // import LocationPermissionScreen from './src/components/LocationPermissionScreen';
 // import SplashScreen from './src/components/SplashScreen';
@@ -171,6 +172,7 @@ const MapScreenDrawer = () => {
       }
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
+      <Drawer.Screen name="Order History" component={HistoryPage} />
     </Drawer.Navigator>
   );
 };
