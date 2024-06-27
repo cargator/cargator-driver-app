@@ -107,6 +107,8 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   const driverStatusToggle = async (event: boolean) => {
+    console.log("driverStatusToggle");
+    
     try {
       setLoading(true);
       setIsDriverOnline(event);
@@ -139,7 +141,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
-        // console.log('>>>>>>>>>>>', orders);
+        console.log('>>>>>>>>>>>', orders);
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array

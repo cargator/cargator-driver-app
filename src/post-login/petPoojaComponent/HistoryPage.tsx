@@ -1,57 +1,67 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Image, ImageBackground, FlatList, ActivityIndicator} from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ImageBackground,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import SidebarIcon from '../../svg/SidebarIcon';
 import LoaderComponent from '../../components/LoaderComponent';
+import DatePicker from 'react-native-date-picker';
 import {
-    heightPercentageToDP as hp,
-    widthPercentageToDP as wp,
-  } from 'react-native-responsive-screen';
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
 import axios from 'axios';
+import { string } from 'yup';
 
 // Mock data
 const prev = [
-    {
-      _id: '411563121716194068',
-      date: '05 June, 2024',
-      dist: '2 kms',
-      time: '20 mins',
-      status: 'Complete',
-      earning: 20,
-    },
-    {
-      _id: '2',
-      date: '05 June, 2024',
-      dist: '2 kms',
-      time: '20 mins',
-      status: 'Complete',
-      earning: 20,
-    },
-    {
-      _id: '3',
-      date: '05 June, 2024',
-      dist: '2kms',
-      time: '20 mins',
-      status: 'Complete',
-      earning: 20,
-    },
-    {
-      _id: '4',
-      date: '05 June, 2024',
-      dist: '2kms',
-      time: '20 mins',
-      status: 'Complete',
-      earning: 20,
-    },
-    {
-      _id: '5',
-      date: '05 June, 2024',
-      dist: '2 kms',
-      time: '20 mins',
-      status: 'Complete',
-      earning: 20,
-    },
-  ];
+  {
+    _id: '411563121716194068',
+    date: '05 June, 2024',
+    dist: '2 kms',
+    time: '20 mins',
+    status: 'Complete',
+    earning: 20,
+  },
+  {
+    _id: '411563121716194069',
+    date: '05 June, 2024',
+    dist: '2 kms',
+    time: '20 mins',
+    status: 'Complete',
+    earning: 20,
+  },
+  {
+    _id: '411563121716194076',
+    date: '05 June, 2024',
+    dist: '2kms',
+    time: '20 mins',
+    status: 'Complete',
+    earning: 20,
+  },
+  {
+    _id: '411563121716194067',
+    date: '05 June, 2024',
+    dist: '2kms',
+    time: '20 mins',
+    status: 'Complete',
+    earning: 20,
+  },
+  {
+    _id: '411563121716194034',
+    date: '05 June, 2024',
+    dist: '2 kms',
+    time: '20 mins',
+    status: 'Complete',
+    earning: 20,
+  },
+];
 const HistoryPage = (props: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [historyData, setHistoryData] = useState<
@@ -66,6 +76,15 @@ const HistoryPage = (props: any) => {
   >([]); // Specify the type explicitly
   const [page, setPage] = useState<number>(1);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [date, setDate] = useState(new Date());
+  const [open, setOpen] = useState(false);
+  const [finaldate,setFinalDate]=useState(String);
+
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const setScreenDate = async (newDate: number, month: number, year: number) => {
+         await setFinalDate(newDate+' '+months[month] +', '+year) 
+  };
+
   const fetchHistory = async (page: number) => {
     try {
       setLoading(page === 1);
@@ -83,11 +102,15 @@ const HistoryPage = (props: any) => {
     }
   };
 
-
-  useEffect(() => {
-    fetchHistory(page);
-  }, [page]);
-
+  const api=async ()=>{
+    console.log("start");
+    
+    const data=await axios.get('http://192.168.1.53:3001/getHistory')
+    console.log(data);
+    console.log("end");
+    
+  }
+  
   const handleLoadMore = () => {
     setPage(prevPage => prevPage + 1);
   };
@@ -100,6 +123,21 @@ const HistoryPage = (props: any) => {
       </View>
     );
   };
+
+  useEffect(() => {
+    fetchHistory(page);
+    if(!finaldate)
+      {
+        setScreenDate(
+          date.getDate(),
+          date.getMonth(),
+          date.getFullYear()
+        );
+       
+        
+        
+      }
+  }, [page]);
 
   return (
     <>
@@ -114,22 +152,68 @@ const HistoryPage = (props: any) => {
             flex: 1,
             marginLeft: wp(2),
             marginTop: hp(0.4),
-          }}>
-      
-        </View>
+          }}></View>
       </TouchableOpacity>
-      <View style={{alignItems:'center',backgroundColor:'yellow'}}>
-      <Text style={{fontSize: 18, fontFamily: 'RobotoMono-Regular'}}>
-            Order History
-      </Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          // backgroundColor: 'yellow',
+        }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontFamily: 'RobotoMono-Regular',
+            color: 'black',
+            paddingLeft: '4%',
+          }}>
+          Order History
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 2,
+            borderWidth: 1,
+            borderColor: 'black',
+            marginRight: '5%',
+            borderRadius: 5,
+            padding: 5,
+          }}>
+          <Image
+            style={{marginTop: 4}}
+            source={require('../../images/date2.png')}
+          />
+          <TouchableOpacity onPress={() => setOpen(true)}>
+            <Text style={{color: 'black'}}>{finaldate}</Text>
+            {/* <Text></Text> */}
+          </TouchableOpacity>
+          <DatePicker
+            modal
+            open={open}
+            mode="date"
+            date={date}
+            onConfirm={newdate => {
+              api();
+              setOpen(false);
+              setDate(newdate);
+              setScreenDate(
+                newdate.getDate(),
+                newdate.getMonth(),
+                newdate.getFullYear()
+              );
+            }}
+            onCancel={() => {
+              setOpen(false);
+            }}
+          />
+        </View>
       </View>
       {loading ? (
         <LoaderComponent />
       ) : (
         <>
-          <View style={{backgroundColor: 'white'}}>
-            {/* <Text>History</Text> */}
-          </View>
+          <View></View>
           <View style={styles.container}>
             <View style={styles.imageContainer}>
               <ImageBackground
@@ -141,10 +225,10 @@ const HistoryPage = (props: any) => {
             </View>
             <FlatList
               data={historyData}
-              renderItem={({ item }) => <OrderHistoryCart order={item} />}
+              renderItem={({item}) => <OrderHistoryCart order={item} />}
               keyExtractor={item => item._id}
               onEndReached={handleLoadMore}
-              onEndReachedThreshold={0.5}
+              onEndReachedThreshold={0.8}
               ListFooterComponent={renderFooter}
               showsVerticalScrollIndicator={false}
             />
@@ -201,7 +285,7 @@ const OrderHistoryCart = ({
     <View style={styles.historyItem}>
       <View style={{flexDirection: 'row', marginBottom: 5}}>
         <Text style={styles.orderId}>Order Id : </Text>
-        <Text style={styles.orderId}> {order._id}</Text>
+        <Text style={styles.orderId}> {order._id.slice(-6)}</Text>
       </View>
 
       <View style={styles.row}>
@@ -231,7 +315,7 @@ const OrderHistoryCart = ({
           <Image source={require('../../images/watch.png')} /> {order.status}
         </Text>
 
-        <Text style={{fontSize: 18, marginLeft: '32%'}}>₹</Text>
+        <Text style={{fontSize: 18, marginLeft: '30%'}}>₹</Text>
         <Text
           style={{
             ...styles.orderId,
@@ -253,11 +337,11 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
+    height:35,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: wp(2),
-    width: wp(100),
+    // backgroundColor: 'red',
   },
   historyItem: {
     backgroundColor: '#fff',
@@ -275,7 +359,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   label: {
     fontWeight: 'bold',
@@ -288,7 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
   },
   orderId: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
   },
