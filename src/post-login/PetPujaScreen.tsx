@@ -90,10 +90,10 @@ const PetPujaScreen = ({navigation}: any) => {
   const getProgressDetail = async () => {
     try {
       setLoading(true);
-      // const response = await getProgressDetails();
-      // console.log('response', response.data);
+      const response = await getProgressDetails();
+      console.log('response', response.data);
 
-      // setProgressData(response.data);
+      setProgressData(response.data);
       // setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
@@ -348,7 +348,7 @@ const PetPujaScreen = ({navigation}: any) => {
     };
 
     fetchData();
-  }, []);
+  }, [orderStarted]);
 
   useEffect(() => {
     // driverSocketConnection();
