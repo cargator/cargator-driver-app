@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -10,6 +10,7 @@ import {
   Image,
   ActivityIndicator,
   Linking,
+  PermissionsAndroid,
 } from 'react-native';
 import {
   heightPercentageToDP,
@@ -26,6 +27,7 @@ import {
   removeOrderDetails,
   removeUserData,
   setDriverPath,
+  setLocationPermission,
   setOrderDetails,
   setOrderStatus,
 } from '../redux/redux';
@@ -40,6 +42,8 @@ import {Circle, Svg} from 'react-native-svg';
 import callLogo from '../svg/callLogo';
 import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import {getProgressDetails} from '../services/rideservices';
+import Geolocation from '@react-native-community/geolocation';
+import * as geolib from 'geolib';
 export let socketInstance: any;
 
 const SliderText = [
@@ -61,6 +65,8 @@ const PetPujaScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
   const mapRef = useRef<any>(null);
+  const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
+  const [heading, setHeading] = useState<any>(0)
   const [region, setRegion] = useState<any>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
@@ -73,9 +79,10 @@ const PetPujaScreen = ({navigation}: any) => {
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
   const [mylocation, setMyLocation] = useState({
-    latitude: 19.16541,
-    longitude: 72.96529,
+    latitude: 19.000000,
+    longitude: 72.000000,
   });
+  
 
   const handleLogout = async () => {
     try {
@@ -150,6 +157,87 @@ const PetPujaScreen = ({navigation}: any) => {
     });
   };
 
+  const emitLiveLocation = () => {
+    let prevLocation:any = null;
+    try {
+      const watchId = Geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude, heading } = position.coords;
+          const newLocation = { latitude, longitude };
+          setMyLocation(newLocation)
+          setHeading(heading)
+          if (orderStarted) {
+            if (prevLocation) {
+              const distance = geolib.getDistance(prevLocation, newLocation);
+              if (distance >= 15) {
+                setMyLocation(newLocation);
+                prevLocation = newLocation;
+              }
+            } else {
+              setMyLocation(newLocation);
+              prevLocation = newLocation;
+            }
+          }
+        },
+        (error) => {
+          console.log(`emitLiveLocation error :>> `, error);
+          if (error.message == 'Location permission not granted.') {
+            Toast.show({
+              type: 'error',
+              text1: 'Please allow location permission.',
+            });
+            dispatch(setLocationPermission(false));
+          }
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000, distanceFilter: 15 }
+      );
+
+      setLoading(false);
+      setGeolocationWatchId(watchId);
+      return () => {
+        Geolocation.clearWatch(watchId);
+      };
+    } catch (error) {
+      console.log(`emitLiveLocation error :>> `, error);
+      setLoading(false);
+    }
+  };
+
+
+  const getCurrentPosition = useCallback(async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Permission',
+          message: 'This app needs access to your location',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        Geolocation.getCurrentPosition(
+          (position) => {
+            setMyLocation({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          (error: any) => console.log('location err', error),
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+          }
+        );
+      } else {
+        console.log('Location permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }, []);
+
+
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
@@ -177,7 +265,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const onAcceptOrder = (order: any) => {
     // console.log('inside accept ride function >>>>>>>>>>>>', order._id);
     setLoading(true);
-    socketInstance?.emit('accept-order', {id: order._id.toString()});
+    socketInstance?.emit('accept-order', {id: order._id.toString(), driverLoc: mylocation});
     // setAvailableOrders((availableOrders: any[]) =>
     //   availableOrders.filter((ele: any) => ele._id != order._id),
     // );
@@ -209,6 +297,7 @@ const PetPujaScreen = ({navigation}: any) => {
           dispatch(setDriverPath(body.path.coords));
           setOrderStarted(true);
           setPath(body.path.coords);
+          console.log(">>>>>>>>>>>>>>",body.path.coords);
           setButtonText(SliderText[slideCount + 1].flowName);
           setSlideCount(slideCount + 1);
           dispatch(setOrderStatus(slideCount));
@@ -374,6 +463,16 @@ const PetPujaScreen = ({navigation}: any) => {
       setAvailableOrders(orderDetails);
     }
   }, []);
+
+  useEffect(() => {
+    Geolocation.clearWatch(geolocationWatchId);
+    // setPath([])
+    emitLiveLocation();
+  }, [orderStarted]);
+
+  useEffect(() => {
+    getCurrentPosition()
+  }, [getCurrentPosition]);
 
   return (
     <>
