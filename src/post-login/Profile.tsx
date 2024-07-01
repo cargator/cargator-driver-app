@@ -37,6 +37,7 @@ const Profile = (props: any) => {
       console.log('error while logging out', error);
     }
   };
+
   const getDriverDetail = async () => {
     try {
       setLoading(true);

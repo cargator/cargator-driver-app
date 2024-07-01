@@ -39,7 +39,7 @@ import Navigate from '../svg/Navigate';
 import {Circle, Svg} from 'react-native-svg';
 import callLogo from '../svg/callLogo';
 import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
-
+import {getProgressDetails} from '../services/rideservices';
 export let socketInstance: any;
 
 const SliderText = [
@@ -57,7 +57,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const userData = useSelector((store: any) => store.userData);
   const orderStatus = useSelector((store: any) => store.orderStatus);
   const DriverPath = useSelector((store: any) => store.driverPath);
-
+  const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
   const mapRef = useRef<any>(null);
@@ -86,6 +86,34 @@ const PetPujaScreen = ({navigation}: any) => {
       console.log('err in handleLogOut', err);
     }
   };
+
+  const getProgressDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await getProgressDetails();
+      console.log('response', response.data);
+
+      setProgressData(response.data);
+      // setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
+    } catch (error) {
+      console.log('Driver Detail error :>> ', error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true); 
+      try {
+        getProgressDetail();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   const handleDelete = async () => {
     try {
@@ -139,7 +167,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
-        // console.log('>>>>>>>>>>>', orders);
+        console.log('>>>>>>>>>>>', orders);
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
@@ -441,15 +469,21 @@ const PetPujaScreen = ({navigation}: any) => {
             <View style={styles.circleModel}>
               <View style={styles.circle}>
                 <Text>Earning</Text>
-                <Text style={{fontWeight: 'bold'}}>12345</Text>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.earning || 0}
+                </Text>
               </View>
               <View style={styles.circle}>
                 <Text>Login Hours</Text>
-                <Text style={{fontWeight: 'bold'}}>0.00</Text>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.loginHours || 0}
+                </Text>
               </View>
               <View style={styles.circle}>
                 <Text>Orders</Text>
-                <Text style={{fontWeight: 'bold'}}>0</Text>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.orders || 0}
+                </Text>
               </View>
             </View>
           </View>
@@ -463,15 +497,15 @@ const PetPujaScreen = ({navigation}: any) => {
             <View style={styles.circleModel}>
               <View style={styles.circle}>
                 <Text>Earning</Text>
-                <Text>0</Text>
+                <Text>{progressData.week?.earning || 0}</Text>
               </View>
               <View style={styles.circle}>
                 <Text>Login Hours</Text>
-                <Text>0.00</Text>
+                <Text>{progressData.week?.loginHours || 0}</Text>
               </View>
               <View style={styles.circle}>
                 <Text>Orders</Text>
-                <Text>0</Text>
+                <Text>{progressData.week?.orders || 0}</Text>
               </View>
             </View>
           </View>
@@ -485,15 +519,15 @@ const PetPujaScreen = ({navigation}: any) => {
             <View style={styles.circleModel}>
               <View style={styles.circle}>
                 <Text>Earning</Text>
-                <Text>0</Text>
+                <Text>{progressData.month?.earning || 0}</Text>
               </View>
               <View style={styles.circle}>
                 <Text>Login Hours</Text>
-                <Text>0.00</Text>
+                <Text>{progressData.month?.loginHours || 0}</Text>
               </View>
               <View style={styles.circle}>
                 <Text>Orders</Text>
-                <Text>0</Text>
+                <Text>{progressData.month?.orders || 0}</Text>
               </View>
             </View>
           </View>
@@ -550,15 +584,21 @@ const PetPujaScreen = ({navigation}: any) => {
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
                     <Text>Earning</Text>
-                    <Text style={{fontWeight: 'bold'}}>12345</Text>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.earning || 0}
+                    </Text>
                   </View>
                   <View style={styles.circle}>
                     <Text>Login Hours</Text>
-                    <Text style={{fontWeight: 'bold'}}>0.00</Text>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.loginHours || 0}
+                    </Text>
                   </View>
                   <View style={styles.circle}>
                     <Text>Orders</Text>
-                    <Text style={{fontWeight: 'bold'}}>0</Text>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.orders || 0}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -573,15 +613,15 @@ const PetPujaScreen = ({navigation}: any) => {
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
                     <Text>Earning</Text>
-                    <Text>0</Text>
+                    <Text>{progressData.week?.earning || 0}</Text>
                   </View>
                   <View style={styles.circle}>
                     <Text>Login Hours</Text>
-                    <Text>0.00</Text>
+                    <Text>{progressData.week?.loginHours || 0}</Text>
                   </View>
                   <View style={styles.circle}>
                     <Text>Orders</Text>
-                    <Text>0</Text>
+                    <Text>{progressData.week?.orders || 0}</Text>
                   </View>
                 </View>
               </View>
@@ -596,15 +636,15 @@ const PetPujaScreen = ({navigation}: any) => {
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
                     <Text>Earning</Text>
-                    <Text>0</Text>
+                    <Text>{progressData.month?.earning || 0}</Text>
                   </View>
                   <View style={styles.circle}>
                     <Text>Login Hours</Text>
-                    <Text>0.00</Text>
+                    <Text>{progressData.month?.loginHours || 0}</Text>
                   </View>
                   <View style={styles.circle}>
                     <Text>Orders</Text>
-                    <Text>0</Text>
+                    <Text>{progressData.month?.orders || 0}</Text>
                   </View>
                 </View>
               </View>
@@ -636,7 +676,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
                 <Text
                   style={{fontWeight: '600', color: '#000000', fontSize: 15}}>
-                  12345{'₹'}
+                  234567{'₹'}
                 </Text>
               </View>
             </View>
@@ -740,7 +780,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     // left: wp(7),
                     top: hp(2),
                   }}>
-                  <Text style={{left:wp(6)}}>
+                  <Text style={{left: wp(6)}}>
                     Order ID:{' '}
                     <Text
                       style={{
@@ -752,12 +792,19 @@ const PetPujaScreen = ({navigation}: any) => {
                       {orderDetails?.order_details.vendor_order_id.slice(-6)}
                     </Text>
                   </Text>
-                  <Text style={{color: '#828282',right:wp(6)}}>
+                  <Text style={{color: '#828282', right: wp(6)}}>
                     {/* <Image source={require('../images/Rupay.png')} /> */}
                     {'₹'} {'Earning'}
                   </Text>
                 </View>
-                <View style={{ top: hp(2),alignSelf:'flex-end',alignItems:'center',right:wp(6),width:wp(15)}}>
+                <View
+                  style={{
+                    top: hp(2),
+                    alignSelf: 'flex-end',
+                    alignItems: 'center',
+                    right: wp(6),
+                    width: wp(15),
+                  }}>
                   <Text
                     style={{
                       color: '#000000',
@@ -783,14 +830,14 @@ const PetPujaScreen = ({navigation}: any) => {
             )}
             {slideCount > 2 && (
               <View style={styles.orderDetailsCard2}>
-                 <View
+                <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     // left: wp(7),
                     top: hp(2),
                   }}>
-                  <Text style={{left:wp(6)}}>
+                  <Text style={{left: wp(6)}}>
                     Order ID:{' '}
                     <Text
                       style={{
@@ -802,12 +849,19 @@ const PetPujaScreen = ({navigation}: any) => {
                       {orderDetails?.order_details.vendor_order_id.slice(-6)}
                     </Text>
                   </Text>
-                  <Text style={{color: '#828282',right:wp(6)}}>
+                  <Text style={{color: '#828282', right: wp(6)}}>
                     {/* <Image source={require('../images/Rupay.png')} /> */}
                     {'₹'} {'Earning'}
                   </Text>
                 </View>
-                <View style={{ top: hp(2),alignSelf:'flex-end',alignItems:'center',right:wp(6),width:wp(15)}}>
+                <View
+                  style={{
+                    top: hp(2),
+                    alignSelf: 'flex-end',
+                    alignItems: 'center',
+                    right: wp(6),
+                    width: wp(15),
+                  }}>
                   <Text
                     style={{
                       color: '#000000',
