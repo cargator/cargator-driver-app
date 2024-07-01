@@ -103,7 +103,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); 
+      setLoading(true);
       try {
         getProgressDetail();
       } catch (error) {
@@ -462,30 +462,41 @@ const PetPujaScreen = ({navigation}: any) => {
           {/* Today Model View */}
           <View style={styles.todayModalView}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                Today Progress
-              </Text>
+              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>Today Progress            </Text>
             </View>
             <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <Text>Earning</Text>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.earning || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Login Hours</Text>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.loginHours || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Orders</Text>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.orders || 0}
-                </Text>
-              </View>
-            </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Earning</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.earning || 20}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/watch.png')} />
+                      <Text>Login Hours</Text>
+                    </View>
+
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.loginHours || 0}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/order.png')} />
+                      <Text>Orders</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.orders || 0}
+                    </Text>
+                  </View>
+                </View>
           </View>
           {/* Week Model View */}
           <View style={styles.todayModalView}>
@@ -495,19 +506,38 @@ const PetPujaScreen = ({navigation}: any) => {
               </Text>
             </View>
             <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <Text>Earning</Text>
-                <Text>{progressData.week?.earning || 0}</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Login Hours</Text>
-                <Text>{progressData.week?.loginHours || 0}</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Orders</Text>
-                <Text>{progressData.week?.orders || 0}</Text>
-              </View>
-            </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Earning</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.earning || 20}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/watch.png')} />
+                      <Text>Login Hours</Text>
+                    </View>
+
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.loginHours || 0}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/order.png')} />
+                      <Text>Orders</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.orders || 0}
+                    </Text>
+                  </View>
+                </View>
           </View>
           {/* Month Model View */}
           <View style={styles.todayModalView}>
@@ -517,19 +547,38 @@ const PetPujaScreen = ({navigation}: any) => {
               </Text>
             </View>
             <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <Text>Earning</Text>
-                <Text>{progressData.month?.earning || 0}</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Login Hours</Text>
-                <Text>{progressData.month?.loginHours || 0}</Text>
-              </View>
-              <View style={styles.circle}>
-                <Text>Orders</Text>
-                <Text>{progressData.month?.orders || 0}</Text>
-              </View>
-            </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Earning</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.earning || 20}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/watch.png')} />
+                      <Text>Login Hours</Text>
+                    </View>
+
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.loginHours || 0}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/order.png')} />
+                      <Text>Orders</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.orders || 0}
+                    </Text>
+                  </View>
+                </View>
           </View>
         </View>
       )}
@@ -583,19 +632,32 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
-                    <Text>Earning</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Earning</Text>
+                    </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 0}
+                      {progressData.today?.earning || 20}
                     </Text>
                   </View>
                   <View style={styles.circle}>
-                    <Text>Login Hours</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/watch.png')} />
+                      <Text>Login Hours</Text>
+                    </View>
+
                     <Text style={{fontWeight: 'bold'}}>
                       {progressData.today?.loginHours || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
-                    <Text>Orders</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/order.png')} />
+                      <Text>Orders</Text>
+                    </View>
                     <Text style={{fontWeight: 'bold'}}>
                       {progressData.today?.orders || 0}
                     </Text>
@@ -612,16 +674,35 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
-                    <Text>Earning</Text>
-                    <Text>{progressData.week?.earning || 0}</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Earning</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.earning || 20}
+                    </Text>
                   </View>
                   <View style={styles.circle}>
-                    <Text>Login Hours</Text>
-                    <Text>{progressData.week?.loginHours || 0}</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/watch.png')} />
+                      <Text>Login Hours</Text>
+                    </View>
+
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.loginHours || 0}
+                    </Text>
                   </View>
                   <View style={styles.circle}>
-                    <Text>Orders</Text>
-                    <Text>{progressData.week?.orders || 0}</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/order.png')} />
+                      <Text>Orders</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.orders || 0}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -635,16 +716,35 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
-                    <Text>Earning</Text>
-                    <Text>{progressData.month?.earning || 0}</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Earning</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.earning || 20}
+                    </Text>
                   </View>
                   <View style={styles.circle}>
-                    <Text>Login Hours</Text>
-                    <Text>{progressData.month?.loginHours || 0}</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/watch.png')} />
+                      <Text>Login Hours</Text>
+                    </View>
+
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.loginHours || 0}
+                    </Text>
                   </View>
                   <View style={styles.circle}>
-                    <Text>Orders</Text>
-                    <Text>{progressData.month?.orders || 0}</Text>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/order.png')} />
+                      <Text>Orders</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.today?.orders || 0}
+                    </Text>
                   </View>
                 </View>
               </View>
