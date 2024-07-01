@@ -16,52 +16,8 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import axios from 'axios';
-import { string } from 'yup';
+import {getOrderHistory} from '../../services/rideservices';
 
-// Mock data
-const prev = [
-  {
-    _id: '411563121716194068',
-    date: '05 June, 2024',
-    dist: '2 kms',
-    time: '20 mins',
-    status: 'Complete',
-    earning: 20,
-  },
-  {
-    _id: '411563121716194069',
-    date: '05 June, 2024',
-    dist: '2 kms',
-    time: '20 mins',
-    status: 'Complete',
-    earning: 20,
-  },
-  {
-    _id: '411563121716194076',
-    date: '05 June, 2024',
-    dist: '2kms',
-    time: '20 mins',
-    status: 'Complete',
-    earning: 20,
-  },
-  {
-    _id: '411563121716194067',
-    date: '05 June, 2024',
-    dist: '2kms',
-    time: '20 mins',
-    status: 'Complete',
-    earning: 20,
-  },
-  {
-    _id: '411563121716194034',
-    date: '05 June, 2024',
-    dist: '2 kms',
-    time: '20 mins',
-    status: 'Complete',
-    earning: 20,
-  },
-];
 const HistoryPage = (props: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [historyData, setHistoryData] = useState<
@@ -78,39 +34,42 @@ const HistoryPage = (props: any) => {
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
-  const [finaldate,setFinalDate]=useState(String);
+  const [finaldate, setFinalDate] = useState(String);
 
-  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const setScreenDate = async (newDate: number, month: number, year: number) => {
-         await setFinalDate(newDate+' '+months[month] +', '+year) 
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const setScreenDate = async (
+    newDate: number,
+    month: number,
+    year: number,
+  ) => {
+    setFinalDate(newDate + ' ' + months[month] + ', ' + year);
   };
 
   const fetchHistory = async (page: number) => {
     try {
-      setLoading(page === 1);
-      setIsLoadingMore(page !== 1);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      //  API call
-      const data = prev; // Use mock data for demonstration
-      setHistoryData(data);
+      setLoading(true);
+      const response = await getOrderHistory();
+      setHistoryData(response.data);
       setLoading(false);
-      setIsLoadingMore(false);
     } catch (error) {
       console.error('Error fetching data:', error);
       setLoading(false);
-      setIsLoadingMore(false);
     }
   };
 
-  const api=async ()=>{
-    console.log("start");
-    
-    const data=await axios.get('http://192.168.1.53:3001/getHistory')
-    console.log(data);
-    console.log("end");
-    
-  }
-  
   const handleLoadMore = () => {
     setPage(prevPage => prevPage + 1);
   };
@@ -126,18 +85,10 @@ const HistoryPage = (props: any) => {
 
   useEffect(() => {
     fetchHistory(page);
-    if(!finaldate)
-      {
-        setScreenDate(
-          date.getDate(),
-          date.getMonth(),
-          date.getFullYear()
-        );
-       
-        
-        
-      }
-  }, [page]);
+    if (!finaldate) {
+      setScreenDate(date.getDate(), date.getMonth(), date.getFullYear());
+    }
+  }, []);
 
   return (
     <>
@@ -194,13 +145,12 @@ const HistoryPage = (props: any) => {
             mode="date"
             date={date}
             onConfirm={newdate => {
-              api();
               setOpen(false);
               setDate(newdate);
               setScreenDate(
                 newdate.getDate(),
                 newdate.getMonth(),
-                newdate.getFullYear()
+                newdate.getFullYear(),
               );
             }}
             onCancel={() => {
@@ -281,6 +231,7 @@ const OrderHistoryCart = ({
   };
 }) => {
   // Specify the type for order explicitly
+  // const orderdate = setScreenDate()
   return (
     <View style={styles.historyItem}>
       <View style={{flexDirection: 'row', marginBottom: 5}}>
@@ -305,7 +256,7 @@ const OrderHistoryCart = ({
             />
           </View>
           <Text style={{color: 'black', fontWeight: 'bold', fontSize: 12.5}}>
-            {order.time} - {order.dist}
+            {order.time} mins - {order.dist || 0} kms
           </Text>
         </View>
       </View>
@@ -337,7 +288,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    height:35,
+    height: 35,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

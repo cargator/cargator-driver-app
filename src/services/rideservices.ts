@@ -15,6 +15,6 @@ export const getProgressDetails = () => {
 };
 
 export const getOrderHistory = () => {
-  return customAxios(``);
+  return customAxios.post('/get-history');
 };
 
