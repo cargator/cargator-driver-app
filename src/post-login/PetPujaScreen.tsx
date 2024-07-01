@@ -90,30 +90,16 @@ const PetPujaScreen = ({navigation}: any) => {
   const getProgressDetail = async () => {
     try {
       setLoading(true);
-      const response = await getProgressDetails();
-      console.log('response', response.data);
+      // const response = await getProgressDetails();
+      // console.log('response', response.data);
 
-      setProgressData(response.data);
+      // setProgressData(response.data);
       // setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
     }
     setLoading(false);
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        getProgressDetail();
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
 
   const handleDelete = async () => {
     try {
@@ -167,7 +153,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const newOrdersListener = () => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
-        console.log('>>>>>>>>>>>', orders);
+        // console.log('>>>>>>>>>>>', orders);
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
@@ -349,6 +335,20 @@ const PetPujaScreen = ({navigation}: any) => {
     }
     isFirstRender.current = false;
   }, [isDriverOnline]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        getProgressDetail();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     // driverSocketConnection();
@@ -766,7 +766,16 @@ const PetPujaScreen = ({navigation}: any) => {
                   textAlign: 'center',
                   color: '#212121',
                 }}>
-                Order Id : {availableOrders[0].order_details?.vendor_order_id}
+                Order Id :{' '}
+                <Text
+                  style={{
+                    fontFamily: 'RobotoMono-Regular',
+                    fontWeight: '700',
+                    color: '#118F5E',
+                    fontSize: 20,
+                  }}>
+                  {availableOrders[0].order_details?.vendor_order_id.slice(-6)}
+                </Text>
               </Text>
             </View>
             {/* Circul data */}
@@ -776,11 +785,11 @@ const PetPujaScreen = ({navigation}: any) => {
                 <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
                 <Text
                   style={{fontWeight: '600', color: '#000000', fontSize: 15}}>
-                  234567{'₹'}
+                  0{'₹'}
                 </Text>
               </View>
             </View>
-            <View style={styles.text}>
+            {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -803,13 +812,21 @@ const PetPujaScreen = ({navigation}: any) => {
                 }}>
                 <Text>Distance :{15}-KM.</Text>
               </View>
-            </View>
-            <View style={{alignItems: 'center', marginTop: '5%'}}>
+            </View> */}
+            <View style={{alignItems: 'center'}}>
               <Text>
                 <Image source={require('../images/cart.png')} /> Pickup Location
               </Text>
               <Text style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
                 {availableOrders[0].pickup_details.address}
+              </Text>
+            </View>
+            <View style={{alignItems: 'center', marginTop: hp(2)}}>
+              <Text>
+                <Image source={require('../images/cart.png')} /> Drop Location
+              </Text>
+              <Text style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                {availableOrders[0].drop_details.address}
               </Text>
             </View>
             {/* SliderButton */}
@@ -861,7 +878,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 title="Reject Order"
                 titleStyle={{color: 'red'}}
                 slideDirection="right">
-                <Text style={{color: 'red', fontSize: 18}}>hiiiiiiitejas</Text>
+                <Text style={{color: 'red', fontSize: 18}}></Text>
               </SlideButton>
             </View>
           </View>
@@ -872,7 +889,7 @@ const PetPujaScreen = ({navigation}: any) => {
           <View>
             {/* order Details card */}
             {slideCount <= 2 && (
-              <View style={styles.orderDetailsCard1}>
+              <View style={styles.orderDetailsCard2}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -912,18 +929,28 @@ const PetPujaScreen = ({navigation}: any) => {
                       fontWeight: '700',
                       fontSize: 16,
                     }}>
-                    {200}
+                    {0}
                     {'₹'}
                   </Text>
                 </View>
                 <View style={styles.line} />
                 <View style={{alignItems: 'center', top: hp(6)}}>
                   <Text>
-                    <Image source={require('../images/cart.png')} /> Pickup Food
+                    <Image source={require('../images/cart.png')} /> Food Pickup
+                    Location
                   </Text>
                   <Text
                     style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
                     {orderDetails?.pickup_details?.address}
+                  </Text>
+                </View>
+                <View style={styles.line1} />
+                <View style={styles.contactNumber}>
+                  {/* <callLogo /> */}
+                  <Image source={require('../images/callicon.png')} />
+                  <Text style={{color: '#333333'}}>
+                    {' '}
+                    +91 {orderDetails.pickup_details.contact_number}
                   </Text>
                 </View>
               </View>
@@ -969,7 +996,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       fontWeight: '700',
                       fontSize: 16,
                     }}>
-                    {200}
+                    {0}
                     {'₹'}
                   </Text>
                 </View>
