@@ -132,7 +132,7 @@ const LoginOtpScreen = ({route}: any) => {
         }}
         source={
           Platform.OS == 'android'
-            ? require('../images/LoginBgAndroid.png')
+            ? require('../images/SukamExpress.png')
             : require('../images/LoginBgIos.png')
         }>
         <View style={styles.bottomContainer}>

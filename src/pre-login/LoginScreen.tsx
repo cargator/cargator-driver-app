@@ -136,7 +136,7 @@ const LoginScreen = ({navigation}: any) => {
           width: wp(100),
           flex: 1,
         }}
-        source={require('../images/LoginBgAndroid.png')}>
+        source={require('../images/SukamExpress.png')}>
         <View style={styles.bottomContainer}>
           <Formik
             initialValues={{
