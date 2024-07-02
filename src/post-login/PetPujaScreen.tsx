@@ -78,6 +78,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [slideCount, setSlideCount] = useState<any>(0);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
+  const [cod, setcod] = useState(true);
   const [mylocation, setMyLocation] = useState({
     latitude: 19.000000,
     longitude: 72.000000,
@@ -333,7 +334,11 @@ const PetPujaScreen = ({navigation}: any) => {
         status: SliderText[slideCount]?.flowName,
       };
       socketInstance?.emit('update-order-status', status);
-      if (slideCount >= SliderText.length - 1 ) {
+
+      if (
+        slideCount >= SliderText.length - 1 &&
+        orderDetails.order_details.payment_status
+      ) {
         setOrderStarted(false);
         setPath([]);
         dispatch(removeOrderDetails());
@@ -343,6 +348,12 @@ const PetPujaScreen = ({navigation}: any) => {
         setButtonText('ACCEPT ORDER');
         setAvailableOrders([]);
         return;
+      }
+      if (
+        slideCount >= SliderText.length - 1 &&
+        !orderDetails.order_details.payment_status
+      ) {
+        setcod(false);
       }
       setSlideCount(slideCount + 1);
       setButtonText(SliderText[slideCount + 1].flowName);
@@ -416,6 +427,18 @@ const PetPujaScreen = ({navigation}: any) => {
     orderAcceptResponseListener();
     // startChatListener();
     // checkDriver();
+  };
+  const paymentButton = () => {
+    setcod(true);
+    socketInstance.emit('payment-status', orderDetails);
+    setOrderStarted(false);
+    setPath([]);
+    dispatch(removeOrderDetails());
+    dispatch(setOrderStatus(''));
+    dispatch(setDriverPath([]));
+    setSlideCount(0);
+    setButtonText('ACCEPT ORDER');
+    setAvailableOrders([]);
   };
 
   useEffect(() => {
@@ -561,7 +584,9 @@ const PetPujaScreen = ({navigation}: any) => {
           {/* Today Model View */}
           <View style={styles.todayModalView}>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>Today Progress            </Text>
+              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                Today Progress{' '}
+              </Text>
             </View>
             <View style={styles.circleModel}>
                   <View style={styles.circle}>
@@ -581,21 +606,20 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.loginHours || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/order.png')} />
-                      <Text>Orders</Text>
-                    </View>
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.orders || 0}
-                    </Text>
-                  </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.loginHours || 0}
+                </Text>
+              </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/order.png')} />
+                  <Text>Orders</Text>
                 </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.orders || 0}
+                </Text>
+              </View>
+            </View>
           </View>
           {/* Week Model View */}
           <View style={styles.todayModalView}>
@@ -622,21 +646,20 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.loginHours || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/order.png')} />
-                      <Text>Orders</Text>
-                    </View>
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.orders || 0}
-                    </Text>
-                  </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.loginHours || 0}
+                </Text>
+              </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/order.png')} />
+                  <Text>Orders</Text>
                 </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.orders || 0}
+                </Text>
+              </View>
+            </View>
           </View>
           {/* Month Model View */}
           <View style={styles.todayModalView}>
@@ -663,21 +686,20 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.loginHours || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/order.png')} />
-                      <Text>Orders</Text>
-                    </View>
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.orders || 0}
-                    </Text>
-                  </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.loginHours || 0}
+                </Text>
+              </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/order.png')} />
+                  <Text>Orders</Text>
                 </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.orders || 0}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       )}
@@ -1054,7 +1076,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
               </View>
             )}
-            {slideCount > 2 && (
+            {slideCount > 2 && cod && (
               <View style={styles.orderDetailsCard2}>
                 <View
                   style={{
@@ -1095,7 +1117,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       fontWeight: '700',
                       fontSize: 16,
                     }}>
-                    {0}
+                    {orderDetails.order_details.order_total}
                     {'₹'}
                   </Text>
                 </View>
@@ -1121,7 +1143,22 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
               </View>
             )}
-
+            {!cod && (
+              <View style={styles.paymentWindiw}>
+                <Text style={styles.paymentText}>Cash</Text>
+                <Text style={{fontSize: 18}}>Pleas Make Your Payment</Text>
+                <Text style={styles.totalorder}>
+                  ₹ {orderDetails.order_details.order_total}
+                </Text>
+                <Pressable
+                  style={styles.paymentButton}
+                  onPress={() => {
+                    paymentButton();
+                  }}>
+                  <Text style={{color: 'white', fontSize: 24}}>Received</Text>
+                </Pressable>
+              </View>
+            )}
             <MapView
               provider={PROVIDER_GOOGLE}
               style={styles.map}
@@ -1193,7 +1230,7 @@ const PetPujaScreen = ({navigation}: any) => {
             </TouchableOpacity>
 
             {/* slider Button */}
-            <View
+            {cod && <View
               style={{
                 flex: 1,
                 justifyContent: 'flex-end',
@@ -1220,6 +1257,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 title={buttonText}
                 slideDirection="right"></SlideButton>
             </View>
+}
           </View>
         )}
       </View>
@@ -1522,6 +1560,39 @@ const styles = StyleSheet.create({
     marginRight: wp(5),
     alignSelf: 'flex-end',
     transform: [{rotate: '315deg'}],
+  },
+  paymentButton: {
+    marginTop: '10%',
+    backgroundColor: 'green',
+    borderRadius: 5,
+    width: '80%',
+    alignItems: 'center',
+    height: '20%',
+    padding: 5,
+  },
+  totalorder: {
+    color: 'black',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: '5%',
+  },
+  paymentText: {
+    marginTop: '10%',
+    fontSize: 24,
+    color: 'black',
+    fontWeight: '400',
+  },
+  paymentWindiw: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    width: '90%',
+    alignSelf: 'center',
+    height: hp(30),
+    zIndex: 4,
+    position: 'absolute',
+    marginTop: '45%',
+    borderRadius: 20,
+    alignItems: 'center',
   },
 });
 
