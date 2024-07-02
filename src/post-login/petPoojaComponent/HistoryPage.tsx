@@ -28,6 +28,7 @@ const HistoryPage = (props: any) => {
       time: string;
       status: string;
       earning: number;
+      orderId:string;
     }[]
   >([]); // Specify the type explicitly
   const [page, setPage] = useState<number>(1);
@@ -68,11 +69,9 @@ const HistoryPage = (props: any) => {
       {
         console.log(response.data[i]);
         console.log("--------------");
-        
-        
       }
       
-      // setHistoryData(response.data);
+      setHistoryData(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -175,14 +174,14 @@ const HistoryPage = (props: any) => {
         <>
           <View></View>
           <View style={styles.container}>
-            <View style={styles.imageContainer}>
+            {/* <View style={styles.imageContainer}>
               <ImageBackground
                 source={require('../../images/orderHistoryBanner.png')}
                 resizeMode="cover"
                 style={styles.image}>
                 <Incentive />
               </ImageBackground>
-            </View>
+            </View> */}
             <FlatList
               data={historyData}
               renderItem={({item}) => <OrderHistoryCart order={item} />}
