@@ -147,7 +147,7 @@ const HistoryPage = (props: any) => {
             />
           </View>
           <Text style={{color: 'black', fontWeight: 'bold', fontSize: 12.5}}>
-            {order.time} mins - {order.dist || 0} kms   .
+            {order.time} mins - {order.dist || 0} kms.
           </Text>
         </View>
       </View>
