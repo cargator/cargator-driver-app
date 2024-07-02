@@ -62,7 +62,17 @@ const HistoryPage = (props: any) => {
     try {
       setLoading(true);
       const response = await getOrderHistory();
-      setHistoryData(response.data);
+      console.log(response.data);
+      
+     for(let i=0;i<response.data.length ;i++)
+      {
+        console.log(response.data[i]);
+        console.log("--------------");
+        
+        
+      }
+      
+      // setHistoryData(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -228,6 +238,7 @@ const OrderHistoryCart = ({
     time: string;
     status: string;
     earning: number;
+    orderId:string;
   };
 }) => {
   // Specify the type for order explicitly
@@ -236,7 +247,7 @@ const OrderHistoryCart = ({
     <View style={styles.historyItem}>
       <View style={{flexDirection: 'row', marginBottom: 5}}>
         <Text style={styles.orderId}>Order Id : </Text>
-        <Text style={styles.orderId}> {order._id.slice(-6)}</Text>
+        <Text style={styles.orderId}> {order.orderId.slice(-6)}</Text>
       </View>
 
       <View style={styles.row}>
