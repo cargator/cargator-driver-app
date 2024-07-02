@@ -66,7 +66,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const isFirstRender = useRef(true);
   const mapRef = useRef<any>(null);
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
-  const [heading, setHeading] = useState<any>(0)
+  const [heading, setHeading] = useState<any>(0);
   const [region, setRegion] = useState<any>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
@@ -80,10 +80,9 @@ const PetPujaScreen = ({navigation}: any) => {
   const [path, setPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
   const [mylocation, setMyLocation] = useState({
-    latitude: 19.000000,
-    longitude: 72.000000,
+    latitude: 19.0,
+    longitude: 72.0,
   });
-  
 
   const handleLogout = async () => {
     try {
@@ -99,8 +98,6 @@ const PetPujaScreen = ({navigation}: any) => {
     try {
       setLoading(true);
       const response = await getProgressDetails();
-      console.log('response', response.data);
-
       setProgressData(response.data);
       // setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
     } catch (error) {
@@ -159,14 +156,14 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   const emitLiveLocation = () => {
-    let prevLocation:any = null;
+    let prevLocation: any = null;
     try {
       const watchId = Geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude, heading } = position.coords;
-          const newLocation = { latitude, longitude };
-          setMyLocation(newLocation)
-          setHeading(heading)
+        position => {
+          const {latitude, longitude, heading} = position.coords;
+          const newLocation = {latitude, longitude};
+          setMyLocation(newLocation);
+          setHeading(heading);
           if (orderStarted) {
             if (prevLocation) {
               const distance = geolib.getDistance(prevLocation, newLocation);
@@ -180,7 +177,7 @@ const PetPujaScreen = ({navigation}: any) => {
             }
           }
         },
-        (error) => {
+        error => {
           console.log(`emitLiveLocation error :>> `, error);
           if (error.message == 'Location permission not granted.') {
             Toast.show({
@@ -190,7 +187,12 @@ const PetPujaScreen = ({navigation}: any) => {
             dispatch(setLocationPermission(false));
           }
         },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000, distanceFilter: 15 }
+        {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 5000,
+          distanceFilter: 15,
+        },
       );
 
       setLoading(false);
@@ -203,7 +205,6 @@ const PetPujaScreen = ({navigation}: any) => {
       setLoading(false);
     }
   };
-
 
   const getCurrentPosition = useCallback(async () => {
     try {
@@ -218,7 +219,7 @@ const PetPujaScreen = ({navigation}: any) => {
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         Geolocation.getCurrentPosition(
-          (position) => {
+          position => {
             setMyLocation({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
@@ -228,7 +229,7 @@ const PetPujaScreen = ({navigation}: any) => {
           {
             enableHighAccuracy: false,
             timeout: 10000,
-          }
+          },
         );
       } else {
         console.log('Location permission denied');
@@ -237,7 +238,6 @@ const PetPujaScreen = ({navigation}: any) => {
       console.warn(err);
     }
   }, []);
-
 
   const newOrdersListener = () => {
     try {
@@ -266,7 +266,10 @@ const PetPujaScreen = ({navigation}: any) => {
   const onAcceptOrder = (order: any) => {
     // console.log('inside accept ride function >>>>>>>>>>>>', order._id);
     setLoading(true);
-    socketInstance?.emit('accept-order', {id: order._id.toString(), driverLoc: mylocation});
+    socketInstance?.emit('accept-order', {
+      id: order._id.toString(),
+      driverLoc: mylocation,
+    });
     // setAvailableOrders((availableOrders: any[]) =>
     //   availableOrders.filter((ele: any) => ele._id != order._id),
     // );
@@ -298,7 +301,6 @@ const PetPujaScreen = ({navigation}: any) => {
           dispatch(setDriverPath(body.path.coords));
           setOrderStarted(true);
           setPath(body.path.coords);
-          console.log(">>>>>>>>>>>>>>",body.path.coords);
           setButtonText(SliderText[slideCount + 1].flowName);
           setSlideCount(slideCount + 1);
           dispatch(setOrderStatus(slideCount));
@@ -494,7 +496,7 @@ const PetPujaScreen = ({navigation}: any) => {
   }, [orderStarted]);
 
   useEffect(() => {
-    getCurrentPosition()
+    getCurrentPosition();
   }, [getCurrentPosition]);
 
   return (
@@ -589,22 +591,20 @@ const PetPujaScreen = ({navigation}: any) => {
               </Text>
             </View>
             <View style={styles.circleModel}>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/Rupay.png')} />
-                      <Text> Earning</Text>
-                    </View>
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/watch.png')} />
-                      <Text>Login Hours</Text>
-                    </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/Rupay.png')} />
+                  <Text> Earning</Text>
+                </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.earning || 0}
+                </Text>
+              </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/watch.png')} />
+                  <Text>Login Hours</Text>
+                </View>
 
                 <Text style={{fontWeight: 'bold'}}>
                   {progressData.today?.loginHours || 0}
@@ -629,22 +629,20 @@ const PetPujaScreen = ({navigation}: any) => {
               </Text>
             </View>
             <View style={styles.circleModel}>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/Rupay.png')} />
-                      <Text> Earning</Text>
-                    </View>
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/watch.png')} />
-                      <Text>Login Hours</Text>
-                    </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/Rupay.png')} />
+                  <Text> Earning</Text>
+                </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.earning || 0}
+                </Text>
+              </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/watch.png')} />
+                  <Text>Login Hours</Text>
+                </View>
 
                 <Text style={{fontWeight: 'bold'}}>
                   {progressData.today?.loginHours || 0}
@@ -669,22 +667,20 @@ const PetPujaScreen = ({navigation}: any) => {
               </Text>
             </View>
             <View style={styles.circleModel}>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/Rupay.png')} />
-                      <Text> Earning</Text>
-                    </View>
-                    <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/watch.png')} />
-                      <Text>Login Hours</Text>
-                    </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/Rupay.png')} />
+                  <Text> Earning</Text>
+                </View>
+                <Text style={{fontWeight: 'bold'}}>
+                  {progressData.today?.earning || 0}
+                </Text>
+              </View>
+              <View style={styles.circle}>
+                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                  <Image source={require('../images/watch.png')} />
+                  <Text>Login Hours</Text>
+                </View>
 
                 <Text style={{fontWeight: 'bold'}}>
                   {progressData.today?.loginHours || 0}
@@ -1146,7 +1142,7 @@ const PetPujaScreen = ({navigation}: any) => {
             {!cod && (
               <View style={styles.paymentWindiw}>
                 <Text style={styles.paymentText}>Cash</Text>
-                <Text style={{fontSize: 18}}>Pleas Make Your Payment</Text>
+                <Text style={{fontSize: 18}}>Please Collect Your Payment</Text>
                 <Text style={styles.totalorder}>
                   ₹ {orderDetails.order_details.order_total}
                 </Text>
@@ -1230,34 +1226,35 @@ const PetPujaScreen = ({navigation}: any) => {
             </TouchableOpacity>
 
             {/* slider Button */}
-            {cod && <View
-              style={{
-                flex: 1,
-                justifyContent: 'flex-end',
-                bottom: hp(6),
-              }}>
-              <SlideButton
-                width={290}
-                height={50}
-                animationDuration={180}
-                autoResetDelay={1080}
-                animation={true}
-                autoReset={true}
-                borderRadius={15}
-                sliderWidth={50}
-                icon={
-                  <Image
-                    source={require('../svg/Arrow.png')}
-                    style={styles.thumbImage}
-                  />
-                } // Adjust width and height as needed
-                onReachedToEnd={handleEndReached}
-                containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
-                underlayStyle={{backgroundColor: 'Red'}}
-                title={buttonText}
-                slideDirection="right"></SlideButton>
-            </View>
-}
+            {cod && (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'flex-end',
+                  bottom: hp(6),
+                }}>
+                <SlideButton
+                  width={290}
+                  height={50}
+                  animationDuration={180}
+                  autoResetDelay={1080}
+                  animation={true}
+                  autoReset={true}
+                  borderRadius={15}
+                  sliderWidth={50}
+                  icon={
+                    <Image
+                      source={require('../svg/Arrow.png')}
+                      style={styles.thumbImage}
+                    />
+                  } // Adjust width and height as needed
+                  onReachedToEnd={handleEndReached}
+                  containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
+                  underlayStyle={{backgroundColor: 'Red'}}
+                  title={buttonText}
+                  slideDirection="right"></SlideButton>
+              </View>
+            )}
           </View>
         )}
       </View>
