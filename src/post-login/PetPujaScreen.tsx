@@ -353,6 +353,18 @@ const PetPujaScreen = ({navigation}: any) => {
     // startChatListener();
     // checkDriver();
   };
+  const paymentButton = () => {
+    setcod(true);
+    socketInstance.emit('payment-status', orderDetails);
+    setOrderStarted(false);
+    setPath([]);
+    dispatch(removeOrderDetails());
+    dispatch(setOrderStatus(''));
+    dispatch(setDriverPath([]));
+    setSlideCount(0);
+    setButtonText('ACCEPT ORDER');
+    setAvailableOrders([]);
+  };
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -865,7 +877,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 title="Reject Order"
                 titleStyle={{color: 'red'}}
                 slideDirection="right">
-                <Text style={{color: 'red', fontSize: 18}}>hiiiiiiitejas</Text>
+               
               </SlideButton>
             </View>
           </View>
@@ -1000,59 +1012,16 @@ const PetPujaScreen = ({navigation}: any) => {
               </View>
             )}
             {!cod && (
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: '#FFFFFF',
-                  width: '90%',
-                  alignSelf: 'center',
-                  height: hp(30),
-                  zIndex: 4,
-                  position: 'absolute',
-                  marginTop: '45%',
-                  borderRadius: 20,
-                  alignItems: 'center',
-                }}>
-                <Text
-                  style={{
-                    marginTop: '10%',
-                    fontSize: 24,
-                    color: 'black',
-                    fontWeight: '400',
-                  }}>
-                  Cash
-                </Text>
+              <View style={styles.paymentWindiw}>
+                <Text style={styles.paymentText}>Cash</Text>
                 <Text style={{fontSize: 18}}>Pleas Make Your Payment</Text>
-                <Text
-                  style={{
-                    color: 'black',
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                    marginTop: '5%',
-                  }}>
+                <Text style={styles.totalorder}>
                   ₹ {orderDetails.order_details.order_total}
                 </Text>
                 <Pressable
-                  style={{
-                    marginTop: '10%',
-                    backgroundColor: 'green',
-                    borderRadius: 5,
-                    width: '80%',
-                    alignItems: 'center',
-                    height: '20%',
-                    padding: 5,
-                  }}
+                  style={styles.paymentButton}
                   onPress={() => {
-                    setcod(true);
-                    socketInstance.emit('payment-status', orderDetails);
-                    setOrderStarted(false);
-                    setPath([]);
-                    dispatch(removeOrderDetails());
-                    dispatch(setOrderStatus(''));
-                    dispatch(setDriverPath([]));
-                    setSlideCount(0);
-                    setButtonText('ACCEPT ORDER');
-                    setAvailableOrders([]);
+                    paymentButton();
                   }}>
                   <Text style={{color: 'white', fontSize: 24}}>Received</Text>
                 </Pressable>
@@ -1129,7 +1098,7 @@ const PetPujaScreen = ({navigation}: any) => {
             </TouchableOpacity>
 
             {/* slider Button */}
-            <View
+            {cod && <View
               style={{
                 flex: 1,
                 justifyContent: 'flex-end',
@@ -1156,6 +1125,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 title={buttonText}
                 slideDirection="right"></SlideButton>
             </View>
+}
           </View>
         )}
       </View>
@@ -1458,6 +1428,39 @@ const styles = StyleSheet.create({
     marginRight: wp(5),
     alignSelf: 'flex-end',
     transform: [{rotate: '315deg'}],
+  },
+  paymentButton: {
+    marginTop: '10%',
+    backgroundColor: 'green',
+    borderRadius: 5,
+    width: '80%',
+    alignItems: 'center',
+    height: '20%',
+    padding: 5,
+  },
+  totalorder: {
+    color: 'black',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: '5%',
+  },
+  paymentText: {
+    marginTop: '10%',
+    fontSize: 24,
+    color: 'black',
+    fontWeight: '400',
+  },
+  paymentWindiw: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    width: '90%',
+    alignSelf: 'center',
+    height: hp(30),
+    zIndex: 4,
+    position: 'absolute',
+    marginTop: '45%',
+    borderRadius: 20,
+    alignItems: 'center',
   },
 });
 

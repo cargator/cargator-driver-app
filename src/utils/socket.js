@@ -7,7 +7,7 @@ function socketConnection(token) {
   return new Promise((resolve, reject) => {
     socket = io.connect(
       // `https://api.cargator.org/?token=${token}`,
-      `http://192.168.1.34:3001?token=${token}`,
+      `http://192.168.1.41:3001?token=${token}`,
       // `https://a90c-182-48-215-1.ngrok-free.app?token=${token}`,
       {transports: ['websocket']},
     );
