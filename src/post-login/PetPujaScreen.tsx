@@ -333,7 +333,7 @@ const PetPujaScreen = ({navigation}: any) => {
         status: SliderText[slideCount]?.flowName,
       };
       socketInstance?.emit('update-order-status', status);
-      if (slideCount >= SliderText.length - 1) {
+      if (slideCount >= SliderText.length - 1 ) {
         setOrderStarted(false);
         setPath([]);
         dispatch(removeOrderDetails());
@@ -571,7 +571,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 20}
+                      {progressData.today?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -612,7 +612,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 20}
+                      {progressData.today?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -653,7 +653,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 20}
+                      {progressData.today?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -737,7 +737,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 20}
+                      {progressData.today?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -779,7 +779,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 20}
+                      {progressData.today?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -821,7 +821,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 20}
+                      {progressData.today?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
