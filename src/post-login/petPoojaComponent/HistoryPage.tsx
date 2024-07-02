@@ -18,6 +18,20 @@ import {
 } from 'react-native-responsive-screen';
 import {getOrderHistory} from '../../services/rideservices';
 
+
+const months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+function formatDateString(dateString: string): string {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month}, ${year}`;
+}
+
 const HistoryPage = (props: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [historyData, setHistoryData] = useState<
@@ -28,6 +42,7 @@ const HistoryPage = (props: any) => {
       time: string;
       status: string;
       earning: number;
+      orderId:string;
     }[]
   >([]); // Specify the type explicitly
   const [page, setPage] = useState<number>(1);
@@ -56,12 +71,20 @@ const HistoryPage = (props: any) => {
     year: number,
   ) => {
     setFinalDate(newDate + ' ' + months[month] + ', ' + year);
+    setPage(1)
+    fetchHistory(page)
   };
 
   const fetchHistory = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getOrderHistory();
+      const response = await getOrderHistory(page, {
+        filter: {
+          startdate: finaldate
+        }
+      });
+      console.log("response.data", response.data);
+      
       setHistoryData(response.data);
       setLoading(false);
     } catch (error) {
@@ -82,6 +105,72 @@ const HistoryPage = (props: any) => {
       </View>
     );
   };
+
+  const OrderHistoryCart = ({
+    order,
+  }:{
+  order: {
+    _id: string;
+    date: string;
+    dist: string;
+    time: string;
+    status: string;
+    earning: number;
+    orderId: string;
+  }
+}) => {
+  // Specify the type for order explicitly
+  console.log("order ===> ",order);
+  
+  // const orderdate = setScreenDate()
+  return (
+    <View style={styles.historyItem}>
+      <View style={{flexDirection: 'row', marginBottom: 5}}>
+        <Text style={styles.orderId}>Order Id : </Text>
+        <Text style={styles.orderId}> {order.orderId.slice(-6)}</Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={{...styles.value, color: 'black'}}>
+          <Image source={require('../../images/date.png')} /> {formatDateString(order.date)}
+        </Text>
+
+        <View style={styles.row}>
+          <View style={{marginRight: '13%'}}>
+            <Image
+              style={{position: 'absolute'}}
+              source={require('../../images/watch.png')}
+            />
+            <Image
+              style={{position: 'absolute', marginTop: 5, marginLeft: 9}}
+              source={require('../../images/distance.png')}
+            />
+          </View>
+          <Text style={{color: 'black', fontWeight: 'bold', fontSize: 12.5}}>
+            {order.time} mins - {order.dist || 0} kms   .
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.value}>
+          <Image source={require('../../images/watch.png')} /> {order.status}
+        </Text>
+
+        <Text style={{fontSize: 18, marginLeft: '30%'}}>₹</Text>
+        <Text
+          style={{
+            ...styles.orderId,
+            color: '#118F5E',
+            flex: 1,
+            marginLeft: 20,
+          }}>
+          {order.earning}
+        </Text>
+      </View>
+    </View>
+  );
+};
 
   useEffect(() => {
     fetchHistory(page);
@@ -189,6 +278,9 @@ const HistoryPage = (props: any) => {
   );
 };
 
+
+
+
 const Incentive = () => {
   return (
     <>
@@ -217,70 +309,6 @@ const Incentive = () => {
     </>
   );
 };
-
-const OrderHistoryCart = ({
-  order,
-}: {
-  order: {
-    _id: string;
-    date: string;
-    dist: string;
-    time: string;
-    status: string;
-    earning: number;
-  };
-}) => {
-  // Specify the type for order explicitly
-  // const orderdate = setScreenDate()
-  return (
-    <View style={styles.historyItem}>
-      <View style={{flexDirection: 'row', marginBottom: 5}}>
-        <Text style={styles.orderId}>Order Id : </Text>
-        <Text style={styles.orderId}> {order._id.slice(-6)}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={{...styles.value, color: 'black'}}>
-          <Image source={require('../../images/date.png')} /> {order.date}
-        </Text>
-
-        <View style={styles.row}>
-          <View style={{marginRight: '13%'}}>
-            <Image
-              style={{position: 'absolute'}}
-              source={require('../../images/watch.png')}
-            />
-            <Image
-              style={{position: 'absolute', marginTop: 5, marginLeft: 9}}
-              source={require('../../images/distance.png')}
-            />
-          </View>
-          <Text style={{color: 'black', fontWeight: 'bold', fontSize: 12.5}}>
-            {order.time} mins - {order.dist || 0} kms
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        <Text style={styles.value}>
-          <Image source={require('../../images/watch.png')} /> {order.status}
-        </Text>
-
-        <Text style={{fontSize: 18, marginLeft: '30%'}}>₹</Text>
-        <Text
-          style={{
-            ...styles.orderId,
-            color: '#118F5E',
-            flex: 1,
-            marginLeft: 20,
-          }}>
-          {order.earning}
-        </Text>
-      </View>
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
