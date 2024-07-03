@@ -4,11 +4,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Animated,
   Pressable,
   ImageBackground,
   Image,
-  ActivityIndicator,
   Linking,
   PermissionsAndroid,
 } from 'react-native';
@@ -32,21 +30,18 @@ import {
   setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
-import RejectRideIcon from '../svg/RejectRideIcon';
 import Toast from 'react-native-toast-message';
 import Spinner from '../svg/spinner';
-import OrderScreen from './petPoojaComponent/OrderScreen';
 import SlideButton from 'rn-slide-button';
 import Navigate from '../svg/Navigate';
-import {Circle, Svg} from 'react-native-svg';
-import callLogo from '../svg/callLogo';
 import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import {getProgressDetails} from '../services/rideservices';
 import Geolocation from '@react-native-community/geolocation';
 import * as geolib from 'geolib';
+import OrderScreen from './petPoojaComponent/OrderScreen';
 export let socketInstance: any;
 
-const SliderText = [
+export const SliderText = [
   {flowName: 'ACCEPT ORDER'},
   {flowName: 'ARRIVED'},
   {flowName: 'DISPATCHED'},
@@ -906,6 +901,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </Text>
               </View>
             </View>
+            {/* time and km comment   */}
             {/* <View style={styles.text}>
               <View
                 style={{
@@ -990,10 +986,10 @@ const PetPujaScreen = ({navigation}: any) => {
                   />
                 } // Adjust width and height as needed
                 onReachedToEnd={onRejectOrder}
-                containerStyle={{backgroundColor: '#FFFFFF', color: 'red'}}
+                containerStyle={{backgroundColor: '#D11A2A', color: 'red'}}
                 underlayStyle={{backgroundColor: 'Red'}}
                 title="Reject Order"
-                titleStyle={{color: 'red'}}
+                titleStyle={{color: 'white'}}
                 slideDirection="right">
                 <Text style={{color: 'red', fontSize: 18}}></Text>
               </SlideButton>
