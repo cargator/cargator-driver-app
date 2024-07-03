@@ -364,9 +364,11 @@ const PetPujaScreen = ({navigation}: any) => {
       ) {
         setcod(false);
       }
+      if( slideCount  <= SliderText.length - 2){
       setSlideCount(slideCount + 1);
       setButtonText(SliderText[slideCount + 1].flowName);
       dispatch(setOrderStatus(slideCount));
+      }
     } catch (error) {
       console.log('Error', error);
     }
