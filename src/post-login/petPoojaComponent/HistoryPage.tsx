@@ -18,10 +18,19 @@ import {
 } from 'react-native-responsive-screen';
 import {getOrderHistory} from '../../services/rideservices';
 
-
 const months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 function formatDateString(dateString: string): string {
@@ -42,7 +51,7 @@ const HistoryPage = (props: any) => {
       time: string;
       status: string;
       earning: number;
-      orderId:string;
+      orderId: string;
     }[]
   >([]); // Specify the type explicitly
   const [page, setPage] = useState<number>(1);
@@ -72,20 +81,20 @@ const HistoryPage = (props: any) => {
     year: number,
   ) => {
     setFinalDate(newDate + ' ' + months[month] + ', ' + year);
-    const stardtDated=year+'-'+(month+1)+'-'+newDate
-    setPage(1)
-    fetchHistory(stardtDated)
+    const stardtDated = year + '-' + (month + 1) + '-' + newDate;
+    setPage(1);
+    fetchHistory(stardtDated);
   };
 
-  const fetchHistory = async (stardtDated:any) => {
+  const fetchHistory = async (stardtDated: any) => {
     try {
       setLoading(true);
       const response = await getOrderHistory(page, {
         filter: {
-          startDate:stardtDated
-        }
+          startDate: stardtDated,
+        },
       });
-      setHistoryData(response.data);    
+      setHistoryData(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -95,20 +104,18 @@ const HistoryPage = (props: any) => {
 
   const handleLoadMore = async () => {
     try {
-      if(result===10){
-      setPage(prevPage => prevPage + 1);
+      if (result === 10) {
+        setPage(prevPage => prevPage + 1);
       }
       setLoading(true);
       const response = await getOrderHistory(page, {
         filter: {
-          startdate: finaldate
-        }
+          startdate: finaldate,
+        },
       });
-      console.log(2,response.data);
+      console.log(2, response.data);
       setLoading(false);
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   };
 
   const renderFooter = () => {
@@ -122,69 +129,70 @@ const HistoryPage = (props: any) => {
 
   const OrderHistoryCart = ({
     order,
-  }:{
-  order: {
-    _id: string;
-    date: string;
-    dist: string;
-    time: string;
-    status: string;
-    earning: number;
-    orderId: string;
-  }
-}) => {
-  // Specify the type for order explicitly
-  console.log("order ===> ",order);
-  
-  // const orderdate = setScreenDate()
-  return (
-    <View style={styles.historyItem}>
-      <View style={{flexDirection: 'row', marginBottom: 5}}>
-        <Text style={styles.orderId}>Order Id : </Text>
-        <Text style={styles.orderId}> {order.orderId.slice(-6)}</Text>
-      </View>
+  }: {
+    order: {
+      _id: string;
+      date: string;
+      dist: string;
+      time: string;
+      status: string;
+      earning: number;
+      orderId: string;
+    };
+  }) => {
+    // Specify the type for order explicitly
+    console.log('order ===> ', order);
 
-      <View style={styles.row}>
-        <Text style={{...styles.value, color: 'black'}}>
-          <Image source={require('../../images/date.png')} /> {formatDateString(order.date)}
-        </Text>
+    // const orderdate = setScreenDate()
+    return (
+      <View style={styles.historyItem}>
+        <View style={{flexDirection: 'row', marginBottom: 5}}>
+          <Text style={styles.orderId}>Order Id : </Text>
+          <Text style={styles.orderId}> {order.orderId.slice(-6)}</Text>
+        </View>
 
         <View style={styles.row}>
-          <View style={{marginRight: '13%'}}>
-            <Image
-              style={{position: 'absolute'}}
-              source={require('../../images/watch.png')}
-            />
-            <Image
-              style={{position: 'absolute', marginTop: 5, marginLeft: 9}}
-              source={require('../../images/distance.png')}
-            />
+          <Text style={{...styles.value, color: 'black'}}>
+            <Image source={require('../../images/date.png')} />{' '}
+            {formatDateString(order.date)}
+          </Text>
+
+          <View style={styles.row}>
+            <View style={{marginRight: '13%'}}>
+              <Image
+                style={{position: 'absolute'}}
+                source={require('../../images/watch.png')}
+              />
+              <Image
+                style={{position: 'absolute', marginTop: 5, marginLeft: 9}}
+                source={require('../../images/distance.png')}
+              />
+            </View>
+            <Text style={{color: 'black', fontWeight: 'bold', fontSize: 12.5}}>
+              {order.time} mins - {order.dist || 0} kms.
+            </Text>
           </View>
-          <Text style={{color: 'black', fontWeight: 'bold', fontSize: 12.5}}>
-            {order.time} mins - {order.dist || 0} kms.
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.value}>
+            <Image source={require('../../images/watch.png')} /> {order.status}
+          </Text>
+
+          <Text style={{fontSize: 18, marginLeft: '30%'}}>₹</Text>
+          <Text
+            style={{
+              ...styles.orderId,
+              color: '#118F5E',
+              flex: 1,
+              marginLeft: 20,
+            }}>
+            {order.earning}
           </Text>
         </View>
       </View>
-
-      <View style={styles.row}>
-        <Text style={styles.value}>
-          <Image source={require('../../images/watch.png')} /> {order.status}
-        </Text>
-
-        <Text style={{fontSize: 18, marginLeft: '30%'}}>₹</Text>
-        <Text
-          style={{
-            ...styles.orderId,
-            color: '#118F5E',
-            flex: 1,
-            marginLeft: 20,
-          }}>
-          {order.earning}
-        </Text>
-      </View>
-    </View>
-  );
-};
+    );
+  };
 
   useEffect(() => {
     fetchHistory(page);
@@ -291,9 +299,6 @@ const HistoryPage = (props: any) => {
     </>
   );
 };
-
-
-
 
 const Incentive = () => {
   return (
