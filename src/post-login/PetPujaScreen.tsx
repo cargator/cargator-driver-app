@@ -4,13 +4,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Animated,
   Pressable,
   ImageBackground,
   Image,
-  ActivityIndicator,
   Linking,
   PermissionsAndroid,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {
   heightPercentageToDP,
@@ -32,28 +32,32 @@ import {
   setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
-import RejectRideIcon from '../svg/RejectRideIcon';
 import Toast from 'react-native-toast-message';
 import Spinner from '../svg/spinner';
-import OrderScreen from './petPoojaComponent/OrderScreen';
 import SlideButton from 'rn-slide-button';
 import Navigate from '../svg/Navigate';
-import {Circle, Svg} from 'react-native-svg';
-import callLogo from '../svg/callLogo';
 import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import {getProgressDetails} from '../services/rideservices';
 import Geolocation from '@react-native-community/geolocation';
 import * as geolib from 'geolib';
+import OrderScreen from './petPoojaComponent/OrderScreen';
 import LoaderComponent from '../components/LoaderComponent';
 export let socketInstance: any;
 
-const SliderText = [
+export const SliderText = [
   {flowName: 'ACCEPT ORDER'},
   {flowName: 'ARRIVED'},
   {flowName: 'DISPATCHED'},
   {flowName: 'ARRIVED_CUSTOMER_DOORSTEP'},
   {flowName: 'DELIVERED'},
 ];
+
+export const dialCall = (number: string) => {
+  let phoneNumber = `tel:${number}`;
+  Linking.openURL(phoneNumber).catch(err => {
+    console.log('err', err), Alert.alert('Error', 'Unable to make a call');
+  });
+};
 
 const PetPujaScreen = ({navigation}: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
@@ -872,48 +876,52 @@ const PetPujaScreen = ({navigation}: any) => {
 
         {_isEmpty(orderDetails) && availableOrders[0] && !orderStarted && (
           <>
-           {loading ? (
+            {loading ? (
               <LoaderComponent />
             ) : (
-            <View
-              key={`order_${0 + 1}`}
-              style={[styles.modalView, {opacity: 2}]}>
-              {/* orderId Text */}
-              <View style={{top: wp(3)}}>
-                <Text
-                  style={{
-                    fontFamily: 'Roboto Mono',
-                    fontSize: hp(2.5),
-                    fontWeight: '600',
-                    textAlign: 'center',
-                    color: '#212121',
-                  }}>
-                  Order Id :{' '}
+              <View
+                key={`order_${0 + 1}`}
+                style={[styles.modalView, {opacity: 2}]}>
+                {/* orderId Text */}
+                <View style={{top: wp(3)}}>
                   <Text
                     style={{
-                      fontFamily: 'RobotoMono-Regular',
-                      fontWeight: '700',
-                      color: '#118F5E',
-                      fontSize: 20,
+                      fontFamily: 'Roboto Mono',
+                      fontSize: hp(2.5),
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      color: '#212121',
                     }}>
-                    {availableOrders[0].order_details?.vendor_order_id.slice(
-                      -6,
-                    )}
-                  </Text>
-                </Text>
-              </View>
-              {/* Circul data */}
-              <View style={styles.circleModel}>
-                <View style={styles.circle}>
-                  <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                  <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
-                  <Text
-                    style={{fontWeight: '600', color: '#000000', fontSize: 15}}>
-                    0{'₹'}
+                    Order Id :{' '}
+                    <Text
+                      style={{
+                        fontFamily: 'RobotoMono-Regular',
+                        fontWeight: '700',
+                        color: '#118F5E',
+                        fontSize: 20,
+                      }}>
+                      {availableOrders[0].order_details?.vendor_order_id.slice(
+                        -6,
+                      )}
+                    </Text>
                   </Text>
                 </View>
-              </View>
-              {/* <View style={styles.text}>
+                {/* Circul data */}
+                <View style={styles.circleModel}>
+                  <View style={styles.circle}>
+                    <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                    <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
+                    <Text
+                      style={{
+                        fontWeight: '600',
+                        color: '#000000',
+                        fontSize: 15,
+                      }}>
+                      {'₹ '}0
+                    </Text>
+                  </View>
+                </View>
+                {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -937,78 +945,80 @@ const PetPujaScreen = ({navigation}: any) => {
                 <Text>Distance :{15}-KM.</Text>
               </View>
             </View> */}
-              <View style={{alignItems: 'center'}}>
-                <Text>
-                  <Image source={require('../images/cart.png')} /> Pickup
-                  Location
-                </Text>
-                <Text
-                  style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
-                  {availableOrders[0].pickup_details.address}
-                </Text>
-              </View>
-              <View style={{alignItems: 'center', marginTop: hp(2)}}>
-                <Text>
-                  <Image source={require('../images/cart.png')} /> Drop Location
-                </Text>
-                <Text
-                  style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
-                  {availableOrders[0].drop_details.address}
-                </Text>
-              </View>
-              {/* SliderButton */}
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'flex-end',
-                  marginBottom: hp(0),
-                }}>
-                <SlideButton
-                  width={290}
-                  height={50}
-                  animationDuration={180}
-                  autoResetDelay={1080}
-                  animation={true}
-                  autoReset={true}
-                  borderRadius={15}
-                  sliderWidth={50}
-                  icon={
-                    <Image
-                      source={require('../svg/Arrow.png')}
-                      style={styles.thumbImage}
-                    />
-                  } // Adjust width and height as needed
-                  onReachedToEnd={handleEndReached}
-                  containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
-                  underlayStyle={{backgroundColor: 'Red'}}
-                  title={buttonText}
-                  slideDirection="right"></SlideButton>
 
-                <SlideButton
-                  width={290}
-                  height={50}
-                  borderRadius={15}
-                  animationDuration={180}
-                  autoResetDelay={1080}
-                  animation={true}
-                  autoReset={true}
-                  sliderWidth={50}
-                  icon={
-                    <Image
-                      source={require('../svg/Arrow.png')}
-                      style={styles.thumbImage}
-                    />
-                  } // Adjust width and height as needed
-                  onReachedToEnd={onRejectOrder}
-                  containerStyle={{backgroundColor: '#FFFFFF', color: 'red'}}
-                  underlayStyle={{backgroundColor: 'Red'}}
-                  title="Reject Order"
-                  titleStyle={{color: 'red'}}
-                  slideDirection="right">
-                  <Text style={{color: 'red', fontSize: 18}}></Text>
-                </SlideButton>
+                <View style={{alignItems: 'center'}}>
+                  <Text>
+                    <Image source={require('../images/cart.png')} /> Pickup
+                    Location
+                  </Text>
+                  <Text
+                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                    {availableOrders[0].pickup_details.address}
+                  </Text>
+                </View>
+                <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                  <Text>
+                    <Image source={require('../images/cart.png')} /> Drop
+                    Location
+                  </Text>
+                  <Text
+                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                    {availableOrders[0].drop_details.address}
+                  </Text>
+                </View>
+                {/* SliderButton */}
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'flex-end',
+                    marginBottom: hp(0),
+                  }}>
+                  <SlideButton
+                    width={290}
+                    height={50}
+                    animationDuration={180}
+                    autoResetDelay={1080}
+                    animation={true}
+                    autoReset={true}
+                    borderRadius={15}
+                    sliderWidth={50}
+                    icon={
+                      <Image
+                        source={require('../svg/Arrow.png')}
+                        style={styles.thumbImage}
+                      />
+                    } // Adjust width and height as needed
+                    onReachedToEnd={handleEndReached}
+                    containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
+                    underlayStyle={{backgroundColor: 'Red'}}
+                    title={buttonText}
+                    slideDirection="right"></SlideButton>
+
+                  <SlideButton
+                    width={290}
+                    height={50}
+                    borderRadius={15}
+                    animationDuration={180}
+                    autoResetDelay={1080}
+                    animation={true}
+                    autoReset={true}
+                    sliderWidth={50}
+                    icon={
+                      <Image
+                        source={require('../svg/Arrow.png')}
+                        style={styles.thumbImage}
+                      />
+                    } // Adjust width and height as needed
+                    onReachedToEnd={onRejectOrder}
+                    containerStyle={{backgroundColor: '#D11A2A', color: 'red'}}
+                    underlayStyle={{backgroundColor: 'Red'}}
+                    title="Reject Order"
+                    titleStyle={{color: 'white'}}
+                    slideDirection="right">
+                    <Text style={{color: 'red', fontSize: 18}}></Text>
+                  </SlideButton>
+                </View>
               </View>
-            </View>
             )}
           </>
         )}
@@ -1085,12 +1095,24 @@ const PetPujaScreen = ({navigation}: any) => {
                     </View>
                     <View style={styles.line1} />
                     <View style={styles.contactNumber}>
-                      {/* <callLogo /> */}
-                      <Image source={require('../images/callicon.png')} />
-                      <Text style={{color: '#333333'}}>
-                        {' '}
-                        +91 {orderDetails.pickup_details.contact_number}
-                      </Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.pickup_details.contact_number)
+                        }>
+                        <Image
+                          source={require('../images/callicon.png')}
+                          style={styles.callIcon}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.pickup_details.contact_number)
+                        }>
+                        <Text style={{color: '#333333'}}>
+                          {' '}
+                          +91{orderDetails.pickup_details.contact_number}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -1158,12 +1180,25 @@ const PetPujaScreen = ({navigation}: any) => {
                     </View>
                     <View style={styles.line1} />
                     <View style={styles.contactNumber}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.drop_details.contact_number)
+                        }>
+                        <Image
+                          source={require('../images/callicon.png')}
+                          style={styles.callIcon}
+                        />
+                      </TouchableOpacity>
                       {/* <callLogo /> */}
-                      <Image source={require('../images/callicon.png')} />
-                      <Text style={{color: '#333333'}}>
-                        {' '}
-                        +91 {orderDetails.drop_details.contact_number}
-                      </Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.drop_details.contact_number)
+                        }>
+                        <Text style={{color: '#333333'}}>
+                          {' '}
+                          +91{orderDetails.drop_details.contact_number}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -1447,6 +1482,11 @@ const styles = StyleSheet.create({
     fontSize: wp(7),
     textAlign: 'center',
   },
+  callIcon: {
+    width: 24, // Adjust the size as needed
+    height: 24, // Adjust the size as needed
+    marginRight: 8, // Adjust the spacing as needed
+  },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
     color: '#464E5F',
@@ -1633,6 +1673,12 @@ const styles = StyleSheet.create({
     marginTop: '45%',
     borderRadius: 20,
     alignItems: 'center',
+  },
+  background: {
+    flex: 1,
+    backgroundColor: '#FFFFF',
+    width: wp(100),
+    height: hp(50),
   },
 });
 
