@@ -50,6 +50,7 @@ const HistoryPage = (props: any) => {
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
   const [finaldate, setFinalDate] = useState(String);
+  const [result, setResult] = useState<number>(1);
 
   const months = [
     'Jan',
@@ -71,21 +72,20 @@ const HistoryPage = (props: any) => {
     year: number,
   ) => {
     setFinalDate(newDate + ' ' + months[month] + ', ' + year);
+    const stardtDated=year+'-'+(month+1)+'-'+newDate
     setPage(1)
-    fetchHistory(page)
+    fetchHistory(stardtDated)
   };
 
-  const fetchHistory = async (page: number) => {
+  const fetchHistory = async (stardtDated:any) => {
     try {
       setLoading(true);
       const response = await getOrderHistory(page, {
         filter: {
-          startdate: finaldate
+          startDate:stardtDated
         }
       });
-      console.log("response.data", response.data);
-      
-      setHistoryData(response.data);
+      setHistoryData(response.data);    
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -93,8 +93,22 @@ const HistoryPage = (props: any) => {
     }
   };
 
-  const handleLoadMore = () => {
-    setPage(prevPage => prevPage + 1);
+  const handleLoadMore = async () => {
+    try {
+      if(result===10){
+      setPage(prevPage => prevPage + 1);
+      }
+      setLoading(true);
+      const response = await getOrderHistory(page, {
+        filter: {
+          startdate: finaldate
+        }
+      });
+      console.log(2,response.data);
+      setLoading(false);
+    } catch (error) {
+      
+    }
   };
 
   const renderFooter = () => {
@@ -266,7 +280,7 @@ const HistoryPage = (props: any) => {
               data={historyData}
               renderItem={({item}) => <OrderHistoryCart order={item} />}
               keyExtractor={item => item._id}
-              onEndReached={handleLoadMore}
+              // onEndReached={handleLoadMore}
               onEndReachedThreshold={0.8}
               ListFooterComponent={renderFooter}
               showsVerticalScrollIndicator={false}
