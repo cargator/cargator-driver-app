@@ -42,6 +42,7 @@ import Geolocation from '@react-native-community/geolocation';
 import * as geolib from 'geolib';
 import OrderScreen from './petPoojaComponent/OrderScreen';
 import LoaderComponent from '../components/LoaderComponent';
+import NetInfo from '@react-native-community/netinfo';
 export let socketInstance: any;
 
 export const SliderText = [
@@ -85,6 +86,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [path, setPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
+  const [isConnected, setConnected] = useState(true);
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
     longitude: 72.0,
@@ -286,7 +288,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const orderAcceptResponseListener = () => {
     socketInstance.on('accept-order-response', (message: any) => {
-      console.log('ride-accept-response event :>> ', message);
+      // console.log('ride-accept-response event :>> ', message);
       setLoading(false);
       let body = parseSocketMessage(message);
       // console.log('accept-order-response event :>> ', message.message);
@@ -422,6 +424,13 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
+  const showAlert = () => {
+		Alert.alert(
+			 'No Internet',
+       'Please check your connection and restart the app.'
+		);
+	};
+
   const startChatListener = () => {
     console.log('start chat with bc', isDriverOnline);
     if (isDriverOnline) {
@@ -504,6 +513,19 @@ const PetPujaScreen = ({navigation}: any) => {
   useEffect(() => {
     getCurrentPosition();
   }, [getCurrentPosition]);
+
+  useEffect(() => {
+		const unsubscribe = NetInfo.addEventListener((state: any) => {
+			setConnected(state.isConnected);
+			if (!state.isConnected) {
+				showAlert();
+			}
+		});
+
+		return () => {
+			unsubscribe();
+		};
+	}, []);
 
   return (
     <>
