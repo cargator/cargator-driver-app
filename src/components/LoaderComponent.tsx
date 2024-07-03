@@ -7,7 +7,7 @@ import {
 const LoaderComponent = () => {
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#B146C2" />
+      <ActivityIndicator size="large" color="#118F5E" />
     </View>
   );
 };

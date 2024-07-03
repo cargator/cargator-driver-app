@@ -6,9 +6,9 @@
  */
 
 import 'react-native-gesture-handler';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React, {useEffect, useState} from 'react';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -21,13 +21,19 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Provider, useDispatch, useSelector } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
+import {Provider, useDispatch, useSelector} from 'react-redux';
+import {PersistGate} from 'redux-persist/integration/react';
 import LoginScreen from './src/pre-login/LoginScreen';
 import MapScreen from './src/post-login/MapScreen';
-import store, { persistor, removeRideDetails, removeUserData, setDriverAppFlow, setRideDetails } from './src/redux/redux';
+import store, {
+  persistor,
+  removeRideDetails,
+  removeUserData,
+  setDriverAppFlow,
+  setRideDetails,
+} from './src/redux/redux';
 import Toast from 'react-native-toast-message';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import SplashScreen from 'react-native-splash-screen';
 import LoginOtpScreen from './src/pre-login/LoginOtpScreen';
 import {
@@ -45,10 +51,10 @@ import {
 import Profile from './src/post-login/Profile';
 import PreviousRides from './src/post-login/PreviousRides';
 import DeviceInfo from 'react-native-device-info';
-import { socketDisconnect } from './src/utils/socket';
+import {socketDisconnect} from './src/utils/socket';
 import RNFetchBlob from 'rn-fetch-blob';
 import CustomMapScreen from './src/post-login/CustomMapScreen';
-import { getDriverAppFlowAPI } from './src/services/userservices';
+import {getDriverAppFlowAPI} from './src/services/userservices';
 import PetPujaScreen from './src/post-login/PetPujaScreen';
 import HistoryPage from './src/post-login/petPoojaComponent/HistoryPage';
 // import DestinationScreen from './src/components/DestinationScreen';
@@ -72,12 +78,12 @@ const Appdrawercontent = (props: any) => {
   }, []);
   const userImg = useSelector((store: any) => store.userImage.path);
   return (
-    <View style={{ flex: 1, height: '100%' }}>
+    <View style={{flex: 1, height: '100%'}}>
       <DrawerContentScrollView
         {...props}
-        contentcontainerstyle={{ flex: 1, position: 'relative' }}>
-        <DrawerItemList {...props} style={{ borderwidth: 1 }} />
-        <View style={{ flex: 1 }}>
+        contentcontainerstyle={{flex: 1, position: 'relative'}}>
+        <DrawerItemList {...props} style={{borderwidth: 1}} />
+        <View style={{flex: 1}}>
           <DrawerItem
             label="Logout"
             onPress={async () => {
@@ -88,8 +94,8 @@ const Appdrawercontent = (props: any) => {
           />
         </View>
       </DrawerContentScrollView>
-      <View style={{ alignSelf: 'center', marginBottom: hp(1) }}>
-        <Text style={{ fontWeight: '600' }}>{`Version ${versionNumber}`}</Text>
+      <View style={{alignSelf: 'center', marginBottom: hp(1)}}>
+        <Text style={{fontWeight: '600'}}>{`Version ${versionNumber}`}</Text>
       </View>
     </View>
   );
@@ -130,7 +136,7 @@ const MapScreenDrawer = () => {
   const dispatch = useDispatch();
   const [versionNumber, setVersionNumber] = useState('');
   const driverAppFlow = useSelector((store: any) => store.driverAppFlow);
-  console.log("from redux 1",driverAppFlow)
+  console.log('from redux 1', driverAppFlow);
 
   useEffect(() => {
     const getVersion = async () => {
@@ -144,32 +150,31 @@ const MapScreenDrawer = () => {
     <Drawer.Navigator
       screenOptions={{ headerShown: false,swipeEnabled:false }}
       drawerContent={props => <Appdrawercontent {...props} />}>
-      {driverAppFlow === "default" ? (
+      {driverAppFlow === 'default' ? (
         <Drawer.Screen
           name="Home"
           component={MapScreen}
-        // options={{
-        //   drawerItemStyle: {display: 'none'},
-        // }}
+          // options={{
+          //   drawerItemStyle: {display: 'none'},
+          // }}
         />
-      ) : driverAppFlow === "custom" ?(
+      ) : driverAppFlow === 'custom' ? (
         <Drawer.Screen
           name="Home"
           component={CustomMapScreen}
-        // options={{
-        //   drawerItemStyle: {display: 'none'},
-        // }}
+          // options={{
+          //   drawerItemStyle: {display: 'none'},
+          // }}
         />
-      ) :(
+      ) : (
         <Drawer.Screen
           name="Home"
           component={PetPujaScreen}
-        // options={{
-        //   drawerItemStyle: {display: 'none'},
-        // }}
+          // options={{
+          //   drawerItemStyle: {display: 'none'},
+          // }}
         />
-      )
-      }
+      )}
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
       <Drawer.Screen name="Order History" component={HistoryPage} />
@@ -185,7 +190,7 @@ export const Routing = () => {
     (store: any) => store.locationPermission,
   );
   const driverAppFlow = useSelector((store: any) => store.driverAppFlow);
-  console.log("from redux2+++++++-",driverAppFlow)
+  console.log('from redux2+++++++-', driverAppFlow);
 
   // console.log({gpsPermission, locationPermission});
   // const infoVisible = useSelector((store: any) => store.infoVisible);
@@ -198,18 +203,18 @@ export const Routing = () => {
     const getDriverAppFlow = async () => {
       try {
         const res = await getDriverAppFlowAPI();
-        console.log("-from api--------",res.data[0].applicationFLow)
-        if ((driverAppFlow !== res.data[0].applicationFLow) || (!driverAppFlow)) {
-          console.log("hello")
+        console.log('-from api--------', res.data[0].applicationFLow);
+        if (driverAppFlow !== res.data[0].applicationFLow || !driverAppFlow) {
+          console.log('hello');
           dispatch(removeRideDetails());
-          dispatch(setDriverAppFlow(res.data[0].applicationFLow))
+          dispatch(setDriverAppFlow(res.data[0].applicationFLow));
         }
       } catch (error) {
-        console.log("error", error)
+        console.log('error', error);
       }
-    }
+    };
     getDriverAppFlow();
-   
+
     SplashScreen.hide();
 
     requestLocationPermission(dispatch);
@@ -217,12 +222,12 @@ export const Routing = () => {
   }, []);
 
   return (
-    <SafeAreaProvider style={{ backgroundColor: '#ffffff' }}>
+    <SafeAreaProvider style={{backgroundColor: '#ffffff'}}>
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="LoginScreen"
           // initialRouteName="PetPujaScreen"
-          screenOptions={{ headerShown: false, orientation: 'portrait' }}>
+          screenOptions={{headerShown: false, orientation: 'portrait'}}>
           {!locationPermission ? (
             <Stack.Screen
               name="LocationPermissionScreen"

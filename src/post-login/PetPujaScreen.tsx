@@ -4,13 +4,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Animated,
   Pressable,
   ImageBackground,
   Image,
-  ActivityIndicator,
   Linking,
   PermissionsAndroid,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {
   heightPercentageToDP,
@@ -32,27 +32,33 @@ import {
   setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
-import RejectRideIcon from '../svg/RejectRideIcon';
 import Toast from 'react-native-toast-message';
 import Spinner from '../svg/spinner';
-import OrderScreen from './petPoojaComponent/OrderScreen';
 import SlideButton from 'rn-slide-button';
 import Navigate from '../svg/Navigate';
-import {Circle, Svg} from 'react-native-svg';
-import callLogo from '../svg/callLogo';
 import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import {getProgressDetails} from '../services/rideservices';
 import Geolocation from '@react-native-community/geolocation';
 import * as geolib from 'geolib';
+import OrderScreen from './petPoojaComponent/OrderScreen';
+import LoaderComponent from '../components/LoaderComponent';
+import NetInfo from '@react-native-community/netinfo';
 export let socketInstance: any;
 
-const SliderText = [
+export const SliderText = [
   {flowName: 'ACCEPT ORDER'},
   {flowName: 'ARRIVED'},
   {flowName: 'DISPATCHED'},
   {flowName: 'ARRIVED_CUSTOMER_DOORSTEP'},
   {flowName: 'DELIVERED'},
 ];
+
+export const dialCall = (number: string) => {
+  let phoneNumber = `tel:${number}`;
+  Linking.openURL(phoneNumber).catch(err => {
+    console.log('err', err), Alert.alert('Error', 'Unable to make a call');
+  });
+};
 
 const PetPujaScreen = ({navigation}: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
@@ -79,6 +85,8 @@ const PetPujaScreen = ({navigation}: any) => {
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
+  const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
+  const [isConnected, setConnected] = useState(true);
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
     longitude: 72.0,
@@ -270,18 +278,18 @@ const PetPujaScreen = ({navigation}: any) => {
       id: order._id.toString(),
       driverLoc: mylocation,
     });
+    // setLoading(false)
     // setAvailableOrders((availableOrders: any[]) =>
     //   availableOrders.filter((ele: any) => ele._id != order._id),
     // );
     setAvailableOrders([]);
-    setLoading(false);
     console.log('order-accept emiited');
   };
 
   const orderAcceptResponseListener = () => {
     socketInstance.on('accept-order-response', (message: any) => {
       // console.log('ride-accept-response event :>> ', message);
-      setLoading(true);
+      setLoading(false);
       let body = parseSocketMessage(message);
       // console.log('accept-order-response event :>> ', message.message);
 
@@ -291,7 +299,7 @@ const PetPujaScreen = ({navigation}: any) => {
         );
         setLoading(false);
         Toast.show({
-          type: 'error',
+          type: 'success',
           text1: 'Order not available !',
           visibilityTime: 5000,
         });
@@ -307,7 +315,7 @@ const PetPujaScreen = ({navigation}: any) => {
           // setDriverStatus(true)
           setLoading(false);
           Toast.show({
-            type: 'error',
+            type: 'success',
             text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
             visibilityTime: 5000,
           });
@@ -329,7 +337,6 @@ const PetPujaScreen = ({navigation}: any) => {
   const updateOrderStatus = async () => {
     try {
       console.log('inside updateorder status', slideCount);
-
       setLoading(true);
       const status = {
         id: orderDetails._id,
@@ -367,7 +374,8 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const orderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
-      setLoading(true);
+      setLoading(false);
+      setSliderButtonLoader(false);
       let body = parseSocketMessage(message);
       // console.log('order-update-response>>>>>>>', body.order);
       if (body.status === 405) {
@@ -388,7 +396,7 @@ const PetPujaScreen = ({navigation}: any) => {
           setPath(body.path.coords);
         }
         Toast.show({
-          type: 'error',
+          type: 'success',
           text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
           visibilityTime: 5000,
         });
@@ -415,6 +423,13 @@ const PetPujaScreen = ({navigation}: any) => {
       console.log(error);
     }
   };
+
+  const showAlert = () => {
+		Alert.alert(
+			 'No Internet',
+       'Please check your connection and restart the app.'
+		);
+	};
 
   const startChatListener = () => {
     console.log('start chat with bc', isDriverOnline);
@@ -503,6 +518,19 @@ const PetPujaScreen = ({navigation}: any) => {
   useEffect(() => {
     getCurrentPosition();
   }, [getCurrentPosition]);
+
+  useEffect(() => {
+		const unsubscribe = NetInfo.addEventListener((state: any) => {
+			setConnected(state.isConnected);
+			if (!state.isConnected) {
+				showAlert();
+			}
+		});
+
+		return () => {
+			unsubscribe();
+		};
+	}, []);
 
   return (
     <>
@@ -874,47 +902,56 @@ const PetPujaScreen = ({navigation}: any) => {
           )}
 
         {_isEmpty(orderDetails) && availableOrders[0] && !orderStarted && (
-          // <View>
-          //   <OrderScreen />
-          // </View>
-          <ImageBackground
-          source={require('../images/Sukam.jpg')}
-          >
-          <View key={`order_${0 + 1}`} style={[styles.modalView, {opacity: 2}]}>
-            {/* orderId Text */}
-            <View style={{top: wp(3)}}>
-              <Text
-                style={{
-                  fontFamily: 'Roboto Mono',
-                  fontSize: hp(2.5),
-                  fontWeight: '600',
-                  textAlign: 'center',
-                  color: '#212121',
-                }}>
-                Order Id :{' '}
-                <Text
-                  style={{
-                    fontFamily: 'RobotoMono-Regular',
-                    fontWeight: '700',
-                    color: '#118F5E',
-                    fontSize: 20,
-                  }}>
-                  {availableOrders[0].order_details?.vendor_order_id.slice(-6)}
-                </Text>
-              </Text>
-            </View>
-            {/* Circul data */}
-            <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
-                <Text
-                  style={{fontWeight: '600', color: '#000000', fontSize: 15}}>
-                  0{'₹'}
-                </Text>
-              </View>
-            </View>
-            {/* <View style={styles.text}>
+          <>
+            {loading ? (
+              <LoaderComponent />
+            ) : (
+              <ImageBackground
+              source={require('../images/Sukam.jpg')}
+              >
+              <View
+                key={`order_${0 + 1}`}
+                style={[styles.modalView, {opacity: 2}]}>
+                {/* orderId Text */}
+                <View style={{top: wp(3)}}>
+                  <Text
+                    style={{
+                      fontFamily: 'Roboto Mono',
+                      fontSize: hp(2.5),
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      color: '#212121',
+                    }}>
+                    Order Id :{' '}
+                    <Text
+                      style={{
+                        fontFamily: 'RobotoMono-Regular',
+                        fontWeight: '700',
+                        color: '#118F5E',
+                        fontSize: 20,
+                      }}>
+                      {availableOrders[0].order_details?.vendor_order_id.slice(
+                        -6,
+                      )}
+                    </Text>
+                  </Text>
+                </View>
+                {/* Circul data */}
+                <View style={styles.circleModel}>
+                  <View style={styles.circle}>
+                    <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                    <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
+                    <Text
+                      style={{
+                        fontWeight: '600',
+                        color: '#000000',
+                        fontSize: 15,
+                      }}>
+                      {'₹ '}0
+                    </Text>
+                  </View>
+                </View>
+                {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -938,331 +975,394 @@ const PetPujaScreen = ({navigation}: any) => {
                 <Text>Distance :{15}-KM.</Text>
               </View>
             </View> */}
-            <View style={{alignItems: 'center'}}>
-              <Text>
-                <Image source={require('../images/cart.png')} /> Pickup Location
-              </Text>
-              <Text style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
-                {availableOrders[0].pickup_details.address}
-              </Text>
-            </View>
-            <View style={{alignItems: 'center', marginTop: hp(2)}}>
-              <Text>
-                <Image source={require('../images/cart.png')} /> Drop Location
-              </Text>
-              <Text style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
-                {availableOrders[0].drop_details.address}
-              </Text>
-            </View>
-            {/* SliderButton */}
-            <View
-              style={{
-                flex: 1,
-                justifyContent: 'flex-end',
-                marginBottom: hp(0),
-              }}>
-              <SlideButton
-                width={290}
-                height={50}
-                animationDuration={180}
-                autoResetDelay={1080}
-                animation={true}
-                autoReset={true}
-                borderRadius={15}
-                sliderWidth={50}
-                icon={
-                  <Image
-                    source={require('../svg/Arrow.png')}
-                    style={styles.thumbImage}
-                  />
-                } // Adjust width and height as needed
-                onReachedToEnd={handleEndReached}
-                containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
-                underlayStyle={{backgroundColor: 'Red'}}
-                title={buttonText}
-                slideDirection="right"></SlideButton>
 
-              <SlideButton
-                width={290}
-                height={50}
-                borderRadius={15}
-                animationDuration={180}
-                autoResetDelay={1080}
-                animation={true}
-                autoReset={true}
-                sliderWidth={50}
-                icon={
-                  <Image
-                    source={require('../svg/Arrow.png')}
-                    style={styles.thumbImage}
-                  />
-                } // Adjust width and height as needed
-                onReachedToEnd={onRejectOrder}
-                containerStyle={{backgroundColor: '#FFFFFF', color: 'red'}}
-                underlayStyle={{backgroundColor: 'Red'}}
-                title="Reject Order"
-                titleStyle={{color: 'red'}}
-                slideDirection="right">
-                <Text style={{color: 'red', fontSize: 18}}></Text>
-              </SlideButton>
-            </View>
-          </View>
-          </ImageBackground>
+                <View style={{alignItems: 'center'}}>
+                  <Text>
+                    <Image source={require('../images/cart.png')} /> Pickup
+                    Location
+                  </Text>
+                  <Text
+                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                    {availableOrders[0].pickup_details.address}
+                  </Text>
+                </View>
+                <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                  <Text>
+                    <Image source={require('../images/cart.png')} /> Drop
+                    Location
+                  </Text>
+                  <Text
+                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
+                    {availableOrders[0].drop_details.address}
+                  </Text>
+                </View>
+                {/* SliderButton */}
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'flex-end',
+                    marginBottom: hp(0),
+                  }}>
+                  <SlideButton
+                    width={290}
+                    height={50}
+                    animationDuration={180}
+                    autoResetDelay={1080}
+                    animation={true}
+                    autoReset={true}
+                    borderRadius={15}
+                    sliderWidth={50}
+                    icon={
+                      <Image
+                        source={require('../svg/Arrow.png')}
+                        style={styles.thumbImage}
+                      />
+                    } // Adjust width and height as needed
+                    onReachedToEnd={handleEndReached}
+                    containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
+                    underlayStyle={{backgroundColor: 'Red'}}
+                    title={buttonText}
+                    slideDirection="right"></SlideButton>
+
+                  <SlideButton
+                    width={290}
+                    height={50}
+                    borderRadius={15}
+                    animationDuration={180}
+                    autoResetDelay={1080}
+                    animation={true}
+                    autoReset={true}
+                    sliderWidth={50}
+                    icon={
+                      <Image
+                        source={require('../svg/Arrow.png')}
+                        style={styles.thumbImage}
+                      />
+                    } // Adjust width and height as needed
+                    onReachedToEnd={onRejectOrder}
+                    containerStyle={{backgroundColor: '#D11A2A', color: 'red'}}
+                    underlayStyle={{backgroundColor: 'Red'}}
+                    title="Reject Order"
+                    titleStyle={{color: 'white'}}
+                    slideDirection="right">
+                    <Text style={{color: 'red', fontSize: 18}}></Text>
+                  </SlideButton>
+                </View>
+              </View>
+              </ImageBackground>
+            )}
+          </>
         )}
 
         {/* // If order Accepted */}
         {orderStarted && !_isEmpty(orderDetails) && (
           <View>
-            {/* order Details card */}
-            {slideCount <= 2 && (
-              <View style={styles.orderDetailsCard2}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    // left: wp(7),
-                    top: hp(2),
-                  }}>
-                  <Text style={{left: wp(6)}}>
-                    Order ID:{' '}
-                    <Text
+            {loading ? (
+              <LoaderComponent />
+            ) : (
+              <>
+                {/* order Details card */}
+                {slideCount <= 2 && (
+                  <View style={styles.orderDetailsCard}>
+                    <View
                       style={{
-                        fontFamily: 'RobotoMono-Regular',
-                        fontWeight: '700',
-                        color: '#118F5E',
-                        fontSize: 15,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        // left: wp(7),
+                        top: hp(2),
                       }}>
-                      {orderDetails?.order_details.vendor_order_id.slice(-6)}
-                    </Text>
-                  </Text>
-                  <Text style={{color: '#828282', right: wp(6)}}>
-                    {/* <Image source={require('../images/Rupay.png')} /> */}
-                    {'₹'} {'Earning'}
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    top: hp(2),
-                    alignSelf: 'flex-end',
-                    alignItems: 'center',
-                    right: wp(6),
-                    width: wp(15),
-                  }}>
-                  <Text
-                    style={{
-                      color: '#000000',
-                      fontFamily: 'RobotoMono-Regular',
-                      fontWeight: '700',
-                      fontSize: 16,
-                    }}>
-                    {0}
-                    {'₹'}
-                  </Text>
-                </View>
-                <View style={styles.line} />
-                <View style={{alignItems: 'center', top: hp(6)}}>
-                  <Text>
-                    <Image source={require('../images/cart.png')} /> Food Pickup
-                    Location
-                  </Text>
-                  <Text
-                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
-                    {orderDetails?.pickup_details?.address}
-                  </Text>
-                </View>
-                <View style={styles.line1} />
-                <View style={styles.contactNumber}>
-                  {/* <callLogo /> */}
-                  <Image source={require('../images/callicon.png')} />
-                  <Text style={{color: '#333333'}}>
-                    {' '}
-                    +91 {orderDetails.pickup_details.contact_number}
-                  </Text>
-                </View>
-              </View>
-            )}
-            {slideCount > 2 && cod && (
-              <View style={styles.orderDetailsCard2}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    // left: wp(7),
-                    top: hp(2),
-                  }}>
-                  <Text style={{left: wp(6)}}>
-                    Order ID:{' '}
-                    <Text
+                      <Text style={{left: wp(6)}}>
+                        Order ID:{' '}
+                        <Text
+                          style={{
+                            fontFamily: 'RobotoMono-Regular',
+                            fontWeight: '700',
+                            color: '#118F5E',
+                            fontSize: 15,
+                          }}>
+                          {orderDetails?.order_details.vendor_order_id.slice(
+                            -6,
+                          )}
+                        </Text>
+                      </Text>
+                      <Text style={{color: '#828282', right: wp(6)}}>
+                        {/* <Image source={require('../images/Rupay.png')} /> */}
+                        {'₹'} {'Earning'}
+                      </Text>
+                    </View>
+                    <View
                       style={{
-                        fontFamily: 'RobotoMono-Regular',
-                        fontWeight: '700',
-                        color: '#118F5E',
-                        fontSize: 15,
+                        top: hp(2),
+                        alignSelf: 'flex-end',
+                        alignItems: 'center',
+                        right: wp(6),
+                        width: wp(15),
                       }}>
-                      {orderDetails?.order_details.vendor_order_id.slice(-6)}
+                      <Text
+                        style={{
+                          color: '#000000',
+                          fontFamily: 'RobotoMono-Regular',
+                          fontWeight: '700',
+                          fontSize: 16,
+                        }}>
+                        {0}
+                        {'₹'}
+                      </Text>
+                    </View>
+                    <View style={styles.line} />
+                    <View style={{alignItems: 'center', top: hp(6)}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Food
+                        Pickup Location
+                      </Text>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
+                        }}>
+                        {orderDetails?.pickup_details?.address}
+                      </Text>
+                    </View>
+                    <View style={styles.line1} />
+                    <View style={styles.contactNumber}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.pickup_details.contact_number)
+                        }>
+                        <Image
+                          source={require('../images/callicon.png')}
+                          style={styles.callIcon}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.pickup_details.contact_number)
+                        }>
+                        <Text style={{color: '#333333'}}>
+                          {' '}
+                          +91{orderDetails.pickup_details.contact_number}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+                {slideCount > 2 && cod && (
+                  <View style={styles.orderDetailsCard}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        // left: wp(7),
+                        top: hp(2),
+                      }}>
+                      <Text style={{left: wp(6)}}>
+                        Order ID:{' '}
+                        <Text
+                          style={{
+                            fontFamily: 'RobotoMono-Regular',
+                            fontWeight: '700',
+                            color: '#118F5E',
+                            fontSize: 15,
+                          }}>
+                          {orderDetails?.order_details.vendor_order_id.slice(
+                            -6,
+                          )}
+                        </Text>
+                      </Text>
+                      <Text style={{color: '#828282', right: wp(6)}}>
+                        {/* <Image source={require('../images/Rupay.png')} /> */}
+                        {'₹'} {'Earning'}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        top: hp(2),
+                        alignSelf: 'flex-end',
+                        alignItems: 'center',
+                        right: wp(6),
+                        width: wp(15),
+                      }}>
+                      <Text
+                        style={{
+                          color: '#000000',
+                          fontFamily: 'RobotoMono-Regular',
+                          fontWeight: '700',
+                          fontSize: 16,
+                        }}>
+                        {orderDetails.order_details.order_total}
+                        {'₹'}
+                      </Text>
+                    </View>
+                    <View style={styles.line} />
+                    <View style={{alignItems: 'center', top: hp(6)}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Food
+                        Drop Location
+                      </Text>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
+                        }}>
+                        {orderDetails?.drop_details?.address}
+                      </Text>
+                    </View>
+                    <View style={styles.line1} />
+                    <View style={styles.contactNumber}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.drop_details.contact_number)
+                        }>
+                        <Image
+                          source={require('../images/callicon.png')}
+                          style={styles.callIcon}
+                        />
+                      </TouchableOpacity>
+                      {/* <callLogo /> */}
+                      <TouchableOpacity
+                        onPress={() =>
+                          dialCall(orderDetails.drop_details.contact_number)
+                        }>
+                        <Text style={{color: '#333333'}}>
+                          {' '}
+                          +91{orderDetails.drop_details.contact_number}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+                {!cod && (
+                  <View style={styles.paymentWindiw}>
+                    <Text style={styles.paymentText}>Cash</Text>
+                    <Text style={{fontSize: 18}}>
+                      Please Collect Your Payment
                     </Text>
-                  </Text>
-                  <Text style={{color: '#828282', right: wp(6)}}>
-                    {/* <Image source={require('../images/Rupay.png')} /> */}
-                    {'₹'} {'Earning'}
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    top: hp(2),
-                    alignSelf: 'flex-end',
-                    alignItems: 'center',
-                    right: wp(6),
-                    width: wp(15),
-                  }}>
-                  <Text
-                    style={{
-                      color: '#000000',
-                      fontFamily: 'RobotoMono-Regular',
-                      fontWeight: '700',
-                      fontSize: 16,
-                    }}>
-                    {orderDetails.order_details.order_total}
-                    {'₹'}
-                  </Text>
-                </View>
-                <View style={styles.line} />
-                <View style={{alignItems: 'center', top: hp(6)}}>
-                  <Text>
-                    <Image source={require('../images/cart.png')} /> Food Drop
-                    Location
-                  </Text>
-                  <Text
-                    style={{fontWeight: '600', color: '#333333', fontSize: 15}}>
-                    {orderDetails?.drop_details?.address}
-                  </Text>
-                </View>
-                <View style={styles.line1} />
-                <View style={styles.contactNumber}>
-                  {/* <callLogo /> */}
-                  <Image source={require('../images/callicon.png')} />
-                  <Text style={{color: '#333333'}}>
-                    {' '}
-                    +91 {orderDetails.drop_details.contact_number}
-                  </Text>
-                </View>
-              </View>
-            )}
-            {!cod && (
-              <View style={styles.paymentWindiw}>
-                <Text style={styles.paymentText}>Cash</Text>
-                <Text style={{fontSize: 18}}>Please Collect Your Payment</Text>
-                <Text style={styles.totalorder}>
-                  ₹ {orderDetails.order_details.order_total}
-                </Text>
-                <Pressable
-                  style={styles.paymentButton}
-                  onPress={() => {
-                    paymentButton();
-                  }}>
-                  <Text style={{color: 'white', fontSize: 24}}>Received</Text>
-                </Pressable>
-              </View>
-            )}
-            <MapView
-              provider={PROVIDER_GOOGLE}
-              style={styles.map}
-              ref={mapRef}
-              initialRegion={{
-                latitude: 19.165061,
-                longitude: 72.965545,
-                latitudeDelta: 0.0122,
-                longitudeDelta: 0.0121,
-              }}
-              region={{
-                latitude: region.latitude || mylocation.latitude,
-                longitude: region.longitude || mylocation.longitude,
-                latitudeDelta: region.latitudeDelta || 0.0122,
-                longitudeDelta: region.longitudeDelta || 0.0121,
-              }}
-              mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
-              <Marker
-                identifier="myLocationMarker"
-                coordinate={mylocation}
-                icon={require('../images/MapDriverIcon.png')}
-              />
-
-              {slideCount <= 2 && (
-                <Marker
-                  identifier="pickUpLocationMarker"
-                  coordinate={{
-                    latitude: orderDetails?.pickup_details?.latitude,
-                    longitude: orderDetails?.pickup_details?.longitude,
+                    <Text style={styles.totalorder}>
+                      ₹ {orderDetails.order_details.order_total}
+                    </Text>
+                    <Pressable
+                      style={styles.paymentButton}
+                      onPress={() => {
+                        paymentButton();
+                      }}>
+                      <Text style={{color: 'white', fontSize: 24}}>
+                        Received
+                      </Text>
+                    </Pressable>
+                  </View>
+                )}
+                <MapView
+                  provider={PROVIDER_GOOGLE}
+                  style={styles.map}
+                  ref={mapRef}
+                  initialRegion={{
+                    latitude: 19.165061,
+                    longitude: 72.965545,
+                    latitudeDelta: 0.0122,
+                    longitudeDelta: 0.0121,
                   }}
-                  icon={require('../images/MapPickupDropLocationIcon.png')}
-                />
-              )}
-              {slideCount > 2 && (
-                <Marker
-                  identifier="pickUpLocationMarker"
-                  coordinate={{
-                    latitude: orderDetails?.drop_details?.latitude,
-                    longitude: orderDetails?.drop_details?.longitude,
+                  region={{
+                    latitude: region.latitude || mylocation.latitude,
+                    longitude: region.longitude || mylocation.longitude,
+                    latitudeDelta: region.latitudeDelta || 0.0122,
+                    longitudeDelta: region.longitudeDelta || 0.0121,
                   }}
-                  icon={require('../images/MapPickupDropLocationIcon.png')}
-                />
-              )}
+                  mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
+                  <Marker
+                    identifier="myLocationMarker"
+                    coordinate={mylocation}
+                    icon={require('../images/MapDriverIcon.png')}
+                  />
 
-              <Polyline
-                coordinates={path}
-                strokeColor={'#404080'}
-                strokeWidth={4}
-              />
-            </MapView>
-
-            <TouchableOpacity
-              style={styles.directionButton}
-              onPress={() =>
-                navigateToGoogleMaps(
-                  slideCount <= 2
-                    ? {
-                        latitude: orderDetails.pickup_details.latitude,
-                        longitude: orderDetails.pickup_details.longitude,
-                      }
-                    : {
-                        latitude: orderDetails.drop_details.latitude,
-                        longitude: orderDetails.drop_details.longitude,
-                      },
-                )
-              }>
-              <Navigate />
-              {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
-            </TouchableOpacity>
-
-            {/* slider Button */}
-            {cod && (
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'flex-end',
-                  bottom: hp(6),
-                }}>
-                <SlideButton
-                  width={290}
-                  height={50}
-                  animationDuration={180}
-                  autoResetDelay={1080}
-                  animation={true}
-                  autoReset={true}
-                  borderRadius={15}
-                  sliderWidth={50}
-                  icon={
-                    <Image
-                      source={require('../svg/Arrow.png')}
-                      style={styles.thumbImage}
+                  {slideCount <= 2 && (
+                    <Marker
+                      identifier="pickUpLocationMarker"
+                      coordinate={{
+                        latitude: orderDetails?.pickup_details?.latitude,
+                        longitude: orderDetails?.pickup_details?.longitude,
+                      }}
+                      icon={require('../images/MapPickupDropLocationIcon.png')}
                     />
-                  } // Adjust width and height as needed
-                  onReachedToEnd={handleEndReached}
-                  containerStyle={{backgroundColor: '#118F5E', color: 'red'}}
-                  underlayStyle={{backgroundColor: 'Red'}}
-                  title={buttonText}
-                  slideDirection="right"></SlideButton>
-              </View>
+                  )}
+                  {slideCount > 2 && (
+                    <Marker
+                      identifier="pickUpLocationMarker"
+                      coordinate={{
+                        latitude: orderDetails?.drop_details?.latitude,
+                        longitude: orderDetails?.drop_details?.longitude,
+                      }}
+                      icon={require('../images/MapPickupDropLocationIcon.png')}
+                    />
+                  )}
+
+                  <Polyline
+                    coordinates={path}
+                    strokeColor={'#404080'}
+                    strokeWidth={4}
+                  />
+                </MapView>
+
+                <TouchableOpacity
+                  style={styles.directionButton}
+                  onPress={() =>
+                    navigateToGoogleMaps(
+                      slideCount <= 2
+                        ? {
+                            latitude: orderDetails.pickup_details.latitude,
+                            longitude: orderDetails.pickup_details.longitude,
+                          }
+                        : {
+                            latitude: orderDetails.drop_details.latitude,
+                            longitude: orderDetails.drop_details.longitude,
+                          },
+                    )
+                  }>
+                  <Navigate />
+                  {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
+                </TouchableOpacity>
+
+                {/* slider Button */}
+                {cod && (
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'flex-end',
+                      bottom: hp(6),
+                    }}>
+                    <SlideButton
+                      width={290}
+                      height={50}
+                      animationDuration={180}
+                      autoResetDelay={1080}
+                      animation={true}
+                      autoReset={true}
+                      borderRadius={15}
+                      sliderWidth={50}
+                      icon={
+                        <Image
+                          source={require('../svg/Arrow.png')}
+                          style={styles.thumbImage}
+                        />
+                      } // Adjust width and height as needed
+                      onReachedToEnd={handleEndReached}
+                      containerStyle={{
+                        backgroundColor: '#118F5E',
+                        color: 'red',
+                      }}
+                      underlayStyle={{backgroundColor: 'Red'}}
+                      title={
+                        sliderButtonLoader ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          buttonText
+                        )
+                      }
+                      slideDirection="right"></SlideButton>
+                  </View>
+                )}
+              </>
             )}
           </View>
         )}
@@ -1413,6 +1513,11 @@ const styles = StyleSheet.create({
     fontSize: wp(7),
     textAlign: 'center',
   },
+  callIcon: {
+    width: 24, // Adjust the size as needed
+    height: 24, // Adjust the size as needed
+    marginRight: 8, // Adjust the spacing as needed
+  },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
     color: '#464E5F',
@@ -1510,7 +1615,7 @@ const styles = StyleSheet.create({
     // alignSelf: 'center',
     // gap: hp(2.5),
     // position: 'absolute',
-    // marginTop: hp(6.5),
+    top: hp(5),
     // alignItems: 'center',
     // justifyContent: 'center',
   },
@@ -1525,7 +1630,7 @@ const styles = StyleSheet.create({
     marginTop: wp(3),
     borderRadius: 20,
   },
-  orderDetailsCard2: {
+  orderDetailsCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     width: wp(95),
@@ -1533,7 +1638,7 @@ const styles = StyleSheet.create({
     height: hp(30),
     zIndex: 4,
     position: 'absolute',
-    marginTop: wp(3),
+    marginTop: wp(15),
     borderRadius: 20,
   },
   line: {
@@ -1599,6 +1704,12 @@ const styles = StyleSheet.create({
     marginTop: '45%',
     borderRadius: 20,
     alignItems: 'center',
+  },
+  background: {
+    flex: 1,
+    backgroundColor: '#FFFFF',
+    width: wp(100),
+    height: hp(50),
   },
 });
 
