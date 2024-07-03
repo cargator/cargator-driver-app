@@ -9,6 +9,7 @@ import {
   Image,
   Linking,
   PermissionsAndroid,
+  Alert,
 } from 'react-native';
 import {
   heightPercentageToDP,
@@ -48,6 +49,13 @@ export const SliderText = [
   {flowName: 'ARRIVED_CUSTOMER_DOORSTEP'},
   {flowName: 'DELIVERED'},
 ];
+
+export const dialCall = (number: string) => {
+  let phoneNumber = `tel:${number}`;
+  Linking.openURL(phoneNumber).catch(err => {
+    console.log('err', err), Alert.alert('Error', 'Unable to make a call');
+  });
+};
 
 const PetPujaScreen = ({navigation}: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
@@ -1059,12 +1067,24 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
                 <View style={styles.line1} />
                 <View style={styles.contactNumber}>
-                  {/* <callLogo /> */}
-                  <Image source={require('../images/callicon.png')} />
-                  <Text style={{color: '#333333'}}>
-                    {' '}
-                    +91 {orderDetails.pickup_details.contact_number}
-                  </Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      dialCall(orderDetails.pickup_details.contact_number)
+                    }>
+                    <Image
+                      source={require('../images/callicon.png')}
+                      style={styles.callIcon}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() =>
+                      dialCall(orderDetails.pickup_details.contact_number)
+                    }>
+                    <Text style={{color: '#333333'}}>
+                      {' '}
+                      +91{orderDetails.pickup_details.contact_number}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             )}
@@ -1126,12 +1146,25 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
                 <View style={styles.line1} />
                 <View style={styles.contactNumber}>
+                <TouchableOpacity
+                    onPress={() =>
+                      dialCall(orderDetails.drop_details.contact_number)
+                    }>
+                    <Image
+                      source={require('../images/callicon.png')}
+                      style={styles.callIcon}
+                    />
+                  </TouchableOpacity>
                   {/* <callLogo /> */}
-                  <Image source={require('../images/callicon.png')} />
-                  <Text style={{color: '#333333'}}>
-                    {' '}
-                    +91 {orderDetails.drop_details.contact_number}
-                  </Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      dialCall(orderDetails.drop_details.contact_number)
+                    }>
+                    <Text style={{color: '#333333'}}>
+                      {' '}
+                      +91{orderDetails.drop_details.contact_number}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             )}
@@ -1400,6 +1433,11 @@ const styles = StyleSheet.create({
     fontSize: wp(7),
     textAlign: 'center',
   },
+  callIcon: {
+    width: 24, // Adjust the size as needed
+    height: 24, // Adjust the size as needed
+    marginRight: 8, // Adjust the spacing as needed
+  },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
     color: '#464E5F',
@@ -1586,6 +1624,12 @@ const styles = StyleSheet.create({
     marginTop: '45%',
     borderRadius: 20,
     alignItems: 'center',
+  },
+  background: {
+    flex: 1,
+    backgroundColor: '#FFFFF',
+    width: wp(100),
+    height: hp(50),
   },
 });
 
