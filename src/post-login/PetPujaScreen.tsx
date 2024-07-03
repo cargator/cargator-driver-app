@@ -431,6 +431,7 @@ const PetPujaScreen = ({navigation}: any) => {
     // checkDriver();
   };
   const paymentButton = () => {
+   try {
     setcod(true);
     socketInstance.emit('payment-status', orderDetails);
     setOrderStarted(false);
@@ -441,6 +442,10 @@ const PetPujaScreen = ({navigation}: any) => {
     setSlideCount(0);
     setButtonText('ACCEPT ORDER');
     setAvailableOrders([]);
+   } catch (error) {
+    console.log(error);
+    
+   }
   };
 
   useEffect(() => {
@@ -872,6 +877,9 @@ const PetPujaScreen = ({navigation}: any) => {
           // <View>
           //   <OrderScreen />
           // </View>
+          <ImageBackground
+          source={require('../images/Sukam.jpg')}
+          >
           <View key={`order_${0 + 1}`} style={[styles.modalView, {opacity: 2}]}>
             {/* orderId Text */}
             <View style={{top: wp(3)}}>
@@ -999,6 +1007,7 @@ const PetPujaScreen = ({navigation}: any) => {
               </SlideButton>
             </View>
           </View>
+          </ImageBackground>
         )}
 
         {/* // If order Accepted */}

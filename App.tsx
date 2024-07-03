@@ -142,7 +142,7 @@ const MapScreenDrawer = () => {
   }, []);
   return (
     <Drawer.Navigator
-      screenOptions={{ headerShown: false }}
+      screenOptions={{ headerShown: false,swipeEnabled:false }}
       drawerContent={props => <Appdrawercontent {...props} />}>
       {driverAppFlow === "default" ? (
         <Drawer.Screen

@@ -61,20 +61,6 @@ const HistoryPage = (props: any) => {
   const [finaldate, setFinalDate] = useState(String);
   const [result, setResult] = useState<number>(1);
 
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
   const setScreenDate = async (
     newDate: number,
     month: number,
@@ -141,7 +127,7 @@ const HistoryPage = (props: any) => {
     };
   }) => {
     // Specify the type for order explicitly
-    console.log('order ===> ', order);
+    // console.log('order ===> ', order);
 
     // const orderdate = setScreenDate()
     return (
