@@ -227,7 +227,7 @@ const PetPujaScreen = ({navigation}: any) => {
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         Geolocation.getCurrentPosition(
-          position => {
+          (position) => {
             setMyLocation({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
@@ -237,7 +237,7 @@ const PetPujaScreen = ({navigation}: any) => {
           {
             enableHighAccuracy: false,
             timeout: 10000,
-          },
+          }
         );
       } else {
         console.log('Location permission denied');
