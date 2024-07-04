@@ -73,9 +73,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.codeb.cargatordriver"
+    namespace "com.codeb.sukamexpress"
     defaultConfig {
-        applicationId "com.codeb.cargatordriver"
+        applicationId "com.codeb.sukamexpress"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 30

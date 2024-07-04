@@ -326,7 +326,7 @@ const PetPujaScreen = ({navigation}: any) => {
           orders.filter((order: any) => order._id != body.order._id.toString()),
         );
         setLoading(false);
-        expireCart()
+        setCartVisible(false);
         Toast.show({
           type: 'success',
           text1: 'Order not available !',
@@ -935,11 +935,8 @@ const PetPujaScreen = ({navigation}: any) => {
           <>
             {loading ? (
               <LoaderComponent />
-            ) :  
-            cartVisible && (
+            ) : (
               <Animated.View style={{ transform: [{ translateX: animation }] }}>
-      
-
               <ImageBackground source={require('../images/Sukam.jpg')}>
                 <View
                   key={`order_${0 + 1}`}
@@ -1097,8 +1094,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
               </ImageBackground>
               </Animated.View>
-            )
-            }
+            )}
           </>
         )}
 

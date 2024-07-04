@@ -1,4 +1,4 @@
-package com.codeb.cargatordriver;
+package com.codeb.sukamexpress;
 
 import android.os.Bundle; // here
 import com.facebook.react.ReactActivity;
