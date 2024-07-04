@@ -68,7 +68,9 @@ const HistoryPage = (props: any) => {
   ) => {
     setFinalDate(newDate + ' ' + months[month] + ', ' + year);
     const stardtDated = year + '-' + (month + 1) + '-' + newDate;
-    setPage(1);
+    // setPage(1);
+    console.log(stardtDated);
+    
     fetchHistory(stardtDated);
   };
 
@@ -81,6 +83,8 @@ const HistoryPage = (props: any) => {
         },
       });
       setHistoryData(response.data);
+      console.log(response.data);
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -181,10 +185,13 @@ const HistoryPage = (props: any) => {
   };
 
   useEffect(() => {
-    fetchHistory(page);
+   
     if (!finaldate) {
+      console.log(date.getDate(),date.getMonth(), date.getFullYear());
+      
       setScreenDate(date.getDate(), date.getMonth(), date.getFullYear());
     }
+    // fetchHistory(page);
   }, []);
 
   return (

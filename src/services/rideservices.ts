@@ -15,5 +15,7 @@ export const getProgressDetails = () => {
 };
 
 export const getOrderHistory = (page: number, data: any, limit = 100) => {
+  console.log({page},{data});
+  
   return customAxios.post(`/get-history?page=${page}&limit=${limit}`, data);
 };
