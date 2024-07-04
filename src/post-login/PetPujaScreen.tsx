@@ -11,6 +11,7 @@ import {
   PermissionsAndroid,
   Alert,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import {
   heightPercentageToDP,
@@ -91,6 +92,32 @@ const PetPujaScreen = ({navigation}: any) => {
     latitude: 19.0,
     longitude: 72.0,
   });
+
+
+  const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
+  const [cartVisible, setCartVisible] = useState(true);
+
+  const animateCart = (toValue:number, callback:any=undefined) => {
+    Animated.timing(animation, {
+      toValue: toValue,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(callback);
+  };
+
+  const expireCart = () => {
+    animateCart(400, () => { // Move off-screen to the right
+      setCartVisible(false);
+    });
+  };
+
+
+  const newCart = () => {
+    setCartVisible(true);
+    animation.setValue(-200); // Reset position to off-screen left
+    animateCart(0); // Move on-screen
+  };
+
 
   const handleLogout = async () => {
     try {
@@ -251,6 +278,7 @@ const PetPujaScreen = ({navigation}: any) => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
         // console.log('>>>>>>>>>>>', orders);
+        newCart();
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
@@ -298,6 +326,7 @@ const PetPujaScreen = ({navigation}: any) => {
           orders.filter((order: any) => order._id != body.order._id.toString()),
         );
         setLoading(false);
+        setCartVisible(false);
         Toast.show({
           type: 'success',
           text1: 'Order not available !',
@@ -907,6 +936,7 @@ const PetPujaScreen = ({navigation}: any) => {
             {loading ? (
               <LoaderComponent />
             ) : (
+              <Animated.View style={{ transform: [{ translateX: animation }] }}>
               <ImageBackground source={require('../images/Sukam.jpg')}>
                 <View
                   key={`order_${0 + 1}`}
@@ -1063,6 +1093,7 @@ const PetPujaScreen = ({navigation}: any) => {
                   </View>
                 </View>
               </ImageBackground>
+              </Animated.View>
             )}
           </>
         )}
