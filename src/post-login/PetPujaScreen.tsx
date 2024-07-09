@@ -88,6 +88,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [cod, setcod] = useState(true);
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
     longitude: 72.0,
@@ -548,6 +549,7 @@ const PetPujaScreen = ({navigation}: any) => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
       setConnected(isConnected);
       driverStatusToggle(isConnected);
+      setIsDisabled(!isConnected)
       if (!isConnected) {
         showAlert();
       }
@@ -565,7 +567,7 @@ const PetPujaScreen = ({navigation}: any) => {
             position: 'absolute',
             top: hp(6),
             alignSelf: 'flex-start',
-            justifyContent:'center'
+            justifyContent: 'center',
           }}>
           {/* <Text>You are not connected to the internet.</Text> */}
           <Image
@@ -1413,7 +1415,8 @@ const PetPujaScreen = ({navigation}: any) => {
                           buttonText
                         )
                       }
-                      slideDirection="right"></SlideButton>
+                      slideDirection="right"
+                      disabled={isDisabled}></SlideButton>
                   </View>
                 )}
               </>
