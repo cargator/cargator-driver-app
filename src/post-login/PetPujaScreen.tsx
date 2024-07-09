@@ -87,17 +87,16 @@ const PetPujaScreen = ({navigation}: any) => {
   const [path, setPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
-  const [isConnected, setConnected] = useState(true);
+  const [connected, setConnected] = useState<boolean>(true);
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
     longitude: 72.0,
   });
 
-
   const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
   const [cartVisible, setCartVisible] = useState(true);
 
-  const animateCart = (toValue:number, callback:any=undefined) => {
+  const animateCart = (toValue: number, callback: any = undefined) => {
     Animated.timing(animation, {
       toValue: toValue,
       duration: 500,
@@ -105,19 +104,11 @@ const PetPujaScreen = ({navigation}: any) => {
     }).start(callback);
   };
 
-  const expireCart = () => {
-    animateCart(400, () => { // Move off-screen to the right
-      setCartVisible(false);
-    });
-  };
-
-
   const newCart = () => {
     setCartVisible(true);
     animation.setValue(-200); // Reset position to off-screen left
     animateCart(0); // Move on-screen
   };
-
 
   const handleLogout = async () => {
     try {
@@ -254,7 +245,7 @@ const PetPujaScreen = ({navigation}: any) => {
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         Geolocation.getCurrentPosition(
-          (position) => {
+          position => {
             setMyLocation({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
@@ -264,7 +255,7 @@ const PetPujaScreen = ({navigation}: any) => {
           {
             enableHighAccuracy: false,
             timeout: 10000,
-          }
+          },
         );
       } else {
         console.log('Location permission denied');
@@ -278,7 +269,6 @@ const PetPujaScreen = ({navigation}: any) => {
     try {
       socketInstance.on('order-request', async (orders: []) => {
         // console.log('>>>>>>>>>>>', orders);
-        newCart();
         orders.map((order: any) => {
           setAvailableOrders((prev: any) => {
             // Check if the order already exists in the array
@@ -287,6 +277,7 @@ const PetPujaScreen = ({navigation}: any) => {
             );
             // If the order doesn't exist, add it to the array
             if (!orderExists) {
+              newCart();
               return [...prev, order];
             }
             // If the order exists, return the previous state without changes
@@ -393,10 +384,10 @@ const PetPujaScreen = ({navigation}: any) => {
       ) {
         setcod(false);
       }
-      if( slideCount  <= SliderText.length - 2){
-      setSlideCount(slideCount + 1);
-      setButtonText(SliderText[slideCount + 1].flowName);
-      dispatch(setOrderStatus(slideCount));
+      if (slideCount <= SliderText.length - 2) {
+        setSlideCount(slideCount + 1);
+        setButtonText(SliderText[slideCount + 1].flowName);
+        dispatch(setOrderStatus(slideCount));
       }
     } catch (error) {
       console.log('Error', error);
@@ -455,18 +446,20 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
+  // Function to show the alert
   const showAlert = () => {
     Alert.alert(
-      'No Internet',
-      'Please check your connection and restart the app.',
+      'No Internet Connection',
+      'Please check your internet connection.',
+      [
+        {
+          text: 'OK',
+          onPress: () => {},
+          style: 'cancel',
+        },
+      ],
+      {cancelable: false},
     );
-  };
-
-  const startChatListener = () => {
-    console.log('start chat with bc', isDriverOnline);
-    if (isDriverOnline) {
-      // acceptOrder();
-    }
   };
 
   const startSocketListeners = () => {
@@ -476,6 +469,7 @@ const PetPujaScreen = ({navigation}: any) => {
     // startChatListener();
     // checkDriver();
   };
+
   const paymentButton = () => {
     try {
       setcod(true);
@@ -515,7 +509,6 @@ const PetPujaScreen = ({navigation}: any) => {
   }, [orderStarted]);
 
   useEffect(() => {
-    // driverSocketConnection();
     if (orderStatus === Number('0')) {
       setOrderStarted(true);
       setPath(DriverPath);
@@ -547,23 +540,40 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     getCurrentPosition();
-  }, [getCurrentPosition]);
+  }, []);
 
+  // useEffect hook to subscribe to network status changes
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state: any) => {
-      setConnected(state.isConnected);
-      if (!state.isConnected) {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
+      setConnected(isConnected);
+      driverStatusToggle(isConnected);
+      if (!isConnected) {
         showAlert();
       }
     });
-
-    return () => {
-      unsubscribe();
-    };
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   return (
     <>
+      {!connected && (
+        <View
+          style={{
+            zIndex: 5,
+            position: 'absolute',
+            top: hp(6),
+            alignSelf: 'flex-start',
+            justifyContent:'center'
+          }}>
+          {/* <Text>You are not connected to the internet.</Text> */}
+          <Image
+            style={{height: hp(30), width: wp(100)}}
+            source={require('../svg/images/Offline.png')}
+          />
+        </View>
+      )}
       {isProfileModal && (
         <View style={styles.profileModalView}>
           <TouchableOpacity onPress={handleLogout}>
@@ -936,51 +946,51 @@ const PetPujaScreen = ({navigation}: any) => {
             {loading ? (
               <LoaderComponent />
             ) : (
-              <Animated.View style={{ transform: [{ translateX: animation }] }}>
-              <ImageBackground source={require('../images/Sukam.jpg')}>
-                <View
-                  key={`order_${0 + 1}`}
-                  style={[styles.modalView, {opacity: 2}]}>
-                  {/* orderId Text */}
-                  <View style={{top: wp(3)}}>
-                    <Text
-                      style={{
-                        fontFamily: 'Roboto Mono',
-                        fontSize: hp(2.5),
-                        fontWeight: '600',
-                        textAlign: 'center',
-                        color: '#212121',
-                      }}>
-                      Order Id :{' '}
+              <Animated.View style={{transform: [{translateX: animation}]}}>
+                <ImageBackground source={require('../images/Sukam.jpg')}>
+                  <View
+                    key={`order_${0 + 1}`}
+                    style={[styles.modalView, {opacity: 2}]}>
+                    {/* orderId Text */}
+                    <View style={{top: wp(3)}}>
                       <Text
                         style={{
-                          fontFamily: 'RobotoMono-Regular',
-                          fontWeight: '700',
-                          color: '#118F5E',
-                          fontSize: 20,
-                        }}>
-                        {availableOrders[0].order_details?.vendor_order_id.slice(
-                          -6,
-                        )}
-                      </Text>
-                    </Text>
-                  </View>
-                  {/* Circul data */}
-                  <View style={styles.circleModel}>
-                    <View style={styles.circle}>
-                      <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                      <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
-                      <Text
-                        style={{
+                          fontFamily: 'Roboto Mono',
+                          fontSize: hp(2.5),
                           fontWeight: '600',
-                          color: '#000000',
-                          fontSize: 15,
+                          textAlign: 'center',
+                          color: '#212121',
                         }}>
-                        {'₹ '}0
+                        Order Id :{' '}
+                        <Text
+                          style={{
+                            fontFamily: 'RobotoMono-Regular',
+                            fontWeight: '700',
+                            color: '#118F5E',
+                            fontSize: 20,
+                          }}>
+                          {availableOrders[0].order_details?.vendor_order_id.slice(
+                            -6,
+                          )}
+                        </Text>
                       </Text>
                     </View>
-                  </View>
-                  {/* <View style={styles.text}>
+                    {/* Circul data */}
+                    <View style={styles.circleModel}>
+                      <View style={styles.circle}>
+                        <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                        <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#000000',
+                            fontSize: 15,
+                          }}>
+                          {'₹ '}0
+                        </Text>
+                      </View>
+                    </View>
+                    {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -1005,94 +1015,94 @@ const PetPujaScreen = ({navigation}: any) => {
               </View>
             </View> */}
 
-                  <View style={{alignItems: 'center'}}>
-                    <Text>
-                      <Image source={require('../images/cart.png')} /> Pickup
-                      Location
-                    </Text>
-                    <Text
+                    <View style={{alignItems: 'center'}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Pickup
+                        Location
+                      </Text>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
+                        }}>
+                        {availableOrders[0].pickup_details.address}
+                      </Text>
+                    </View>
+                    <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Drop
+                        Location
+                      </Text>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
+                        }}>
+                        {availableOrders[0].drop_details.address}
+                      </Text>
+                    </View>
+                    {/* SliderButton */}
+                    <View
                       style={{
-                        fontWeight: '600',
-                        color: '#333333',
-                        fontSize: 15,
+                        flex: 1,
+                        justifyContent: 'flex-end',
+                        marginBottom: hp(0),
                       }}>
-                      {availableOrders[0].pickup_details.address}
-                    </Text>
-                  </View>
-                  <View style={{alignItems: 'center', marginTop: hp(2)}}>
-                    <Text>
-                      <Image source={require('../images/cart.png')} /> Drop
-                      Location
-                    </Text>
-                    <Text
-                      style={{
-                        fontWeight: '600',
-                        color: '#333333',
-                        fontSize: 15,
-                      }}>
-                      {availableOrders[0].drop_details.address}
-                    </Text>
-                  </View>
-                  {/* SliderButton */}
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'flex-end',
-                      marginBottom: hp(0),
-                    }}>
-                    <SlideButton
-                      width={290}
-                      height={50}
-                      animationDuration={180}
-                      autoResetDelay={1080}
-                      animation={true}
-                      autoReset={true}
-                      borderRadius={15}
-                      sliderWidth={50}
-                      icon={
-                        <Image
-                          source={require('../svg/Arrow.png')}
-                          style={styles.thumbImage}
-                        />
-                      } // Adjust width and height as needed
-                      onReachedToEnd={handleEndReached}
-                      containerStyle={{
-                        backgroundColor: '#118F5E',
-                        color: 'red',
-                      }}
-                      underlayStyle={{backgroundColor: 'Red'}}
-                      title={buttonText}
-                      slideDirection="right"></SlideButton>
+                      <SlideButton
+                        width={290}
+                        height={50}
+                        animationDuration={180}
+                        autoResetDelay={1080}
+                        animation={true}
+                        autoReset={true}
+                        borderRadius={15}
+                        sliderWidth={50}
+                        icon={
+                          <Image
+                            source={require('../svg/Arrow.png')}
+                            style={styles.thumbImage}
+                          />
+                        } // Adjust width and height as needed
+                        onReachedToEnd={handleEndReached}
+                        containerStyle={{
+                          backgroundColor: '#118F5E',
+                          color: 'red',
+                        }}
+                        underlayStyle={{backgroundColor: 'Red'}}
+                        title={buttonText}
+                        slideDirection="right"></SlideButton>
 
-                    <SlideButton
-                      width={290}
-                      height={50}
-                      borderRadius={15}
-                      animationDuration={180}
-                      autoResetDelay={1080}
-                      animation={true}
-                      autoReset={true}
-                      sliderWidth={50}
-                      icon={
-                        <Image
-                          source={require('../svg/Arrow.png')}
-                          style={styles.thumbImage}
-                        />
-                      } // Adjust width and height as needed
-                      onReachedToEnd={onRejectOrder}
-                      containerStyle={{
-                        backgroundColor: '#D11A2A',
-                        color: 'red',
-                      }}
-                      underlayStyle={{backgroundColor: 'Red'}}
-                      title="Reject Order"
-                      titleStyle={{color: 'white'}}
-                      slideDirection="right">
-                      <Text style={{color: 'red', fontSize: 18}}></Text>
-                    </SlideButton>
+                      <SlideButton
+                        width={290}
+                        height={50}
+                        borderRadius={15}
+                        animationDuration={180}
+                        autoResetDelay={1080}
+                        animation={true}
+                        autoReset={true}
+                        sliderWidth={50}
+                        icon={
+                          <Image
+                            source={require('../svg/Arrow.png')}
+                            style={styles.thumbImage}
+                          />
+                        } // Adjust width and height as needed
+                        onReachedToEnd={onRejectOrder}
+                        containerStyle={{
+                          backgroundColor: '#D11A2A',
+                          color: 'red',
+                        }}
+                        underlayStyle={{backgroundColor: 'Red'}}
+                        title="Reject Order"
+                        titleStyle={{color: 'white'}}
+                        slideDirection="right">
+                        <Text style={{color: 'red', fontSize: 18}}></Text>
+                      </SlideButton>
+                    </View>
                   </View>
-                </View>
-              </ImageBackground>
+                </ImageBackground>
               </Animated.View>
             )}
           </>
