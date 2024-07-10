@@ -710,7 +710,7 @@ const PetPujaScreen = ({navigation}: any) => {
                   <Text> Earning</Text>
                 </View>
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.earning || 0}
+                  {progressData.week?.earning || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
@@ -720,7 +720,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
 
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.loginHours || 0}
+                  {progressData.week?.loginHours || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
@@ -729,7 +729,7 @@ const PetPujaScreen = ({navigation}: any) => {
                   <Text>Orders</Text>
                 </View>
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.orders || 0}
+                  {progressData.week?.orders || 0}
                 </Text>
               </View>
             </View>
@@ -748,7 +748,7 @@ const PetPujaScreen = ({navigation}: any) => {
                   <Text> Earning</Text>
                 </View>
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.earning || 0}
+                  {progressData.month?.earning || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
@@ -758,7 +758,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
 
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.loginHours || 0}
+                  {progressData.month?.loginHours || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
@@ -767,7 +767,7 @@ const PetPujaScreen = ({navigation}: any) => {
                   <Text>Orders</Text>
                 </View>
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.orders || 0}
+                  {progressData.month?.orders || 0}
                 </Text>
               </View>
             </View>
@@ -872,7 +872,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 0}
+                      {progressData.week?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -883,7 +883,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     </View>
 
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.loginHours || 0}
+                      {progressData.week?.loginHours || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -893,7 +893,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text>Orders</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.orders || 0}
+                      {progressData.week?.orders || 0}
                     </Text>
                   </View>
                 </View>
@@ -914,7 +914,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.earning || 0}
+                      {progressData.month?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -925,7 +925,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     </View>
 
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.loginHours || 0}
+                      {progressData.month?.loginHours || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -935,7 +935,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       <Text>Orders</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.orders || 0}
+                      {progressData.month?.orders || 0}
                     </Text>
                   </View>
                 </View>
