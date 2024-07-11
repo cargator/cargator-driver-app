@@ -44,7 +44,9 @@ import * as geolib from 'geolib';
 import OrderScreen from './petPoojaComponent/OrderScreen';
 import LoaderComponent from '../components/LoaderComponent';
 import NetInfo from '@react-native-community/netinfo';
+import {driverLivelocationAPI} from '../services/userservices';
 export let socketInstance: any;
+let intervalId: any;
 
 export const SliderText = [
   {flowName: 'ACCEPT ORDER'},
@@ -89,6 +91,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [intervalState, setIntervalState] = useState();
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
     longitude: 72.0,
@@ -182,6 +185,17 @@ const PetPujaScreen = ({navigation}: any) => {
     });
   };
 
+  const driverLivelocation = async () => {
+    try {
+      let coordinates = [mylocation.latitude, mylocation.longitude];
+      const data = {coordinates};
+      const res = await driverLivelocationAPI(data);
+      // console.log('response>>>>>>>', res);
+    } catch (error) {
+      console.log('Error', error);
+    }
+  };
+
   const emitLiveLocation = () => {
     let prevLocation: any = null;
     try {
@@ -189,6 +203,9 @@ const PetPujaScreen = ({navigation}: any) => {
         position => {
           const {latitude, longitude, heading} = position.coords;
           const newLocation = {latitude, longitude};
+          socketInstance?.emit('emit-driver-live-location', {
+            coordinates: [position.coords.latitude, position.coords.longitude],
+          });
           setMyLocation(newLocation);
           setHeading(heading);
           if (orderStarted) {
@@ -221,6 +238,8 @@ const PetPujaScreen = ({navigation}: any) => {
           distanceFilter: 15,
         },
       );
+
+      console.log('watchID>', watchId);
 
       setLoading(false);
       setGeolocationWatchId(watchId);
@@ -535,12 +554,17 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     Geolocation.clearWatch(geolocationWatchId);
-    // setPath([])
     emitLiveLocation();
-  }, [orderStarted]);
+  }, []);
 
   useEffect(() => {
-    getCurrentPosition();
+    intervalId = setInterval(() => {
+      getCurrentPosition();
+      driverLivelocation();
+    }, 10000);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   // useEffect hook to subscribe to network status changes
@@ -549,7 +573,7 @@ const PetPujaScreen = ({navigation}: any) => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
       setConnected(isConnected);
       driverStatusToggle(isConnected);
-      setIsDisabled(!isConnected)
+      setIsDisabled(!isConnected);
       if (!isConnected) {
         showAlert();
       }

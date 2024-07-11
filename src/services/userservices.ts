@@ -42,6 +42,10 @@ export const upDateRideStatus = (data:any) =>{
 
 //petPuja API ----------------------
 
+export const driverLivelocationAPI = (liveLocation: any) => {
+    return customAxios.post(`/update-live-location`,liveLocation)
+}
+
 export const getOrdersAPI = () => {
     return customAxios.get('/get-new-orders')
 }
