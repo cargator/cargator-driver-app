@@ -467,20 +467,20 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   // Function to show the alert
-  const showAlert = () => {
-    Alert.alert(
-      'No Internet Connection',
-      'Please check your internet connection.',
-      [
-        {
-          text: 'OK',
-          onPress: () => {},
-          style: 'cancel',
-        },
-      ],
-      {cancelable: false},
-    );
-  };
+  // const showAlert = () => {
+  //   Alert.alert(
+  //     'No Internet Connection',
+  //     'Please check your internet connection.',
+  //     [
+  //       {
+  //         text: 'OK',
+  //         onPress: () => {},
+  //         style: 'cancel',
+  //       },
+  //     ],
+  //     {cancelable: false},
+  //   );
+  // };
 
   const startSocketListeners = () => {
     orderStatusListener();
@@ -574,9 +574,9 @@ const PetPujaScreen = ({navigation}: any) => {
       setConnected(isConnected);
       driverStatusToggle(isConnected);
       setIsDisabled(!isConnected);
-      if (!isConnected) {
-        showAlert();
-      }
+      // if (!isConnected) {
+      //   showAlert();
+      // }
     });
     // Cleanup subscription on unmount
     return () => unsubscribe();
