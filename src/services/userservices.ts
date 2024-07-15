@@ -41,6 +41,9 @@ export const upDateRideStatus = (data:any) =>{
 
 
 //petPuja API ----------------------
+export const driverLoginHours=(data:any)=>{
+    return customAxios.post(`/driver-login-time`,data)
+}
 
 export const driverLivelocationAPI = (liveLocation: any) => {
     return customAxios.post(`/update-live-location`,liveLocation)

@@ -142,7 +142,7 @@ const PetPujaScreen = ({navigation}: any) => {
       if (res) {
         handleLogout();
       }
-    } catch (error) {
+    } catch (error) { 
       console.log(error);
     }
   };

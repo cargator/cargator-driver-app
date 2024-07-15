@@ -1,19 +1,24 @@
 import {io} from 'socket.io-client';
+import { driverLoginHours } from '../services/userservices';
 
 let socket;
 let socketDetails = {status: 'disconnected'};
+let loginTime=null;
+let logOutTime=null
+
 
 function socketConnection(token) {
   return new Promise((resolve, reject) => {
     socket = io.connect(
-      `https://sukam-api.cargator.org/?token=${token}`,
-      // `http://192.168.1.36:3001?token=${token}`,
+      // `https://sukam-api.cargator.org/?token=${token}`,
+      `http://192.168.1.46:3001?token=${token}`,
       // `https://2dbf-182-48-213-167.ngrok-free.app?token=${token}`,
       {transports: ['websocket']},
     );
 
     socket.on('connect', () => {
       console.log('socket connected');
+      loginTime=new Date();
       socketDetails.status = 'connected';
       // Toast.show({
       //   type: 'success',
@@ -23,9 +28,17 @@ function socketConnection(token) {
       resolve(socket);
     });
 
-    socket.on('disconnect', () => {
-      console.log('socket disconnected');
+    socket.on('disconnect', async () => {
+      console.log("socket disconnected");
       socketDetails.status = 'disconnected';
+      logOutTime=new Date();
+      const totalLoginTime=((logOutTime-loginTime)/60000).toFixed(2)
+      const body={time:totalLoginTime}
+      try {
+        await driverLoginHours(body)
+      } catch (error) {
+        console.log(error);
+      }
       // Toast.show({
       //   type: 'error',
       //   text1: 'You are offline',
