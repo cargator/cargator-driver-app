@@ -29,11 +29,11 @@ function socketConnection(token) {
     });
 
     socket.on('disconnect', async () => {
+      logOutTime=new Date();
+      const totalLoginTime=((logOutTime-loginTime)/3600000).toFixed(5)
+      const body={time:totalLoginTime}
       console.log("socket disconnected");
       socketDetails.status = 'disconnected';
-      logOutTime=new Date();
-      const totalLoginTime=((logOutTime-loginTime)/60000).toFixed(2)
-      const body={time:totalLoginTime}
       try {
         await driverLoginHours(body)
       } catch (error) {
