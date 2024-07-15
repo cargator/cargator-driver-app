@@ -30,7 +30,10 @@ function socketConnection(token) {
 
     socket.on('disconnect', async () => {
       logOutTime=new Date();
-      const totalLoginTime=((logOutTime-loginTime)/3600000).toFixed(5)
+      const totalLoginTime=((logOutTime-loginTime)%36000)/3600
+
+
+
       const body={time:totalLoginTime}
       console.log("socket disconnected");
       socketDetails.status = 'disconnected';

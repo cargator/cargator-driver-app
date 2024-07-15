@@ -44,7 +44,7 @@ import * as geolib from 'geolib';
 import OrderScreen from './petPoojaComponent/OrderScreen';
 import LoaderComponent from '../components/LoaderComponent';
 import NetInfo from '@react-native-community/netinfo';
-import {driverLivelocationAPI} from '../services/userservices';
+import {driverLivelocationAPI, driverLoginHours} from '../services/userservices';
 export let socketInstance: any;
 let intervalId: any;
 
@@ -506,6 +506,19 @@ const PetPujaScreen = ({navigation}: any) => {
       console.log(error);
     }
   };
+  const  loginHrs=()=>{
+    setInterval(async ()=>{
+      // socketInstance.emit('driver-login-hours', userId);
+      console.log("hi");
+      try {
+        const body={time:0.01}
+        await driverLoginHours(body)
+      } catch (error) {
+        console.log(error);
+      }
+      getProgressDetail();
+    },36000)
+  }
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -519,6 +532,7 @@ const PetPujaScreen = ({navigation}: any) => {
       setLoading(true);
       try {
         getProgressDetail();
+        loginHrs();
       } catch (error) {
         console.error('Error fetching data:', error);
       }
