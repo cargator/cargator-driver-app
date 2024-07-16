@@ -512,13 +512,17 @@ const PetPujaScreen = ({navigation}: any) => {
   let timeIntervalId:any;
   const  loginHrs=()=>{
     timeIntervalId=setInterval(async ()=>{
-      console.log("hi");
-      
+      console.log("one min added in login hour");
+      const loginTime:any=new Date();
       try {
-        socketInstance.onclose = function(event: any) {
-          console.log("closed");
-          
-          stopInterval();
+        socketInstance.onclose = async function(event: any) {
+        console.log('Socket is closed:', event);
+       const logOutTime:any=new Date();
+      const totalLoginTime=((logOutTime-loginTime)%60000)/1000
+      console.log(totalLoginTime);
+      const body={time:Math.round(totalLoginTime)}
+      await riderLoginHours(body)
+      stopInterval()
       };
         const body={time:60}
         await riderLoginHours(body)
