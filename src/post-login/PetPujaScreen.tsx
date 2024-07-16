@@ -44,7 +44,7 @@ import * as geolib from 'geolib';
 import OrderScreen from './petPoojaComponent/OrderScreen';
 import LoaderComponent from '../components/LoaderComponent';
 import NetInfo from '@react-native-community/netinfo';
-import {driverLivelocationAPI, driverLoginHours} from '../services/userservices';
+import {driverLivelocationAPI, riderLoginHours} from '../services/userservices';
 export let socketInstance: any;
 let intervalId: any;
 
@@ -521,7 +521,7 @@ const PetPujaScreen = ({navigation}: any) => {
           stopInterval();
       };
         const body={time:60}
-        await driverLoginHours(body)
+        await riderLoginHours(body)
       } catch (error) {
         console.log(error);
       }

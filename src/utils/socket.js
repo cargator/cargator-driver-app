@@ -1,5 +1,5 @@
 import {io} from 'socket.io-client';
-import { driverLoginHours } from '../services/userservices';
+import { riderLoginHours } from '../services/userservices';
 
 let socket;
 let socketDetails = {status: 'disconnected'};
@@ -37,7 +37,7 @@ function socketConnection(token) {
       console.log("socket disconnected");
       socketDetails.status = 'disconnected';
       try {
-        await driverLoginHours(body)
+        await riderLoginHours(body)
       } catch (error) {
         console.log(error);
       }
