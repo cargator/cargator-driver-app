@@ -21,6 +21,7 @@ import OTPInputView from '@twotalltotems/react-native-otp-input';
 import RightArrow from '../svg/RightArrow';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import { login, verifyOtp } from '../services/userservices';
+import { getFcmTokenAndSendToBackend } from '../utils/firebase-config';
 
 const LoginOtpScreen = ({route}: any) => {
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ const LoginOtpScreen = ({route}: any) => {
       });
       return;
     }
+    await getFcmTokenAndSendToBackend();
     // navigation.navigate('MapScreen');
     // dispatch(setUserId(user._id));
     // dispatch(setLoginToken(user.token));

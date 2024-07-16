@@ -16,6 +16,8 @@
     "@react-native-community/clipboard": "^1.5.1",
     "@react-native-community/geolocation": "^3.0.6",
     "@react-native-community/netinfo": "^11.3.2",
+    "@react-native-firebase/app": "^20.2.0",
+    "@react-native-firebase/messaging": "^20.2.0",
     "@react-navigation/drawer": "^6.6.3",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",

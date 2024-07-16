@@ -19,3 +19,7 @@ export const getOrderHistory = (page: number, data: any, limit = 100) => {
   
   return customAxios.post(`/get-history?page=${page}&limit=${limit}`, data);
 };
+
+export const updateFcmToken = (data: any) => {
+  return customAxios.post(`/update-FCM-token`, data);
+};
