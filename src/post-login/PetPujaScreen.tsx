@@ -117,7 +117,9 @@ const PetPujaScreen = ({navigation}: any) => {
   const handleLogout = async () => {
     try {
       // await RNFetchBlob.fs.unlink(`file://${userImg}`);
+      
       await socketDisconnect();
+      stopInterval()
       dispatch(removeUserData());
     } catch (err) {
       console.log('err in handleLogOut', err);
@@ -162,6 +164,7 @@ const PetPujaScreen = ({navigation}: any) => {
       if (!event) {
         setAvailableOrders([]);
         await socketDisconnect();
+        stopInterval();
       } else {
         socketInstance = await getSocketInstance(loginToken);
         startSocketListeners();
@@ -506,20 +509,36 @@ const PetPujaScreen = ({navigation}: any) => {
       console.log(error);
     }
   };
+  let timeIntervalId:any;
   const  loginHrs=()=>{
-    setInterval(async ()=>{
-      // socketInstance.emit('driver-login-hours', userId);
+    timeIntervalId=setInterval(async ()=>{
       console.log("hi");
+      
       try {
-        const body={time:0.01}
+        socketInstance.onclose = function(event: any) {
+          console.log("closed");
+          
+          stopInterval();
+      };
+        const body={time:60}
         await driverLoginHours(body)
       } catch (error) {
         console.log(error);
       }
       getProgressDetail();
-    },36000)
+    },60000)
   }
-
+ 
+  function convertToHours(time:number)
+{
+  const hours=Math.round(time/3600)<=9?`0${Math.round(time/3600)}`:Math.round(time/3600)
+  const min=Math.round((time%3600)/60)<=9?`0${Math.round((time%3600)/60)}`:Math.round((time%3600)/60)
+  if(hours===0 && min===0){return `00:00`}
+  return (`${hours}:${min}`)
+}
+const stopInterval=()=>{
+  clearInterval(timeIntervalId);
+}
   useEffect(() => {
     if (isFirstRender.current) {
       driverStatusToggle(isDriverOnline);
@@ -720,7 +739,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
 
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.loginHours || 0}
+                  {convertToHours(progressData.today?.loginHours) || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
@@ -758,7 +777,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
 
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.week?.loginHours || 0}
+                  {convertToHours(progressData.week?.loginHours) || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
@@ -796,7 +815,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 </View>
 
                 <Text style={{fontWeight: 'bold'}}>
-                  {progressData.month?.loginHours || 0}
+                  {convertToHours(progressData.month?.loginHours) || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
@@ -879,7 +898,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     </View>
 
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.today?.loginHours || 0}
+                    {convertToHours(progressData.today?.loginHours) || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -921,7 +940,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     </View>
 
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.week?.loginHours || 0}
+                      {convertToHours(progressData.week?.loginHours) || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -963,7 +982,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     </View>
 
                     <Text style={{fontWeight: 'bold'}}>
-                      {progressData.month?.loginHours || 0}
+                      {convertToHours(progressData.month?.loginHours) || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
