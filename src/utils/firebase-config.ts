@@ -1,5 +1,7 @@
 import messaging from '@react-native-firebase/messaging';
 import {updateFcmToken} from '../services/rideservices';
+console.log(" iam in firerv=base");
+
 
 // Function to get FCM token
 export const getFcmToken = async (): Promise<string | null> => {
@@ -40,9 +42,7 @@ export const requestUserPermission = async () => {
   }
 };
 
-requestUserPermission();
+
 
 // Handle background notifications
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-  console.log('Message handled in the background!', remoteMessage);
-});
+

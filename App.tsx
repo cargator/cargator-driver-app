@@ -57,6 +57,7 @@ import CustomMapScreen from './src/post-login/CustomMapScreen';
 import {getDriverAppFlowAPI} from './src/services/userservices';
 import PetPujaScreen from './src/post-login/PetPujaScreen';
 import HistoryPage from './src/post-login/petPoojaComponent/HistoryPage';
+import { requestUserPermission } from './src/utils/firebase-config';
 // import DestinationScreen from './src/components/DestinationScreen';
 // import LocationPermissionScreen from './src/components/LocationPermissionScreen';
 // import SplashScreen from './src/components/SplashScreen';
@@ -74,8 +75,11 @@ const Appdrawercontent = (props: any) => {
       setVersionNumber(version);
     };
 
+    requestUserPermission();
     getVersion();
   }, []);
+  
+  
   const userImg = useSelector((store: any) => store.userImage.path);
   return (
     <View style={{flex: 1, height: '100%'}}>

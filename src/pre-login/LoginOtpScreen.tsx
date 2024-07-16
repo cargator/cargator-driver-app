@@ -21,7 +21,8 @@ import OTPInputView from '@twotalltotems/react-native-otp-input';
 import RightArrow from '../svg/RightArrow';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import { login, verifyOtp } from '../services/userservices';
-import { getFcmTokenAndSendToBackend } from '../utils/firebase-config';
+import { getFcmTokenAndSendToBackend, requestUserPermission } from '../utils/firebase-config';
+import messaging from '@react-native-firebase/messaging';
 
 const LoginOtpScreen = ({route}: any) => {
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ const LoginOtpScreen = ({route}: any) => {
 
   const handleContinueBtn = async () => {
     console.log(`handleContinueBtn called`);
+    
     if (!isOtpVerified) {
       Toast.show({
         type: 'error',
@@ -40,7 +42,7 @@ const LoginOtpScreen = ({route}: any) => {
       });
       return;
     }
-    await getFcmTokenAndSendToBackend();
+
     // navigation.navigate('MapScreen');
     // dispatch(setUserId(user._id));
     // dispatch(setLoginToken(user.token));
@@ -67,6 +69,14 @@ const LoginOtpScreen = ({route}: any) => {
           text1: 'OTP verified. Press continue.',
         });
         setIsOtpVerified(true);
+        console.log("asdfhjkl");
+    
+        await getFcmTokenAndSendToBackend();
+
+        messaging().setBackgroundMessageHandler(async remoteMessage => {
+          console.log('Message handled in the background!', remoteMessage);
+        });
+
         setOTP(otp);
         // res.user.token = res.token;
         // setUser(res.user);
