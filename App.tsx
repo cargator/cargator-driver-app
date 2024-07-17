@@ -82,7 +82,10 @@ const Appdrawercontent = (props: any) => {
       .then((remoteMessage: any) => {
         if (remoteMessage?.data?.data) {
           dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));
-          props.navigation.navigate('Home');
+          setTimeout(() => {
+            
+            props.navigation.navigate('Home');
+          }, 500);
         }
       });
 

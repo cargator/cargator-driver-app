@@ -65,7 +65,6 @@ export const dialCall = (number: string) => {
 };
 
 const PetPujaScreen = ({navigation}: any) => {
-  
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
@@ -167,6 +166,18 @@ const PetPujaScreen = ({navigation}: any) => {
         await socketDisconnect();
       } else {
         socketInstance = await getSocketInstance(loginToken);
+console.log('attaching');
+
+        socketInstance.on('rder-update-response', (message: any) => {
+          console.log('message :>> ', message);})
+          socketInstance.on('order-update-response', (message: any) => {
+            console.log('message :>> ', message);})
+          console.log('done');
+
+          socketInstance.on('accept-order', (data:any)=>{
+            console.log('acceptdata :>> ', data);
+          })
+          
         startSocketListeners();
         // emitLiveLocation();
       }
@@ -328,56 +339,6 @@ const PetPujaScreen = ({navigation}: any) => {
     console.log('order-accept emiited');
   };
 
-  const orderAcceptResponseListener = () => {
-    socketInstance.on('accept-order-response', (message: any) => {
-      console.log('ride-accept-response event :>> ', message);
-      setLoading(false);
-      let body = parseSocketMessage(message);
-      // console.log('accept-order-response event :>> ', message.message);
-
-      if (body.driverId && body.driverId.toString() != userId) {
-        dispatch(setNotificationData(null))
-        setAvailableOrders((orders: any) =>
-          orders.filter((order: any) => order._id != body.order._id.toString()),
-        );
-        setLoading(false);
-        setCartVisible(false);
-        Toast.show({
-          type: 'success',
-          text1: 'Order not available !',
-          visibilityTime: 5000,
-        });
-      } else {
-        if (body.driverId && body.order) {
-          dispatch(setNotificationData(null))
-          dispatch(setOrderDetails(body.order));
-          dispatch(setDriverPath(body.path.coords));
-          setOrderStarted(true);
-          setPath(body.path.coords);
-          setButtonText(SliderText[slideCount + 1].flowName);
-          setSlideCount(slideCount + 1);
-          dispatch(setOrderStatus(slideCount));
-          // setDriverStatus(true)
-          setLoading(false);
-          Toast.show({
-            type: 'success',
-            text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
-            visibilityTime: 5000,
-          });
-        }
-      }
-
-      if (body?.status == 404) {
-        Toast.show({
-          type: 'error',
-          text1: 'Order not available !',
-          visibilityTime: 5000,
-        });
-        dispatch(removeOrderDetails());
-      }
-      setLoading(false);
-    });
-  };
 
   const updateOrderStatus = async () => {
     try {
@@ -420,40 +381,97 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   const orderStatusListener = async () => {
+    console.log('attaching the listener');
+    
     socketInstance.on('order-update-response', (message: any) => {
-      setLoading(false);
-      setSliderButtonLoader(false);
-      let body = parseSocketMessage(message);
-      // console.log('order-update-response>>>>>>>', body.order);
-      if (body.status === 405) {
-        Toast.show({
-          type: 'error',
-          text1: 'Order cancelled by customer!',
-          visibilityTime: 5000,
-        });
-        setOrderStarted(false);
-        setPath([]);
-        dispatch(removeOrderDetails());
-        setSlideCount(0);
-        setButtonText('ACCEPT ORDER');
-        return;
-      } else {
-        if (body.order.status === 'DISPATCHED') {
-          dispatch(setDriverPath(body.path.coords));
-          setPath(body.path.coords);
-        }
-        Toast.show({
-          type: 'success',
-          text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
-          visibilityTime: 5000,
-        });
+      console.log('message 1 :>> ', message);
+      switch (message.type) {
+        case 'accept-order-response':
+          {console.log('ride-accept-response event :>> ', message);
+          setLoading(false);
+          let body = parseSocketMessage(message.message);
+          // console.log('accept-order-response event :>> ', message.message);
+
+          if (body.driverId && body.driverId.toString() != userId) {
+            dispatch(setNotificationData(null));
+            setAvailableOrders([]
+            );
+            setLoading(false);
+            setCartVisible(false);
+            Toast.show({
+              type: 'success',
+              text1: 'Order not available !',
+              visibilityTime: 5000,
+            });
+          } else {
+            if (body.driverId && body.order) {
+              dispatch(setNotificationData(null));
+              dispatch(setOrderDetails(body.order));
+              dispatch(setDriverPath(body.path.coords));
+              setOrderStarted(true);
+              setPath(body.path.coords);
+              setButtonText(SliderText[slideCount + 1].flowName);
+              setSlideCount(slideCount + 1);
+              dispatch(setOrderStatus(slideCount));
+              // setDriverStatus(true)
+              setLoading(false);
+              Toast.show({
+                type: 'success',
+                text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
+                visibilityTime: 5000,
+              });
+            }
+          }
+
+          if (body?.status == 404) {
+            Toast.show({
+              type: 'error',
+              text1: 'Order not available !',
+              visibilityTime: 5000,
+            });
+            dispatch(removeOrderDetails());
+          }
+          setLoading(false);}
+          break;
+
+        case 'order-update-response':
+          {setLoading(false);
+          setSliderButtonLoader(false);
+          let body = parseSocketMessage(message.message);
+          // console.log('order-update-response>>>>>>>', body.order);
+          if (body.status === 405) {
+            Toast.show({
+              type: 'error',
+              text1: 'Order cancelled by customer!',
+              visibilityTime: 5000,
+            });
+            setOrderStarted(false);
+            setPath([]);
+            dispatch(removeOrderDetails());
+            setSlideCount(0);
+            setButtonText('ACCEPT ORDER');
+            return;
+          } else {
+            if (body.order.status === 'DISPATCHED') {
+              dispatch(setDriverPath(body.path.coords));
+              setPath(body.path.coords);
+            }
+            Toast.show({
+              type: 'success',
+              text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
+              visibilityTime: 5000,
+            });
+          }}
+          break;
+        default:
+          break;
       }
     });
   };
 
   const onRejectOrder = async () => {
     try {
-      dispatch(setNotificationData(null))
+      dispatch(setNotificationData(null));
       setAvailableOrders([]);
     } catch (error) {
       console.log(error);
@@ -491,7 +509,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const startSocketListeners = () => {
     orderStatusListener();
     // newOrdersListener();
-    orderAcceptResponseListener();
+    // orderAcceptResponseListener();
     // startChatListener();
     // checkDriver();
   };
@@ -588,10 +606,8 @@ const PetPujaScreen = ({navigation}: any) => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(()=>{
-    
-    if(Object.keys(notificationData || {}).length){
-
+  useEffect(() => {
+    if (Object.keys(notificationData || {}).length) {
       setAvailableOrders((prev: any) => {
         // Check if the order already exists in the array
         const orderExists = prev.some(
@@ -601,13 +617,13 @@ const PetPujaScreen = ({navigation}: any) => {
         // If the order doesn't exist, add it to the array
         if (!orderExists) {
           newCart();
-          return [...prev, notificationData];
+          return [...prev,notificationData];
         }
         // If the order exists, return the previous state without changes
         return prev;
       });
     }
-  },[notificationData])
+  }, [notificationData]);
   return (
     <>
       {!connected && (
