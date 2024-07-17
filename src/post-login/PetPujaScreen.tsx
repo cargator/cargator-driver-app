@@ -288,33 +288,33 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   }, []);
 
-  const newOrdersListener = () => {
-    try {
-      socketInstance.on('order-request', async (orders: []) => {
-        // console.log('>>>>>>>>>>>', orders);
-        orders.map((order: any) => {
-          setAvailableOrders((prev: any) => {
-            // Check if the order already exists in the array
-            const orderExists = prev.some(
-              (existingOrder: any) => existingOrder._id === order._id,
-            );
-            // If the order doesn't exist, add it to the array
-            if (!orderExists) {
-              newCart();
-              return [...prev, order];
-            }
-            // If the order exists, return the previous state without changes
-            return prev;
-          });
-        });
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const newOrdersListener = () => {
+  //   try {
+  //     socketInstance.on('order-request', async (orders: []) => {
+  //       // console.log('>>>>>>>>>>>', orders);
+  //       orders.map((order: any) => {
+  //         setAvailableOrders((prev: any) => {
+  //           // Check if the order already exists in the array
+  //           const orderExists = prev.some(
+  //             (existingOrder: any) => existingOrder._id === order._id,
+  //           );
+  //           // If the order doesn't exist, add it to the array
+  //           if (!orderExists) {
+  //             newCart();
+  //             return [...prev, order];
+  //           }
+  //           // If the order exists, return the previous state without changes
+  //           return prev;
+  //         });
+  //       });
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const onAcceptOrder = (order: any) => {
-    // console.log('inside accept ride function >>>>>>>>>>>>', order._id);
+    console.log('inside accept ride function >>>>>>>>>>>>', order._id);
     setLoading(true);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
@@ -324,19 +324,19 @@ const PetPujaScreen = ({navigation}: any) => {
     // setAvailableOrders((availableOrders: any[]) =>
     //   availableOrders.filter((ele: any) => ele._id != order._id),
     // );
-    dispatch(setNotificationData(null))
     setAvailableOrders([]);
     console.log('order-accept emiited');
   };
 
   const orderAcceptResponseListener = () => {
     socketInstance.on('accept-order-response', (message: any) => {
-      // console.log('ride-accept-response event :>> ', message);
+      console.log('ride-accept-response event :>> ', message);
       setLoading(false);
       let body = parseSocketMessage(message);
       // console.log('accept-order-response event :>> ', message.message);
 
       if (body.driverId && body.driverId.toString() != userId) {
+        dispatch(setNotificationData(null))
         setAvailableOrders((orders: any) =>
           orders.filter((order: any) => order._id != body.order._id.toString()),
         );
@@ -349,6 +349,7 @@ const PetPujaScreen = ({navigation}: any) => {
         });
       } else {
         if (body.driverId && body.order) {
+          dispatch(setNotificationData(null))
           dispatch(setOrderDetails(body.order));
           dispatch(setDriverPath(body.path.coords));
           setOrderStarted(true);
