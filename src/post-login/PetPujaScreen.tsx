@@ -45,7 +45,7 @@ import * as geolib from 'geolib';
 import OrderScreen from './petPoojaComponent/OrderScreen';
 import LoaderComponent from '../components/LoaderComponent';
 import NetInfo from '@react-native-community/netinfo';
-import {driverLivelocationAPI} from '../services/userservices';
+import {driverLivelocationAPI, setDriverOffline} from '../services/userservices';
 export let socketInstance: any;
 let intervalId: any;
 
@@ -164,6 +164,7 @@ const PetPujaScreen = ({navigation}: any) => {
       if (!event) {
         setAvailableOrders([]);
         await socketDisconnect();
+        await setDriverOffline()
       } else {
         socketInstance = await getSocketInstance(loginToken);
         startSocketListeners();

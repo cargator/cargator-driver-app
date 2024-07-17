@@ -58,3 +58,7 @@ export const orderAcceptAPI = (order: any) => {
 export const updateOrderAPI = (data: any) => {
     return customAxios.post('/order-update',data)
 }
+
+export const setDriverOffline = () => {
+    return customAxios.post('/set-driver-offline')
+}
