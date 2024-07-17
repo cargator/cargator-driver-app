@@ -58,7 +58,7 @@ export const SliderText = [
 
 export const dialCall = (number: string) => {
   let phoneNumber = `tel:${number}`;
-  Linking.openURL(phoneNumber).catch(err => {
+  Linking.openURL(phoneNumber).catch((err: any) => {
     console.log('err', err), Alert.alert('Error', 'Unable to make a call');
   });
 };
@@ -176,7 +176,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const navigateToGoogleMaps = ({latitude, longitude}: any) => {
     const url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${latitude},${longitude}`;
-    Linking.openURL(url).then(supported => {
+    Linking.openURL(url).then((supported: any) => {
       if (supported) {
         return Linking.openURL(url);
       } else {

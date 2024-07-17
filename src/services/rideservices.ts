@@ -20,6 +20,7 @@ export const getOrderHistory = (page: number, data: any, limit = 100) => {
   return customAxios.post(`/get-history?page=${page}&limit=${limit}`, data);
 };
 
-export const updateFcmToken = (data: any) => {
+export const updateFcmToken = (data: {token: any}) => {
+  console.log("api called>>>>>>",data);
   return customAxios.post(`/update-FCM-token`, data);
 };

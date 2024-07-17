@@ -40,6 +40,11 @@ const LoginOtpScreen = ({route}: any) => {
         type: 'error',
         text1: 'Please enter OTP.',
       });
+         await getFcmTokenAndSendToBackend();
+
+        messaging().setBackgroundMessageHandler(async (remoteMessage: any) => {
+          console.log('Message handled in the background!', remoteMessage);
+        });
       return;
     }
 
@@ -71,11 +76,7 @@ const LoginOtpScreen = ({route}: any) => {
         setIsOtpVerified(true);
         console.log("asdfhjkl");
     
-        await getFcmTokenAndSendToBackend();
-
-        messaging().setBackgroundMessageHandler(async remoteMessage => {
-          console.log('Message handled in the background!', remoteMessage);
-        });
+     
 
         setOTP(otp);
         // res.user.token = res.token;
