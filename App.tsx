@@ -62,7 +62,6 @@ import {requestUserPermission} from './src/utils/firebase-config';
 import PushNotification from 'react-native-push-notification';
 import messaging from '@react-native-firebase/messaging';
 
-
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
   const [versionNumber, setVersionNumber] = useState('');
@@ -73,37 +72,28 @@ const Appdrawercontent = (props: any) => {
       setVersionNumber(version);
     };
 
-    messaging().onNotificationOpenedApp((remoteMessage:any) => {
-      console.log(
-        'Notification caused app to open from background state:',
-        remoteMessage.notification,
-      );
-      dispatch(setNotificationData(JSON.parse(remoteMessage.data.data))) 
+    messaging().onNotificationOpenedApp((remoteMessage: any) => {
+      dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));
       props.navigation.navigate('Home');
     });
 
     messaging()
       .getInitialNotification()
       .then((remoteMessage: any) => {
-        console.log(
-          'Notification caused app to open from quite state:',
-          remoteMessage.notification,
-        );
-        // navigation.navigate(remoteMessage.data.type);
-        dispatch(setNotificationData(JSON.parse(remoteMessage.data.data))) 
-      props.navigation.navigate('Home');
-
+        if (remoteMessage?.data?.data) {
+          dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));
+          props.navigation.navigate('Home');
+        }
       });
 
     requestUserPermission();
     getVersion();
-    const unsubscribe = messaging().onMessage(async (remoteMessage:any) => {
+    const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
       console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
-      console.log("new order>>>>>", JSON.parse(remoteMessage.data.data));
-      
-      dispatch(setNotificationData(JSON.parse(remoteMessage.data.data))) 
-      props.navigation.navigate('Home');
+      console.log('new order>>>>>', JSON.parse(remoteMessage.data.data));
 
+      dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));
+      props.navigation.navigate('Home');
     });
 
     return unsubscribe;

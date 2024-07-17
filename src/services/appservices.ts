@@ -5,8 +5,8 @@ const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
   // baseURL: `http://192.168.1.55:3001`,
   // baseURL: `https://a90c-182-48-215-1.ngrok-free.app`
-  baseURL: `https://2c06-114-79-174-195.ngrok-free.app`,
-  // baseURL: `https://sukam-api.cargator.org/`,
+  // baseURL: `https://2c06-114-79-174-195.ngrok-free.app`,
+  baseURL: `https://sukam-api.cargator.org/`,
 });
 
 customAxios.interceptors.request.use(

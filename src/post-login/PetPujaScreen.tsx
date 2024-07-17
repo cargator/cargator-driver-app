@@ -29,6 +29,7 @@ import {
   removeUserData,
   setDriverPath,
   setLocationPermission,
+  setNotificationData,
   setOrderDetails,
   setOrderStatus,
 } from '../redux/redux';
@@ -323,6 +324,7 @@ const PetPujaScreen = ({navigation}: any) => {
     // setAvailableOrders((availableOrders: any[]) =>
     //   availableOrders.filter((ele: any) => ele._id != order._id),
     // );
+    dispatch(setNotificationData(null))
     setAvailableOrders([]);
     console.log('order-accept emiited');
   };
@@ -450,6 +452,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const onRejectOrder = async () => {
     try {
+      dispatch(setNotificationData(null))
       setAvailableOrders([]);
     } catch (error) {
       console.log(error);
@@ -593,6 +596,7 @@ const PetPujaScreen = ({navigation}: any) => {
         const orderExists = prev.some(
           (existingOrder: any) => existingOrder._id === notificationData._id,
         );
+        // newCart();
         // If the order doesn't exist, add it to the array
         if (!orderExists) {
           newCart();
