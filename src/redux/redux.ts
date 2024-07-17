@@ -31,6 +31,7 @@ const authSlice = createSlice({
     driverAppFlow:'',
     orderDetails: {},
     orderStatus: '',
+    notificationData: null,
   },
   reducers: {
     setUserData: (state, action) => {
@@ -103,6 +104,9 @@ const authSlice = createSlice({
     setDriverAppFlow: (state, action) => {
       state.driverAppFlow = action.payload;
     },
+    setNotificationData: (state, action) => {
+      state.notificationData = action.payload;
+    },
     setOrderDetails: (state, action) => {
       state.orderDetails = action.payload;
     },
@@ -137,6 +141,7 @@ export const {
   setDriverPath,
   setRideStatus,
   setDriverAppFlow,
+  setNotificationData,
   setOrderDetails,
   setOrderStatus,
   removeOrderDetails,

@@ -30,6 +30,7 @@ import store, {
   removeRideDetails,
   removeUserData,
   setDriverAppFlow,
+  setNotificationData,
   setRideDetails,
 } from './src/redux/redux';
 import Toast from 'react-native-toast-message';
@@ -57,13 +58,10 @@ import CustomMapScreen from './src/post-login/CustomMapScreen';
 import {getDriverAppFlowAPI} from './src/services/userservices';
 import PetPujaScreen from './src/post-login/PetPujaScreen';
 import HistoryPage from './src/post-login/petPoojaComponent/HistoryPage';
-import { requestUserPermission } from './src/utils/firebase-config';
-// import DestinationScreen from './src/components/DestinationScreen';
-// import LocationPermissionScreen from './src/components/LocationPermissionScreen';
-// import SplashScreen from './src/components/SplashScreen';
-// import {enableLatestRenderer} from 'react-native-maps';
+import {requestUserPermission} from './src/utils/firebase-config';
+import PushNotification from 'react-native-push-notification';
+import messaging from '@react-native-firebase/messaging';
 
-// enableLatestRenderer();
 
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
@@ -75,11 +73,42 @@ const Appdrawercontent = (props: any) => {
       setVersionNumber(version);
     };
 
+    messaging().onNotificationOpenedApp((remoteMessage:any) => {
+      console.log(
+        'Notification caused app to open from background state:',
+        remoteMessage.notification,
+      );
+      dispatch(setNotificationData(JSON.parse(remoteMessage.data.data))) 
+      props.navigation.navigate('Home');
+    });
+
+    messaging()
+      .getInitialNotification()
+      .then((remoteMessage: any) => {
+        console.log(
+          'Notification caused app to open from quite state:',
+          remoteMessage.notification,
+        );
+        // navigation.navigate(remoteMessage.data.type);
+        dispatch(setNotificationData(JSON.parse(remoteMessage.data.data))) 
+      props.navigation.navigate('Home');
+
+      });
+
     requestUserPermission();
     getVersion();
+    const unsubscribe = messaging().onMessage(async (remoteMessage:any) => {
+      console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      console.log("new order>>>>>", JSON.parse(remoteMessage.data.data));
+      
+      dispatch(setNotificationData(JSON.parse(remoteMessage.data.data))) 
+      props.navigation.navigate('Home');
+
+    });
+
+    return unsubscribe;
   }, []);
-  
-  
+
   const userImg = useSelector((store: any) => store.userImage.path);
   return (
     <View style={{flex: 1, height: '100%'}}>
@@ -152,7 +181,7 @@ const MapScreenDrawer = () => {
   }, []);
   return (
     <Drawer.Navigator
-      screenOptions={{ headerShown: false,swipeEnabled:false }}
+      screenOptions={{headerShown: false, swipeEnabled: false}}
       drawerContent={props => <Appdrawercontent {...props} />}>
       {driverAppFlow === 'default' ? (
         <Drawer.Screen
@@ -244,7 +273,7 @@ export const Routing = () => {
             />
           ) : !loginToken ? (
             <>
-              <Stack.Screen name="PetPujaScreen" component={PetPujaScreen} />
+              {/* <Stack.Screen name="PetPujaScreen" component={PetPujaScreen} /> */}
 
               <Stack.Screen name="LoginScreen" component={LoginScreen} />
               <Stack.Screen name="LoginOtpScreen" component={LoginOtpScreen} />

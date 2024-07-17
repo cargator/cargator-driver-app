@@ -64,12 +64,14 @@ export const dialCall = (number: string) => {
 };
 
 const PetPujaScreen = ({navigation}: any) => {
+  
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
   const orderStatus = useSelector((store: any) => store.orderStatus);
   const DriverPath = useSelector((store: any) => store.driverPath);
+  const notificationData = useSelector((store: any) => store.notificationData);
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
@@ -484,7 +486,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const startSocketListeners = () => {
     orderStatusListener();
-    newOrdersListener();
+    // newOrdersListener();
     orderAcceptResponseListener();
     // startChatListener();
     // checkDriver();
@@ -582,6 +584,25 @@ const PetPujaScreen = ({navigation}: any) => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(()=>{
+    
+    if(Object.keys(notificationData || {}).length){
+
+      setAvailableOrders((prev: any) => {
+        // Check if the order already exists in the array
+        const orderExists = prev.some(
+          (existingOrder: any) => existingOrder._id === notificationData._id,
+        );
+        // If the order doesn't exist, add it to the array
+        if (!orderExists) {
+          newCart();
+          return [...prev, notificationData];
+        }
+        // If the order exists, return the previous state without changes
+        return prev;
+      });
+    }
+  },[notificationData])
   return (
     <>
       {!connected && (
@@ -1052,7 +1073,7 @@ const PetPujaScreen = ({navigation}: any) => {
                           color: '#333333',
                           fontSize: 15,
                         }}>
-                        {availableOrders[0].pickup_details.address}
+                        {availableOrders[0].pickup_details?.address}
                       </Text>
                     </View>
                     <View style={{alignItems: 'center', marginTop: hp(2)}}>
@@ -1066,7 +1087,7 @@ const PetPujaScreen = ({navigation}: any) => {
                           color: '#333333',
                           fontSize: 15,
                         }}>
-                        {availableOrders[0].drop_details.address}
+                        {availableOrders[0].drop_details?.address}
                       </Text>
                     </View>
                     {/* SliderButton */}
