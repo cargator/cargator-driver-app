@@ -166,18 +166,6 @@ const PetPujaScreen = ({navigation}: any) => {
         await socketDisconnect();
       } else {
         socketInstance = await getSocketInstance(loginToken);
-console.log('attaching');
-
-        socketInstance.on('rder-update-response', (message: any) => {
-          console.log('message :>> ', message);})
-          socketInstance.on('order-update-response', (message: any) => {
-            console.log('message :>> ', message);})
-          console.log('done');
-
-          socketInstance.on('accept-order', (data:any)=>{
-            console.log('acceptdata :>> ', data);
-          })
-          
         startSocketListeners();
         // emitLiveLocation();
       }
@@ -381,10 +369,7 @@ console.log('attaching');
   };
 
   const orderStatusListener = async () => {
-    console.log('attaching the listener');
-    
     socketInstance.on('order-update-response', (message: any) => {
-      console.log('message 1 :>> ', message);
       switch (message.type) {
         case 'accept-order-response':
           {console.log('ride-accept-response event :>> ', message);
@@ -394,8 +379,7 @@ console.log('attaching');
 
           if (body.driverId && body.driverId.toString() != userId) {
             dispatch(setNotificationData(null));
-            setAvailableOrders([]
-            );
+            setAvailableOrders([]);
             setLoading(false);
             setCartVisible(false);
             Toast.show({
@@ -404,7 +388,7 @@ console.log('attaching');
               visibilityTime: 5000,
             });
           } else {
-            if (body.driverId && body.order) {
+            if (body.driverId  && body.driverId.toString() == userId && body.order) {
               dispatch(setNotificationData(null));
               dispatch(setOrderDetails(body.order));
               dispatch(setDriverPath(body.path.coords));
@@ -608,20 +592,9 @@ console.log('attaching');
 
   useEffect(() => {
     if (Object.keys(notificationData || {}).length) {
-      setAvailableOrders((prev: any) => {
-        // Check if the order already exists in the array
-        const orderExists = prev.some(
-          (existingOrder: any) => existingOrder._id === notificationData._id,
-        );
-        // newCart();
-        // If the order doesn't exist, add it to the array
-        if (!orderExists) {
-          newCart();
-          return [...prev,notificationData];
-        }
-        // If the order exists, return the previous state without changes
-        return prev;
-      });
+      setAvailableOrders([notificationData]);
+      newCart()
+      dispatch(setNotificationData(null))
     }
   }, [notificationData]);
   return (
