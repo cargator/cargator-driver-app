@@ -1,28 +1,26 @@
+import OTPInputView from '@twotalltotems/react-native-otp-input';
 import React, {useRef, useState} from 'react';
 import {
+  ActivityIndicator,
+  ImageBackground,
+  Keyboard,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Keyboard,
-  ImageBackground,
-  Platform,
 } from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+import Toast from 'react-native-toast-message';
 import {useDispatch} from 'react-redux';
 import {setLoginToken, setUserData, setUserId} from '../redux/redux';
-import customAxios from '../services/appservices';
-import Toast from 'react-native-toast-message';
-import OTPInputView from '@twotalltotems/react-native-otp-input';
+import {login, verifyOtp} from '../services/userservices';
 import RightArrow from '../svg/RightArrow';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import { login, verifyOtp } from '../services/userservices';
-import { getFcmTokenAndSendToBackend, requestUserPermission } from '../utils/firebase-config';
-import messaging from '@react-native-firebase/messaging';
+import {getFcmTokenAndSendToBackend} from '../utils/firebase-config';
 
 const LoginOtpScreen = ({route}: any) => {
   const dispatch = useDispatch();
@@ -34,23 +32,15 @@ const LoginOtpScreen = ({route}: any) => {
 
   const handleContinueBtn = async () => {
     console.log(`handleContinueBtn called`);
-    
+
     if (!isOtpVerified) {
       Toast.show({
         type: 'error',
         text1: 'Please enter OTP.',
       });
-         await getFcmTokenAndSendToBackend();
 
-        messaging().setBackgroundMessageHandler(async (remoteMessage: any) => {
-          console.log('Message handled in the background!', remoteMessage);
-        });
       return;
     }
-
-    // navigation.navigate('MapScreen');
-    // dispatch(setUserId(user._id));
-    // dispatch(setLoginToken(user.token));
   };
 
   const sendOTP = async (otp: any) => {
@@ -58,25 +48,21 @@ const LoginOtpScreen = ({route}: any) => {
       console.log(`sendOTP >> otp :>> `, otp);
       setIsOtpEntered(true);
       Keyboard.dismiss();
-      const otpData={
+      const otpData = {
         otp,
         type: 'driver',
         mobileNumber: route.params.mobileNumber,
-      }
+      };
       // API Call to verify Login-OTP.
-      const res: any = await verifyOtp(otpData)
-      console.log('res', res);
+      const res: any = await verifyOtp(otpData);
 
       if (res.status == 200) {
-        console.log('OTP verified.');
+        await getFcmTokenAndSendToBackend();
         Toast.show({
           type: 'success',
           text1: 'OTP verified. Press continue.',
         });
         setIsOtpVerified(true);
-        console.log("asdfhjkl");
-    
-     
 
         setOTP(otp);
         // res.user.token = res.token;
@@ -90,7 +76,6 @@ const LoginOtpScreen = ({route}: any) => {
       }
     } catch (error: any) {
       setOTP('');
-      console.log(`sendOTP >> error :>> `, error);
       Toast.show({
         type: 'error',
         // text1: error.response.data.message,
@@ -102,22 +87,18 @@ const LoginOtpScreen = ({route}: any) => {
 
   const handleResendOTP = async () => {
     try {
-      console.log(`handleResendOTP called`);
       setOTP('');
       const data = {
         mobileNumber: route.params.mobileNumber,
         type: 'driver',
-      }
+      };
       // API Call to again request OTP for Login (same as in LoginScreen).
-      const res: any = await login(data)
-      console.log('res', res);
-
+      const res: any = await login(data);
       Toast.show({
         type: 'success',
         text1: 'New OTP Sent !',
       });
     } catch (error: any) {
-      console.log(`handleResendOTP error :>> `, error);
       Toast.show({
         type: 'error',
         // text1: error.response.data.message,

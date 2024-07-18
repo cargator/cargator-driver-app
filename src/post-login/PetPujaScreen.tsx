@@ -1,29 +1,33 @@
+import Geolocation from '@react-native-community/geolocation';
+import NetInfo from '@react-native-community/netinfo';
+import * as geolib from 'geolib';
+import {isEmpty as _isEmpty} from 'lodash';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Pressable,
-  ImageBackground,
+  ActivityIndicator,
+  Alert,
+  Animated,
   Image,
+  ImageBackground,
   Linking,
   PermissionsAndroid,
-  Alert,
-  ActivityIndicator,
-  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import {
   heightPercentageToDP,
   heightPercentageToDP as hp,
   widthPercentageToDP,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import SidebarIcon from '../svg/SidebarIcon';
+import Toast from 'react-native-toast-message';
 import {useDispatch, useSelector} from 'react-redux';
-import OnlineOfflineSwitch from './OnlineOfflineSwitch';
-import {isEmpty as _isEmpty, orderBy} from 'lodash';
-import {getSocketInstance, socketDisconnect} from '../utils/socket';
+import SlideButton from 'rn-slide-button';
+import LoaderComponent from '../components/LoaderComponent';
 import {
   removeOrderDetails,
   removeUserData,
@@ -34,18 +38,16 @@ import {
   setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
-import Toast from 'react-native-toast-message';
-import Spinner from '../svg/spinner';
-import SlideButton from 'rn-slide-button';
-import Navigate from '../svg/Navigate';
-import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import {getProgressDetails} from '../services/rideservices';
-import Geolocation from '@react-native-community/geolocation';
-import * as geolib from 'geolib';
-import OrderScreen from './petPoojaComponent/OrderScreen';
-import LoaderComponent from '../components/LoaderComponent';
-import NetInfo from '@react-native-community/netinfo';
-import {driverLivelocationAPI, setDriverOffline} from '../services/userservices';
+import {
+  driverLivelocationAPI,
+  setDriverOffline,
+} from '../services/userservices';
+import Navigate from '../svg/Navigate';
+import SidebarIcon from '../svg/SidebarIcon';
+import Spinner from '../svg/spinner';
+import {getSocketInstance, socketDisconnect} from '../utils/socket';
+import OnlineOfflineSwitch from './OnlineOfflineSwitch';
 export let socketInstance: any;
 let intervalId: any;
 
@@ -85,6 +87,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<any>([]);
+  const ordersList = useRef<any>([]);
   const [orderStarted, setOrderStarted] = useState<boolean>(false);
   const [slideCount, setSlideCount] = useState<any>(0);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
@@ -164,7 +167,7 @@ const PetPujaScreen = ({navigation}: any) => {
       if (!event) {
         setAvailableOrders([]);
         await socketDisconnect();
-        await setDriverOffline()
+        await setDriverOffline();
       } else {
         socketInstance = await getSocketInstance(loginToken);
         startSocketListeners();
@@ -314,20 +317,13 @@ const PetPujaScreen = ({navigation}: any) => {
   // };
 
   const onAcceptOrder = (order: any) => {
-    console.log('inside accept ride function >>>>>>>>>>>>', order._id);
     setLoading(true);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
       driverLoc: mylocation,
     });
-    // setLoading(false)
-    // setAvailableOrders((availableOrders: any[]) =>
-    //   availableOrders.filter((ele: any) => ele._id != order._id),
-    // );
     setAvailableOrders([]);
-    console.log('order-accept emiited');
   };
-
 
   const updateOrderStatus = async () => {
     try {
@@ -373,33 +369,76 @@ const PetPujaScreen = ({navigation}: any) => {
     socketInstance.on('order-update-response', (message: any) => {
       switch (message.type) {
         case 'accept-order-response':
-          {console.log('ride-accept-response event :>> ', message);
-          setLoading(false);
-          let body = parseSocketMessage(message.message);
-          // console.log('accept-order-response event :>> ', message.message);
-
-          if (body.driverId && body.driverId.toString() != userId) {
-            dispatch(setNotificationData(null));
-            setAvailableOrders([]);
-            setLoading(false);
-            setCartVisible(false);
-            Toast.show({
-              type: 'success',
-              text1: 'Order not available !',
-              visibilityTime: 5000,
-            });
-          } else {
-            if (body.driverId  && body.driverId.toString() == userId && body.order) {
+          {
+            let body = parseSocketMessage(message.message);
+            if (body.driverId && body.driverId.toString() != userId) {
               dispatch(setNotificationData(null));
-              dispatch(setOrderDetails(body.order));
-              dispatch(setDriverPath(body.path.coords));
-              setOrderStarted(true);
-              setPath(body.path.coords);
-              setButtonText(SliderText[slideCount + 1].flowName);
-              setSlideCount(slideCount + 1);
-              dispatch(setOrderStatus(slideCount));
-              // setDriverStatus(true)
+              setAvailableOrders([]);
               setLoading(false);
+              setCartVisible(false);
+              Toast.show({
+                type: 'success',
+                text1: 'Order not available !',
+                visibilityTime: 5000,
+              });
+            } else {
+              if (
+                body.driverId &&
+                body.driverId.toString() == userId &&
+                body.order
+              ) {
+                dispatch(setNotificationData(null));
+                dispatch(setOrderDetails(body.order));
+                dispatch(setDriverPath(body.path.coords));
+                setOrderStarted(true);
+                setPath(body.path.coords);
+                setButtonText(SliderText[slideCount + 1].flowName);
+                setSlideCount(slideCount + 1);
+                dispatch(setOrderStatus(slideCount));
+                // setDriverStatus(true)
+                setLoading(false);
+                Toast.show({
+                  type: 'success',
+                  text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
+                  visibilityTime: 5000,
+                });
+              }
+            }
+
+            if (body?.status == 404) {
+              Toast.show({
+                type: 'error',
+                text1: 'Order not available !',
+                visibilityTime: 5000,
+              });
+              dispatch(removeOrderDetails());
+            }
+            setLoading(false);
+          }
+          break;
+
+        case 'order-update-response':
+          {
+            setSliderButtonLoader(false);
+            let body = parseSocketMessage(message.message);
+            // console.log('order-update-response>>>>>>>', body.order);
+            if (body.status === 405) {
+              Toast.show({
+                type: 'error',
+                text1: 'Order cancelled by customer!',
+                visibilityTime: 5000,
+              });
+              setOrderStarted(false);
+              setPath([]);
+              dispatch(removeOrderDetails());
+              setSlideCount(0);
+              setButtonText('ACCEPT ORDER');
+              return;
+            } else {
+              if (body.order.status === 'DISPATCHED') {
+                dispatch(setDriverPath(body.path.coords));
+                setPath(body.path.coords);
+              }
               Toast.show({
                 type: 'success',
                 text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
@@ -407,48 +446,14 @@ const PetPujaScreen = ({navigation}: any) => {
               });
             }
           }
-
-          if (body?.status == 404) {
-            Toast.show({
-              type: 'error',
-              text1: 'Order not available !',
-              visibilityTime: 5000,
-            });
-            dispatch(removeOrderDetails());
-          }
-          setLoading(false);}
-          break;
-
-        case 'order-update-response':
-          {setLoading(false);
-          setSliderButtonLoader(false);
-          let body = parseSocketMessage(message.message);
-          // console.log('order-update-response>>>>>>>', body.order);
-          if (body.status === 405) {
-            Toast.show({
-              type: 'error',
-              text1: 'Order cancelled by customer!',
-              visibilityTime: 5000,
-            });
-            setOrderStarted(false);
-            setPath([]);
-            dispatch(removeOrderDetails());
-            setSlideCount(0);
-            setButtonText('ACCEPT ORDER');
-            return;
-          } else {
-            if (body.order.status === 'DISPATCHED') {
-              dispatch(setDriverPath(body.path.coords));
-              setPath(body.path.coords);
-            }
-            Toast.show({
-              type: 'success',
-              text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
-              visibilityTime: 5000,
-            });
-          }}
           break;
         default:
+          if (parseSocketMessage(message.message).status === 404) {
+            Toast.show({
+              type: 'error',
+              text1: parseSocketMessage(message.message).message,
+            });
+          }
           break;
       }
     });
@@ -493,10 +498,6 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const startSocketListeners = () => {
     orderStatusListener();
-    // newOrdersListener();
-    // orderAcceptResponseListener();
-    // startChatListener();
-    // checkDriver();
   };
 
   const paymentButton = () => {
@@ -523,17 +524,17 @@ const PetPujaScreen = ({navigation}: any) => {
     isFirstRender.current = false;
   }, [isDriverOnline]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        getProgressDetail();
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-      setLoading(false);
-    };
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      getProgressDetail();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchData();
   }, [orderStarted]);
 
@@ -564,9 +565,6 @@ const PetPujaScreen = ({navigation}: any) => {
   useEffect(() => {
     Geolocation.clearWatch(geolocationWatchId);
     emitLiveLocation();
-  }, []);
-
-  useEffect(() => {
     intervalId = setInterval(() => {
       getCurrentPosition();
       driverLivelocation();
@@ -583,9 +581,6 @@ const PetPujaScreen = ({navigation}: any) => {
       setConnected(isConnected);
       driverStatusToggle(isConnected);
       setIsDisabled(!isConnected);
-      // if (!isConnected) {
-      //   showAlert();
-      // }
     });
     // Cleanup subscription on unmount
     return () => unsubscribe();
@@ -593,11 +588,20 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     if (Object.keys(notificationData || {}).length) {
-      setAvailableOrders([notificationData]);
-      newCart()
-      dispatch(setNotificationData(null))
+      const orderExists = ordersList.current.some(
+        (existingOrder: any) => existingOrder._id === notificationData._id,
+      );
+      // newCart();
+      // If the order doesn't exist, add it to the array
+      if (!orderExists) {
+        newCart();
+        ordersList.current = [...ordersList.current, notificationData];
+      }
+      setAvailableOrders(ordersList.current);
+      dispatch(setNotificationData(null));
     }
   }, [notificationData]);
+
   return (
     <>
       {!connected && (

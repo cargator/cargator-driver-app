@@ -5,14 +5,16 @@
  * @format
  */
 
-import 'react-native-gesture-handler';
+import messaging from '@react-native-firebase/messaging';
+import {
+  DrawerContentScrollView,
+  DrawerItem,
+  DrawerItemList,
+  createDrawerNavigator,
+} from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
-import {
-  heightPercentageToDP as hp,
-  widthPercentageToDP as wp,
-} from 'react-native-responsive-screen';
 import {
   Appearance,
   Platform,
@@ -21,46 +23,42 @@ import {
   Text,
   View,
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import 'react-native-gesture-handler';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import SplashScreen from 'react-native-splash-screen';
+import Toast from 'react-native-toast-message';
 import {Provider, useDispatch, useSelector} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
-import LoginScreen from './src/pre-login/LoginScreen';
+import RNFetchBlob from 'rn-fetch-blob';
+import {
+  checkLocationPermission,
+  requestLocationPermission,
+} from './src/components/functions';
+import GPSPermissionScreen from './src/components/GPSPermissionScreen';
+import LocationPermissionScreen from './src/components/LocationPermissionScreen';
+import CustomMapScreen from './src/post-login/CustomMapScreen';
 import MapScreen from './src/post-login/MapScreen';
+import HistoryPage from './src/post-login/petPoojaComponent/HistoryPage';
+import PetPujaScreen from './src/post-login/PetPujaScreen';
+import PreviousRides from './src/post-login/PreviousRides';
+import Profile from './src/post-login/Profile';
+import LoginOtpScreen from './src/pre-login/LoginOtpScreen';
+import LoginScreen from './src/pre-login/LoginScreen';
 import store, {
   persistor,
   removeRideDetails,
   removeUserData,
   setDriverAppFlow,
   setNotificationData,
-  setRideDetails,
 } from './src/redux/redux';
-import Toast from 'react-native-toast-message';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import SplashScreen from 'react-native-splash-screen';
-import LoginOtpScreen from './src/pre-login/LoginOtpScreen';
-import {
-  checkLocationPermission,
-  requestLocationPermission,
-} from './src/components/functions';
-import LocationPermissionScreen from './src/components/LocationPermissionScreen';
-import GPSPermissionScreen from './src/components/GPSPermissionScreen';
-import {
-  DrawerContentScrollView,
-  DrawerItem,
-  DrawerItemList,
-  createDrawerNavigator,
-} from '@react-navigation/drawer';
-import Profile from './src/post-login/Profile';
-import PreviousRides from './src/post-login/PreviousRides';
-import DeviceInfo from 'react-native-device-info';
-import {socketDisconnect} from './src/utils/socket';
-import RNFetchBlob from 'rn-fetch-blob';
-import CustomMapScreen from './src/post-login/CustomMapScreen';
 import {getDriverAppFlowAPI} from './src/services/userservices';
-import PetPujaScreen from './src/post-login/PetPujaScreen';
-import HistoryPage from './src/post-login/petPoojaComponent/HistoryPage';
 import {requestUserPermission} from './src/utils/firebase-config';
-import PushNotification from 'react-native-push-notification';
-import messaging from '@react-native-firebase/messaging';
+import {socketDisconnect} from './src/utils/socket';
 
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
@@ -83,7 +81,6 @@ const Appdrawercontent = (props: any) => {
         if (remoteMessage?.data?.data) {
           dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));
           setTimeout(() => {
-            
             props.navigation.navigate('Home');
           }, 500);
         }
@@ -92,9 +89,6 @@ const Appdrawercontent = (props: any) => {
     requestUserPermission();
     getVersion();
     const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
-      console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
-      console.log('new order>>>>>', JSON.parse(remoteMessage.data.data));
-
       dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));
       props.navigation.navigate('Home');
     });
@@ -131,75 +125,19 @@ Appearance.setColorScheme('light');
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-//   const [versionNumber, setVersionNumber] = useState('');
-
-//   useEffect(() => {
-//     const getVersion = async () => {
-//       const version = DeviceInfo.getVersion();
-//       setVersionNumber(version);
-//     };
-
-//     getVersion();
-//   }, []);
-//   return (
-//     <Drawer.Navigator
-//       screenOptions={{headerShown: false}}
-//       drawerContent={props => <Appdrawercontent {...props} />}>
-//       <Drawer.Screen
-//         name="Home"
-//         component={MapScreen}
-//         // options={{
-//         //   drawerItemStyle: {display: 'none'},
-//         // }}
-//       />
-//       <Drawer.Screen name="Profile" component={Profile} />
-//       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
-//     </Drawer.Navigator>
-//   );
-// };
-
 const MapScreenDrawer = () => {
-  const dispatch = useDispatch();
-  const [versionNumber, setVersionNumber] = useState('');
   const driverAppFlow = useSelector((store: any) => store.driverAppFlow);
-  console.log('from redux 1', driverAppFlow);
 
-  useEffect(() => {
-    const getVersion = async () => {
-      const version = DeviceInfo.getVersion();
-      setVersionNumber(version);
-    };
-
-    getVersion();
-  }, []);
   return (
     <Drawer.Navigator
       screenOptions={{headerShown: false, swipeEnabled: false}}
       drawerContent={props => <Appdrawercontent {...props} />}>
       {driverAppFlow === 'default' ? (
-        <Drawer.Screen
-          name="Home"
-          component={MapScreen}
-          // options={{
-          //   drawerItemStyle: {display: 'none'},
-          // }}
-        />
+        <Drawer.Screen name="Home" component={MapScreen} />
       ) : driverAppFlow === 'custom' ? (
-        <Drawer.Screen
-          name="Home"
-          component={CustomMapScreen}
-          // options={{
-          //   drawerItemStyle: {display: 'none'},
-          // }}
-        />
+        <Drawer.Screen name="Home" component={CustomMapScreen} />
       ) : (
-        <Drawer.Screen
-          name="Home"
-          component={PetPujaScreen}
-          // options={{
-          //   drawerItemStyle: {display: 'none'},
-          // }}
-        />
+        <Drawer.Screen name="Home" component={PetPujaScreen} />
       )}
       <Drawer.Screen name="Profile" component={Profile} />
       <Drawer.Screen name="Previous Rides" component={PreviousRides} />
@@ -216,29 +154,22 @@ export const Routing = () => {
     (store: any) => store.locationPermission,
   );
   const driverAppFlow = useSelector((store: any) => store.driverAppFlow);
-  console.log('from redux2+++++++-', driverAppFlow);
 
-  // console.log({gpsPermission, locationPermission});
-  // const infoVisible = useSelector((store: any) => store.infoVisible);
-  // const userId = useSelector((store: any) => store.userId);
+  const getDriverAppFlow = async () => {
+    try {
+      const res = await getDriverAppFlowAPI();
+      if (driverAppFlow !== res.data[0].applicationFLow || !driverAppFlow) {
+        dispatch(removeRideDetails());
+        dispatch(setDriverAppFlow(res.data[0].applicationFLow));
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
 
   useEffect(() => {
     // do stuff while splash screen is shown
     // After having done stuff (such as async tasks) hide the splash screen
-
-    const getDriverAppFlow = async () => {
-      try {
-        const res = await getDriverAppFlowAPI();
-        console.log('-from api--------', res.data[0].applicationFLow);
-        if (driverAppFlow !== res.data[0].applicationFLow || !driverAppFlow) {
-          console.log('hello');
-          dispatch(removeRideDetails());
-          dispatch(setDriverAppFlow(res.data[0].applicationFLow));
-        }
-      } catch (error) {
-        console.log('error', error);
-      }
-    };
     getDriverAppFlow();
 
     SplashScreen.hide();
