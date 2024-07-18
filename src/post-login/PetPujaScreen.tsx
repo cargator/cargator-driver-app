@@ -1,8 +1,8 @@
 import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import * as geolib from 'geolib';
-import {isEmpty as _isEmpty} from 'lodash';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import { isEmpty as _isEmpty } from 'lodash';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,7 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from 'react-native-maps';
 import {
   heightPercentageToDP,
   heightPercentageToDP as hp,
@@ -25,7 +25,7 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Toast from 'react-native-toast-message';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import SlideButton from 'rn-slide-button';
 import LoaderComponent from '../components/LoaderComponent';
 import {
@@ -38,7 +38,7 @@ import {
   setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
-import {getProgressDetails} from '../services/rideservices';
+import { getProgressDetails } from '../services/rideservices';
 import {
   driverLivelocationAPI,
   setDriverOffline,
@@ -46,17 +46,17 @@ import {
 import Navigate from '../svg/Navigate';
 import SidebarIcon from '../svg/SidebarIcon';
 import Spinner from '../svg/spinner';
-import {getSocketInstance, socketDisconnect} from '../utils/socket';
+import { getSocketInstance, socketDisconnect } from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
 export let socketInstance: any;
 let intervalId: any;
 
 export const SliderText = [
-  {flowName: 'ACCEPT ORDER'},
-  {flowName: 'ARRIVED'},
-  {flowName: 'DISPATCHED'},
-  {flowName: 'ARRIVED_CUSTOMER_DOORSTEP'},
-  {flowName: 'DELIVERED'},
+  { flowName: 'ACCEPT ORDER' },
+  { flowName: 'ARRIVED' },
+  { flowName: 'DISPATCHED' },
+  { flowName: 'ARRIVED_CUSTOMER_DOORSTEP' },
+  { flowName: 'DELIVERED' },
 ];
 
 export const dialCall = (number: string) => {
@@ -66,7 +66,7 @@ export const dialCall = (number: string) => {
   });
 };
 
-const PetPujaScreen = ({navigation}: any) => {
+const PetPujaScreen = ({ navigation }: any) => {
   const orderDetails = useSelector((store: any) => store.orderDetails);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
@@ -180,7 +180,7 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
-  const navigateToGoogleMaps = ({latitude, longitude}: any) => {
+  const navigateToGoogleMaps = ({ latitude, longitude }: any) => {
     const url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=${latitude},${longitude}`;
     Linking.openURL(url).then((supported: any) => {
       if (supported) {
@@ -194,7 +194,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const driverLivelocation = async () => {
     try {
       let coordinates = [mylocation.latitude, mylocation.longitude];
-      const data = {coordinates};
+      const data = { coordinates };
       const res = await driverLivelocationAPI(data);
     } catch (error) {
       console.log('Error', error);
@@ -206,8 +206,8 @@ const PetPujaScreen = ({navigation}: any) => {
     try {
       const watchId = Geolocation.watchPosition(
         position => {
-          const {latitude, longitude, heading} = position.coords;
-          const newLocation = {latitude, longitude};
+          const { latitude, longitude, heading } = position.coords;
+          const newLocation = { latitude, longitude };
           socketInstance?.emit('emit-driver-live-location', {
             coordinates: [position.coords.latitude, position.coords.longitude],
           });
@@ -419,7 +419,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
         case 'order-update-response':
           {
-            setSliderButtonLoader(false);setLoading(false);
+            setSliderButtonLoader(false); setLoading(false);
             if (body.status === 405) {
               Toast.show({
                 type: 'error',
@@ -431,7 +431,7 @@ const PetPujaScreen = ({navigation}: any) => {
               dispatch(removeOrderDetails());
               setSlideCount(0);
               setButtonText('ACCEPT ORDER');
-              
+
               return;
             } else {
               if (body.driverId && body.driverId.toString() == userId) {
@@ -468,7 +468,7 @@ const PetPujaScreen = ({navigation}: any) => {
         allOrders.filter(ele => ele._id != order._id),
       );
       ordersList.current = []
-      
+
     } catch (error) {
       console.log(error);
     }
@@ -625,7 +625,7 @@ const PetPujaScreen = ({navigation}: any) => {
           }}>
           {/* <Text>You are not connected to the internet.</Text> */}
           <Image
-            style={{height: hp(30), width: wp(100)}}
+            style={{ height: hp(30), width: wp(100) }}
             source={require('../svg/images/Offline.png')}
           />
         </View>
@@ -713,37 +713,37 @@ const PetPujaScreen = ({navigation}: any) => {
           </Text>
           {/* Today Model View */}
           <View style={styles.todayModalView}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>
                 Today Progress{' '}
               </Text>
             </View>
             <View style={styles.circleModel}>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/Rupay.png')} />
                   <Text> Earning</Text>
                 </View>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.today?.earning || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/watch.png')} />
                   <Text>Login Hours</Text>
                 </View>
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.today?.loginHours || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/order.png')} />
                   <Text>Orders</Text>
                 </View>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.today?.orders || 0}
                 </Text>
               </View>
@@ -751,37 +751,37 @@ const PetPujaScreen = ({navigation}: any) => {
           </View>
           {/* Week Model View */}
           <View style={styles.todayModalView}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>
                 This Week Progress
               </Text>
             </View>
             <View style={styles.circleModel}>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/Rupay.png')} />
                   <Text> Earning</Text>
                 </View>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.week?.earning || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/watch.png')} />
                   <Text>Login Hours</Text>
                 </View>
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.week?.loginHours || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/order.png')} />
                   <Text>Orders</Text>
                 </View>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.week?.orders || 0}
                 </Text>
               </View>
@@ -789,37 +789,37 @@ const PetPujaScreen = ({navigation}: any) => {
           </View>
           {/* Month Model View */}
           <View style={styles.todayModalView}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>
                 This Month Progress
               </Text>
             </View>
             <View style={styles.circleModel}>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/Rupay.png')} />
                   <Text> Earning</Text>
                 </View>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.month?.earning || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/watch.png')} />
                   <Text>Login Hours</Text>
                 </View>
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.month?.loginHours || 0}
                 </Text>
               </View>
               <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                   <Image source={require('../images/order.png')} />
                   <Text>Orders</Text>
                 </View>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold' }}>
                   {progressData.month?.orders || 0}
                 </Text>
               </View>
@@ -869,41 +869,41 @@ const PetPujaScreen = ({navigation}: any) => {
               </View>
               {/* Today Model View */}
               <View style={styles.todayModalView}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text
-                    style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                    style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>
                     Today Progress
                   </Text>
                 </View>
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/Rupay.png')} />
                       <Text> Earning</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.today?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/watch.png')} />
                       <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.today?.loginHours || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/order.png')} />
                       <Text>Orders</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.today?.orders || 0}
                     </Text>
                   </View>
@@ -911,41 +911,41 @@ const PetPujaScreen = ({navigation}: any) => {
               </View>
               {/* Week Model View */}
               <View style={styles.todayModalView}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text
-                    style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                    style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>
                     This Week Progress
                   </Text>
                 </View>
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/Rupay.png')} />
                       <Text> Earning</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.week?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/watch.png')} />
                       <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.week?.loginHours || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/order.png')} />
                       <Text>Orders</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.week?.orders || 0}
                     </Text>
                   </View>
@@ -953,41 +953,41 @@ const PetPujaScreen = ({navigation}: any) => {
               </View>
               {/* Month Model View */}
               <View style={styles.todayModalView}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text
-                    style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
+                    style={{ fontSize: 25, color: '#333333', marginLeft: wp(3) }}>
                     This Month Progress
                   </Text>
                 </View>
                 <View style={styles.circleModel}>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/Rupay.png')} />
                       <Text> Earning</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.month?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/watch.png')} />
                       <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.month?.loginHours || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      style={{ flexDirection: 'column', alignItems: 'center' }}>
                       <Image source={require('../images/order.png')} />
                       <Text>Orders</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={{ fontWeight: 'bold' }}>
                       {progressData.month?.orders || 0}
                     </Text>
                   </View>
@@ -1001,13 +1001,13 @@ const PetPujaScreen = ({navigation}: any) => {
             {loading ? (
               <LoaderComponent />
             ) : (
-              <Animated.View style={{transform: [{translateX: animation}]}}>
+              <Animated.View style={{ transform: [{ translateX: animation }] }}>
                 <ImageBackground source={require('../images/Sukam.jpg')}>
                   <View
                     key={`order_${0 + 1}`}
-                    style={[styles.modalView, {opacity: 2}]}>
+                    style={[styles.modalView, { opacity: 2 }]}>
                     {/* orderId Text */}
-                    <View style={{top: wp(3)}}>
+                    <View style={{ top: wp(3) }}>
                       <Text
                         style={{
                           fontFamily: 'Roboto Mono',
@@ -1033,8 +1033,8 @@ const PetPujaScreen = ({navigation}: any) => {
                     {/* Circul data */}
                     <View style={styles.circleModel}>
                       <View style={styles.circle}>
-                        <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                        <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
+                        <Text style={{ alignItems: 'center' }}>{'₹'}</Text>
+                        <Text style={{ alignItems: 'center' }}>{'Earning'}</Text>
                         <Text
                           style={{
                             fontWeight: '600',
@@ -1070,7 +1070,7 @@ const PetPujaScreen = ({navigation}: any) => {
               </View>
             </View> */}
 
-                    <View style={{alignItems: 'center'}}>
+                    <View style={{ alignItems: 'center' }}>
                       <Text>
                         <Image source={require('../images/cart.png')} /> Pickup
                         Location
@@ -1084,7 +1084,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         {availableOrders[0].pickup_details?.address}
                       </Text>
                     </View>
-                    <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                    <View style={{ alignItems: 'center', marginTop: hp(2) }}>
                       <Text>
                         <Image source={require('../images/cart.png')} /> Drop
                         Location
@@ -1107,7 +1107,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       }}>
                       <SlideButton
                         width={290}
-                        height={50}
+                        height={50}r
                         animationDuration={180}
                         autoResetDelay={1080}
                         animation={true}
@@ -1116,7 +1116,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         sliderWidth={50}
                         icon={
                           <Image
-                            source={require('../svg/Arrow.png')}
+                            source={require('../svg/arrow.png')}
                             style={styles.thumbImage}
                           />
                         } // Adjust width and height as needed
@@ -1125,7 +1125,7 @@ const PetPujaScreen = ({navigation}: any) => {
                           backgroundColor: '#118F5E',
                           color: 'red',
                         }}
-                        underlayStyle={{backgroundColor: 'Red'}}
+                        underlayStyle={{ backgroundColor: 'Red' }}
                         title={buttonText}
                         slideDirection="right"></SlideButton>
 
@@ -1140,7 +1140,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         sliderWidth={50}
                         icon={
                           <Image
-                            source={require('../svg/Arrow.png')}
+                            source={require('../svg/arrow.png')}
                             style={styles.thumbImage}
                           />
                         } // Adjust width and height as needed
@@ -1149,11 +1149,11 @@ const PetPujaScreen = ({navigation}: any) => {
                           backgroundColor: '#D11A2A',
                           color: 'red',
                         }}
-                        underlayStyle={{backgroundColor: 'Red'}}
+                        underlayStyle={{ backgroundColor: 'Red' }}
                         title="Reject Order"
-                        titleStyle={{color: 'white'}}
+                        titleStyle={{ color: 'white' }}
                         slideDirection="right">
-                        <Text style={{color: 'red', fontSize: 18}}></Text>
+                        <Text style={{ color: 'red', fontSize: 18 }}></Text>
                       </SlideButton>
                     </View>
                   </View>
@@ -1180,7 +1180,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         // left: wp(7),
                         top: hp(2),
                       }}>
-                      <Text style={{left: wp(6)}}>
+                      <Text style={{ left: wp(6) }}>
                         Order ID:{' '}
                         <Text
                           style={{
@@ -1194,7 +1194,7 @@ const PetPujaScreen = ({navigation}: any) => {
                           )}
                         </Text>
                       </Text>
-                      <Text style={{color: '#828282', right: wp(6)}}>
+                      <Text style={{ color: '#828282', right: wp(6) }}>
                         {/* <Image source={require('../images/Rupay.png')} /> */}
                         {'₹'} {'Earning'}
                       </Text>
@@ -1219,7 +1219,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       </Text>
                     </View>
                     <View style={styles.line} />
-                    <View style={{alignItems: 'center', top: hp(6)}}>
+                    <View style={{ alignItems: 'center', top: hp(6) }}>
                       <Text>
                         <Image source={require('../images/cart.png')} /> Food
                         Pickup Location
@@ -1248,7 +1248,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         onPress={() =>
                           dialCall(orderDetails.pickup_details.contact_number)
                         }>
-                        <Text style={{color: '#333333'}}>
+                        <Text style={{ color: '#333333' }}>
                           {' '}
                           +91{orderDetails.pickup_details.contact_number}
                         </Text>
@@ -1265,7 +1265,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         // left: wp(7),
                         top: hp(2),
                       }}>
-                      <Text style={{left: wp(6)}}>
+                      <Text style={{ left: wp(6) }}>
                         Order ID:{' '}
                         <Text
                           style={{
@@ -1279,7 +1279,7 @@ const PetPujaScreen = ({navigation}: any) => {
                           )}
                         </Text>
                       </Text>
-                      <Text style={{color: '#828282', right: wp(6)}}>
+                      <Text style={{ color: '#828282', right: wp(6) }}>
                         {/* <Image source={require('../images/Rupay.png')} /> */}
                         {'₹'} {'Earning'}
                       </Text>
@@ -1304,7 +1304,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       </Text>
                     </View>
                     <View style={styles.line} />
-                    <View style={{alignItems: 'center', top: hp(6)}}>
+                    <View style={{ alignItems: 'center', top: hp(6) }}>
                       <Text>
                         <Image source={require('../images/cart.png')} /> Food
                         Drop Location
@@ -1334,7 +1334,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         onPress={() =>
                           dialCall(orderDetails.drop_details.contact_number)
                         }>
-                        <Text style={{color: '#333333'}}>
+                        <Text style={{ color: '#333333' }}>
                           {' '}
                           +91{orderDetails.drop_details.contact_number}
                         </Text>
@@ -1345,7 +1345,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 {!cod && (
                   <View style={styles.paymentWindiw}>
                     <Text style={styles.paymentText}>Cash</Text>
-                    <Text style={{fontSize: 18}}>
+                    <Text style={{ fontSize: 18 }}>
                       Please Collect Your Payment
                     </Text>
                     <Text style={styles.totalorder}>
@@ -1356,7 +1356,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       onPress={() => {
                         paymentButton();
                       }}>
-                      <Text style={{color: 'white', fontSize: 24}}>
+                      <Text style={{ color: 'white', fontSize: 24 }}>
                         Received
                       </Text>
                     </Pressable>
@@ -1378,7 +1378,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     latitudeDelta: region.latitudeDelta || 0.0122,
                     longitudeDelta: region.longitudeDelta || 0.0121,
                   }}
-                  mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
+                  mapPadding={{ top: 200, right: 50, left: 20, bottom: 30 }}>
                   <Marker
                     identifier="myLocationMarker"
                     coordinate={mylocation}
@@ -1419,13 +1419,13 @@ const PetPujaScreen = ({navigation}: any) => {
                     navigateToGoogleMaps(
                       slideCount <= 2
                         ? {
-                            latitude: orderDetails.pickup_details.latitude,
-                            longitude: orderDetails.pickup_details.longitude,
-                          }
+                          latitude: orderDetails.pickup_details.latitude,
+                          longitude: orderDetails.pickup_details.longitude,
+                        }
                         : {
-                            latitude: orderDetails.drop_details.latitude,
-                            longitude: orderDetails.drop_details.longitude,
-                          },
+                          latitude: orderDetails.drop_details.latitude,
+                          longitude: orderDetails.drop_details.longitude,
+                        },
                     )
                   }>
                   <Navigate />
@@ -1451,7 +1451,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       sliderWidth={50}
                       icon={
                         <Image
-                          source={require('../svg/Arrow.png')}
+                          source={require('../svg/arrow.png')}
                           style={styles.thumbImage}
                         />
                       } // Adjust width and height as needed
@@ -1460,7 +1460,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         backgroundColor: '#118F5E',
                         color: 'red',
                       }}
-                      underlayStyle={{backgroundColor: 'Red'}}
+                      underlayStyle={{ backgroundColor: 'Red' }}
                       title={
                         sliderButtonLoader ? (
                           <ActivityIndicator size="small" color="#fff" />
@@ -1654,14 +1654,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     top: '50%',
     left: '50%',
-    transform: [{translateX: -23}, {translateY: 80}], // Adjust the translation to center the spinner
+    transform: [{ translateX: -23 }, { translateY: 80 }], // Adjust the translation to center the spinner
     // Adjust the translateX and translateY values if the spinner size is different
   },
   spinnerContainer: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    transform: [{translateX: 24}, {translateY: 5}], // Adjust the translation to center the spinner
+    transform: [{ translateX: 24 }, { translateY: 5 }], // Adjust the translation to center the spinner
     // Adjust the translateX and translateY values if the spinner size is different
   },
   todayModalView: {
@@ -1780,7 +1780,7 @@ const styles = StyleSheet.create({
     bottom: hp(15),
     marginRight: wp(5),
     alignSelf: 'flex-end',
-    transform: [{rotate: '315deg'}],
+    transform: [{ rotate: '315deg' }],
   },
   paymentButton: {
     marginTop: '10%',
