@@ -78,8 +78,8 @@ android {
         applicationId "com.codeb.sukamexpress"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 34
-        versionName "1.0.8"
+        versionCode 35
+        versionName "1.0.9"
     }
     signingConfigs {
         debug {

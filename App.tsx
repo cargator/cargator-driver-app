@@ -140,7 +140,7 @@ const MapScreenDrawer = () => {
         <Drawer.Screen name="Home" component={PetPujaScreen} />
       )}
       <Drawer.Screen name="Profile" component={Profile} />
-      <Drawer.Screen name="Previous Rides" component={PreviousRides} />
+      {/* <Drawer.Screen name="Previous Rides" component={PreviousRides} /> */}
       <Drawer.Screen name="Order History" component={HistoryPage} />
     </Drawer.Navigator>
   );

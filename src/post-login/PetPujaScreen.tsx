@@ -196,7 +196,6 @@ const PetPujaScreen = ({navigation}: any) => {
       let coordinates = [mylocation.latitude, mylocation.longitude];
       const data = {coordinates};
       const res = await driverLivelocationAPI(data);
-      // console.log('response>>>>>>>', res);
     } catch (error) {
       console.log('Error', error);
     }
@@ -244,9 +243,6 @@ const PetPujaScreen = ({navigation}: any) => {
           distanceFilter: 15,
         },
       );
-
-      console.log('watchID>', watchId);
-
       setLoading(false);
       setGeolocationWatchId(watchId);
       return () => {
@@ -328,7 +324,6 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const updateOrderStatus = async () => {
     try {
-      console.log('inside updateorder status', slideCount);
       setLoading(true);
       const status = {
         id: orderDetails._id,
@@ -423,7 +418,6 @@ const PetPujaScreen = ({navigation}: any) => {
         case 'order-update-response':
           {
             setSliderButtonLoader(false);setLoading(false);
-            // console.log('order-update-response>>>>>>>', body.order);
             if (body.status === 405) {
               Toast.show({
                 type: 'error',
@@ -604,10 +598,6 @@ const PetPujaScreen = ({navigation}: any) => {
       const orderExists = ordersList.current.some(
         (existingOrder: any) => existingOrder._id === notificationData._id,
       );
-      console.log('orderExists :>> ', orderExists);
-      console.log('ordersList.current :>> ', ordersList.current);
-      console.log('notificationData :>> ', notificationData);
-      // newCart();
       // If the order doesn't exist, add it to the array
       if (!orderExists) {
         newCart();
@@ -682,7 +672,6 @@ const PetPujaScreen = ({navigation}: any) => {
           <View>
             <TouchableOpacity
               onPress={() => {
-                // console.log('SideBarIcon pressed!');
                 navigation.toggleDrawer();
               }}>
               <SidebarIcon />
