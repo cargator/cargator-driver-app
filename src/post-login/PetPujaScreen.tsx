@@ -323,6 +323,7 @@ const PetPujaScreen = ({navigation}: any) => {
       driverLoc: mylocation,
     });
     setAvailableOrders([]);
+    ordersList.current = []
   };
 
   const updateOrderStatus = async () => {
@@ -468,6 +469,8 @@ const PetPujaScreen = ({navigation}: any) => {
     try {
       dispatch(setNotificationData(null));
       setAvailableOrders([]);
+      ordersList.current = []
+      
     } catch (error) {
       console.log(error);
     }
