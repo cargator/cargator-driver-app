@@ -69,6 +69,9 @@ const Appdrawercontent = (props: any) => {
       const version = DeviceInfo.getVersion();
       setVersionNumber(version);
     };
+    
+    messaging().setBackgroundMessageHandler(() => new Promise<void>((resolve) => resolve()));
+
 
     messaging().onNotificationOpenedApp((remoteMessage: any) => {
       dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));

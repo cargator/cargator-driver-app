@@ -318,7 +318,9 @@ const PetPujaScreen = ({navigation}: any) => {
       id: order._id.toString(),
       driverLoc: mylocation,
     });
-    setAvailableOrders([]);
+    setAvailableOrders((allOrders: any[]) =>
+      allOrders.filter(ele => ele._id != order._id),
+    );
     ordersList.current = []
   };
 
@@ -459,10 +461,12 @@ const PetPujaScreen = ({navigation}: any) => {
     });
   };
 
-  const onRejectOrder = async () => {
+  const onRejectOrder = async (order: any) => {
     try {
       dispatch(setNotificationData(null));
-      setAvailableOrders([]);
+      setAvailableOrders((allOrders: any[]) =>
+        allOrders.filter(ele => ele._id != order._id),
+      );
       ordersList.current = []
       
     } catch (error) {
@@ -1140,7 +1144,7 @@ const PetPujaScreen = ({navigation}: any) => {
                             style={styles.thumbImage}
                           />
                         } // Adjust width and height as needed
-                        onReachedToEnd={onRejectOrder}
+                        onReachedToEnd={() => onRejectOrder(availableOrders[0])}
                         containerStyle={{
                           backgroundColor: '#D11A2A',
                           color: 'red',
