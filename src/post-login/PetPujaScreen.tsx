@@ -318,10 +318,10 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const onAcceptOrder = (order: any) => {
     setLoading(true);
-    socketInstance?.emit('accept-order', {
-      id: order._id.toString(),
-      driverLoc: mylocation,
-    });
+      socketInstance?.emit('accept-order', {
+        id: order._id.toString(),
+        driverLoc: mylocation,
+      });
     setAvailableOrders([]);
   };
 
@@ -367,10 +367,11 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const orderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
-      switch (message.type) {
+      let body1 = parseSocketMessage(message);
+      let body = body1.message;
+      switch (body1.type) {
         case 'accept-order-response':
           {
-            let body = parseSocketMessage(message.message);
             if (body.driverId && body.driverId.toString() != userId) {
               dispatch(setNotificationData(null));
               setAvailableOrders([]);
@@ -420,7 +421,6 @@ const PetPujaScreen = ({navigation}: any) => {
         case 'order-update-response':
           {
             setSliderButtonLoader(false);
-            let body = parseSocketMessage(message.message);
             // console.log('order-update-response>>>>>>>', body.order);
             if (body.status === 405) {
               Toast.show({
@@ -433,6 +433,7 @@ const PetPujaScreen = ({navigation}: any) => {
               dispatch(removeOrderDetails());
               setSlideCount(0);
               setButtonText('ACCEPT ORDER');
+              setLoading(false);
               return;
             } else {
               if (body.order.status === 'DISPATCHED') {
@@ -444,14 +445,15 @@ const PetPujaScreen = ({navigation}: any) => {
                 text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
                 visibilityTime: 5000,
               });
+              setLoading(false);
             }
           }
           break;
         default:
-          if (parseSocketMessage(message.message).status === 404) {
+          if (body.message.status === 404) {
             Toast.show({
               type: 'error',
-              text1: parseSocketMessage(message.message).message,
+              text1: body.message.message,
             });
           }
           break;
@@ -518,11 +520,8 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      driverStatusToggle(isDriverOnline);
-    }
-    isFirstRender.current = false;
-  }, [isDriverOnline]);
+    driverStatusToggle(isDriverOnline);
+     }, [isDriverOnline]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -565,26 +564,34 @@ const PetPujaScreen = ({navigation}: any) => {
   useEffect(() => {
     Geolocation.clearWatch(geolocationWatchId);
     emitLiveLocation();
+    let unsubscribe:any;
+       unsubscribe = NetInfo.addEventListener(state => {
+        const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
+        setConnected(isConnected);
+        setIsDisabled(!isConnected);
+      });
+ 
     intervalId = setInterval(() => {
       getCurrentPosition();
       driverLivelocation();
     }, 10000);
     return () => {
       clearInterval(intervalId);
+      if(unsubscribe)return unsubscribe()
     };
   }, []);
 
   // useEffect hook to subscribe to network status changes
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
-      setConnected(isConnected);
-      driverStatusToggle(isConnected);
-      setIsDisabled(!isConnected);
-    });
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
+  // useEffect(() => {
+  //   const unsubscribe = NetInfo.addEventListener(state => {
+  //     const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
+  //     setConnected(isConnected);
+  //     driverStatusToggle(isConnected);
+  //     setIsDisabled(!isConnected);
+  //   });
+  //   // Cleanup subscription on unmount
+  //   return () => unsubscribe();
+  // }, []);
 
   useEffect(() => {
     if (Object.keys(notificationData || {}).length) {

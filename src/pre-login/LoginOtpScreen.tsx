@@ -57,7 +57,6 @@ const LoginOtpScreen = ({route}: any) => {
       const res: any = await verifyOtp(otpData);
 
       if (res.status == 200) {
-        await getFcmTokenAndSendToBackend();
         Toast.show({
           type: 'success',
           text1: 'OTP verified. Press continue.',
@@ -70,9 +69,11 @@ const LoginOtpScreen = ({route}: any) => {
         dispatch(setUserData(res.user));
         dispatch(setUserId(res.user._id));
         dispatch(setLoginToken(res.token));
-        setTimeout(() => {
+        setTimeout(async () => {
           setIsOtpEntered(false);
+        await getFcmTokenAndSendToBackend();
         }, 1000);
+
       }
     } catch (error: any) {
       setOTP('');

@@ -21,6 +21,5 @@ export const getOrderHistory = (page: number, data: any, limit = 100) => {
 };
 
 export const updateFcmToken = (data: {token: any}) => {
-  console.log("api called>>>>>>",data);
   return customAxios.post(`/update-FCM-token`, data);
 };

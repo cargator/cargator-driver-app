@@ -9,7 +9,7 @@ function socketConnection(token) {
       `https://sukam-api.cargator.org/?token=${token}`,
       // `http://192.168.1.55:3001?token=${token}`,
       // `https://2c06-114-79-174-195.ngrok-free.app?token=${token}`,
-      {transports: ['websocket']},
+      {transports: ['websocket'], forceNew: true},
     );
 
     socket.on('connect', () => {
@@ -23,8 +23,8 @@ function socketConnection(token) {
       resolve(socket);
     });
 
-    socket.on('disconnect', () => {
-      console.log('socket disconnected');
+    socket.on('disconnect', (reason,details) => {
+      console.log(reason,'socket disconnected',details);
       socketDetails.status = 'disconnected';
       // Toast.show({
       //   type: 'error',
