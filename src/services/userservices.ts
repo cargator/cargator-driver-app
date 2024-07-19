@@ -46,10 +46,9 @@ export const driverLivelocationAPI = (liveLocation: any) => {
     return customAxios.post(`/update-live-location`,liveLocation)
 }
 
-export const getOrdersAPI = () => {
-    return customAxios.get('/get-new-orders')
+export const getAllOrdersAPI = () => {
+    return customAxios.get('/get-pending-orders')
 }
-
 
 export const orderAcceptAPI = (order: any) => {
     return customAxios.post('/order-accept',order)

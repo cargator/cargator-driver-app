@@ -41,6 +41,7 @@ import customAxios from '../services/appservices';
 import { getProgressDetails } from '../services/rideservices';
 import {
   driverLivelocationAPI,
+  getAllOrdersAPI,
   setDriverOffline,
 } from '../services/userservices';
 import Navigate from '../svg/Navigate';
@@ -312,16 +313,40 @@ const PetPujaScreen = ({ navigation }: any) => {
   //   }
   // };
 
+  const getAllOrders = async () => {
+    try {
+      if(!orderStarted){
+        console.log('get all order function called');
+      const orders: any = await getAllOrdersAPI();
+      orders.data.map((order: any) => {
+        setAvailableOrders((prev: any) => {
+          // Check if the order already exists in the array
+          const orderExists = prev.some(
+            (existingOrder: any) => existingOrder._id === order._id,
+          );
+          // If the order doesn't exist, add it to the array
+          if (!orderExists) {
+            newCart();
+            return [...prev, order];
+          }
+          // If the order exists, return the previous state without changes
+          return prev;
+        });
+      });
+    }
+    } catch (error) {
+      console.log('Error', error);
+    }
+  };
+
   const onAcceptOrder = (order: any) => {
     setLoading(true);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
       driverLoc: mylocation,
     });
-    setAvailableOrders((allOrders: any[]) =>
-      allOrders.filter(ele => ele._id != order._id),
-    );
-    ordersList.current = []
+    setAvailableOrders([])
+    ordersList.current = [];
   };
 
   const updateOrderStatus = async () => {
@@ -338,6 +363,7 @@ const PetPujaScreen = ({ navigation }: any) => {
         orderDetails.order_details.payment_status
       ) {
         setOrderStarted(false);
+        getAllOrders();
         setPath([]);
         dispatch(removeOrderDetails());
         dispatch(setOrderStatus(''));
@@ -363,21 +389,29 @@ const PetPujaScreen = ({ navigation }: any) => {
     }
   };
 
+
   const orderStatusListener = async () => {
-    socketInstance.on('order-update-response', (message: any) => {
+    socketInstance.on('order-update-response', (message: any) => {    
+      console.log("orders>>>>", parseSocketMessage(message));
+        
       let body1 = parseSocketMessage(message);
-      let body = body1.message;
+      let body = body1.message;   
+      console.log("<<<<<<<<<>>>>>>>>>", body);
+      
       switch (body1.type) {
         case 'accept-order-response':
           {
-            if (body.driverId && body.driverId.toString() != userId) {
+            if (!body.driverId) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
-              setAvailableOrders([]);
+              // setAvailableOrders([])
+              setAvailableOrders((allOrders: any[]) =>
+                allOrders.filter(ele => ele._id != body.order.orderId),
+              );
               setLoading(false);
               setCartVisible(false);
               Toast.show({
-                type: 'success',
+                type: 'error',
                 text1: 'Order not available !',
                 visibilityTime: 5000,
               });
@@ -389,9 +423,9 @@ const PetPujaScreen = ({ navigation }: any) => {
               ) {
                 dispatch(setNotificationData(null));
                 dispatch(setOrderDetails(body.order));
-                dispatch(setDriverPath(body.path.coords));
+                dispatch(setDriverPath(body?.path?.coords || []));
                 setOrderStarted(true);
-                setPath(body.path.coords);
+                setPath(body?.path?.coords);
                 setButtonText(SliderText[slideCount + 1].flowName);
                 setSlideCount(slideCount + 1);
                 dispatch(setOrderStatus(slideCount));
@@ -419,7 +453,8 @@ const PetPujaScreen = ({ navigation }: any) => {
 
         case 'order-update-response':
           {
-            setSliderButtonLoader(false); setLoading(false);
+            setSliderButtonLoader(false);
+            setLoading(false);
             if (body.status === 405) {
               Toast.show({
                 type: 'error',
@@ -436,8 +471,8 @@ const PetPujaScreen = ({ navigation }: any) => {
             } else {
               if (body.driverId && body.driverId.toString() == userId) {
                 if (body.order.status === 'DISPATCHED') {
-                  dispatch(setDriverPath(body.path.coords));
-                  setPath(body.path.coords);
+                  dispatch(setDriverPath(body?.path?.coords || []));
+                  setPath(body?.path?.coords);
                 }
                 Toast.show({
                   type: 'success',
@@ -463,12 +498,12 @@ const PetPujaScreen = ({ navigation }: any) => {
 
   const onRejectOrder = async (order: any) => {
     try {
+      newCart();
       dispatch(setNotificationData(null));
       setAvailableOrders((allOrders: any[]) =>
         allOrders.filter(ele => ele._id != order._id),
       );
-      ordersList.current = []
-
+      ordersList.current = [];
     } catch (error) {
       console.log(error);
     }
@@ -586,16 +621,16 @@ const PetPujaScreen = ({ navigation }: any) => {
   }, []);
 
   // useEffect hook to subscribe to network status changes
-  // useEffect(() => {
-  //   const unsubscribe = NetInfo.addEventListener(state => {
-  //     const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
-  //     setConnected(isConnected);
-  //     driverStatusToggle(isConnected);
-  //     setIsDisabled(!isConnected);
-  //   });
-  //   // Cleanup subscription on unmount
-  //   return () => unsubscribe();
-  // }, []);
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
+      setConnected(isConnected);
+      driverStatusToggle(isConnected);
+      setIsDisabled(!isConnected);
+    });
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (Object.keys(notificationData || {}).length) {
@@ -611,6 +646,10 @@ const PetPujaScreen = ({ navigation }: any) => {
       dispatch(setNotificationData(null));
     }
   }, [notificationData]);
+
+  useEffect(() => {
+    getAllOrders();
+  },[notificationData,orderStarted]);
 
   return (
     <>
@@ -1407,7 +1446,7 @@ const PetPujaScreen = ({ navigation }: any) => {
                   )}
 
                   <Polyline
-                    coordinates={path}
+                    coordinates={path || []}
                     strokeColor={'#404080'}
                     strokeWidth={4}
                   />
