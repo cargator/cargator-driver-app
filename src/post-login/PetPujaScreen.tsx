@@ -415,7 +415,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 visibilityTime: 5000,
               });
             } 
-            else if(body.driverId != userId){
+            else if(body.driverId != userId && !orderStarted){
               ordersList.current = [];
               dispatch(setNotificationData(null));
               // setAvailableOrders([])
