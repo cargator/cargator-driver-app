@@ -414,7 +414,23 @@ const PetPujaScreen = ({navigation}: any) => {
                 text1: 'Order not available !',
                 visibilityTime: 5000,
               });
-            } else {
+            } 
+            else if(body.driverId != userId){
+              ordersList.current = [];
+              dispatch(setNotificationData(null));
+              // setAvailableOrders([])
+              newCart();
+              setAvailableOrders((allOrders: any[]) =>
+                allOrders.filter(ele => ele._id != body.order._id),
+              );
+              setLoading(false);
+              setCartVisible(false);
+              Toast.show({
+                type: 'error',
+                text1: 'Order not available !',
+                visibilityTime: 5000,
+              });
+            }else {
               if (
                 body.driverId &&
                 body.driverId.toString() == userId &&
