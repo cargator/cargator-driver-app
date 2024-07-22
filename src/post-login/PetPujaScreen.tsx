@@ -319,7 +319,7 @@ const PetPujaScreen = ({navigation}: any) => {
       if (!orderStarted) {
         const orders: any = await getAllOrdersAPI();
         orders.data.map((order: any) => {
-          setAvailableOrders((prev: any) => {
+          setAvailableOrders((prev =[]) => {
             // Check if the order already exists in the array
             const orderExists = prev.some(
               (existingOrder: any) => existingOrder._id === order._id,
@@ -627,7 +627,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
     intervalId = setInterval(() => {
       emitLiveLocation();
-      driverStatusToggle(isDriverOnline);
+      // driverStatusToggle(isDriverOnline);
       driverLivelocation();
     }, 10000);
     return () => {
