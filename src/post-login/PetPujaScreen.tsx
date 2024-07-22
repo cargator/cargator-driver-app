@@ -171,6 +171,7 @@ const PetPujaScreen = ({navigation}: any) => {
         await setDriverOffline();
       } else {
         socketInstance = await getSocketInstance(loginToken);
+        console.log("startSocketListeners>>>>>>>>>>>.");
         startSocketListeners();
         // emitLiveLocation();
       }
@@ -316,7 +317,6 @@ const PetPujaScreen = ({navigation}: any) => {
   const getAllOrders = async () => {
     try {
       if (!orderStarted) {
-        console.log('get all order function called');
         const orders: any = await getAllOrdersAPI();
         orders.data.map((order: any) => {
           setAvailableOrders((prev: any) => {
@@ -377,6 +377,7 @@ const PetPujaScreen = ({navigation}: any) => {
         slideCount >= SliderText.length - 1 &&
         !orderDetails.order_details.payment_status
       ) {
+        setLoading(false);
         setcod(false);
       }
       if (slideCount <= SliderText.length - 2) {
@@ -411,26 +412,25 @@ const PetPujaScreen = ({navigation}: any) => {
               setCartVisible(false);
               Toast.show({
                 type: 'error',
-                text1: 'Order not available !',
+                text1: `${body.message} !`,
                 visibilityTime: 5000,
               });
-            } 
-            else if(body.driverId != userId && !orderStarted){
+            } else if (body.driverId != userId && !orderStarted) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
               // setAvailableOrders([])
-              newCart();
               setAvailableOrders((allOrders: any[]) =>
                 allOrders.filter(ele => ele._id != body.order._id),
               );
+              newCart();
               setLoading(false);
               setCartVisible(false);
               Toast.show({
                 type: 'error',
-                text1: 'Order not available !',
+                text1: `${body.message} !`,
                 visibilityTime: 5000,
               });
-            }else {
+            } else {
               if (
                 body.driverId &&
                 body.driverId.toString() == userId &&
@@ -617,7 +617,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     Geolocation.clearWatch(geolocationWatchId);
-    emitLiveLocation();
+    getCurrentPosition();
     let unsubscribe: any;
     unsubscribe = NetInfo.addEventListener(state => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
@@ -626,7 +626,8 @@ const PetPujaScreen = ({navigation}: any) => {
     });
 
     intervalId = setInterval(() => {
-      getCurrentPosition();
+      emitLiveLocation();
+      driverStatusToggle(isDriverOnline);
       driverLivelocation();
     }, 10000);
     return () => {
@@ -1401,7 +1402,7 @@ const PetPujaScreen = ({navigation}: any) => {
                   <View style={styles.paymentWindiw}>
                     <Text style={styles.paymentText}>Cash</Text>
                     <Text style={{fontSize: 18}}>
-                      Please Collect Your Payment
+                      Please collect the order amount from the customer.
                     </Text>
                     <Text style={styles.totalorder}>
                       ₹ {orderDetails.order_details.order_total}
@@ -1467,7 +1468,7 @@ const PetPujaScreen = ({navigation}: any) => {
                     strokeWidth={4}
                   />
                 </MapView>
-
+                {/*   Nevigate to google map */}
                 <TouchableOpacity
                   style={styles.directionButton}
                   onPress={() =>
