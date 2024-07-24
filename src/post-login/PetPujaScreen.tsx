@@ -1172,7 +1172,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         sliderWidth={50}
                         icon={
                           <Image
-                            source={require('../svg/arrow.png')}
+                            source={require('../svg/Arrow.png')}
                             style={styles.thumbImage}
                           />
                         } // Adjust width and height as needed
@@ -1196,7 +1196,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         sliderWidth={50}
                         icon={
                           <Image
-                            source={require('../svg/arrow.png')}
+                            source={require('../svg/Arrow.png')}
                             style={styles.thumbImage}
                           />
                         } // Adjust width and height as needed
@@ -1507,7 +1507,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       sliderWidth={50}
                       icon={
                         <Image
-                          source={require('../svg/arrow.png')}
+                          source={require('../svg/Arrow.png')}
                           style={styles.thumbImage}
                         />
                       } // Adjust width and height as needed
