@@ -75,6 +75,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const orderStatus = useSelector((store: any) => store.orderStatus);
   const DriverPath = useSelector((store: any) => store.driverPath);
   const notificationData = useSelector((store: any) => store.notificationData);
+  const notificationOrder = useSelector((store: any) => store.notificationOrder);
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
@@ -87,7 +88,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [driverStatus, setDriverStatus] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
-  const [availableOrders, setAvailableOrders] = useState<any>([]);
+  const [availableOrders, setAvailableOrders] = useState<any[]>([]);
   const ordersList = useRef<any>([]);
   const [orderStarted, setOrderStarted] = useState<boolean>(false);
   const [slideCount, setSlideCount] = useState<any>(0);
@@ -98,6 +99,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [connected, setConnected] = useState<boolean>(true);
   const [isDisabled, setIsDisabled] = useState(false);
   const [intervalState, setIntervalState] = useState();
+  const [newNotificationData, setNewNotificationData] = useState();
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
     longitude: 72.0,
@@ -171,7 +173,6 @@ const PetPujaScreen = ({navigation}: any) => {
         await setDriverOffline();
       } else {
         socketInstance = await getSocketInstance(loginToken);
-        console.log("startSocketListeners>>>>>>>>>>>.");
         startSocketListeners();
         // emitLiveLocation();
       }
@@ -318,18 +319,21 @@ const PetPujaScreen = ({navigation}: any) => {
     try {
       if (!orderStarted) {
         const orders: any = await getAllOrdersAPI();
-        orders.data.map((order: any) => {
-          setAvailableOrders((prev =[]) => {
-            // Check if the order already exists in the array
+        orders.data.forEach((order: any) => {
+          setAvailableOrders((prev: any) => {
+            console.log('Previous state:', prev);
+
+            if (!Array.isArray(prev)) {
+              prev = [];
+            }
             const orderExists = prev.some(
               (existingOrder: any) => existingOrder._id === order._id,
             );
-            // If the order doesn't exist, add it to the array
+
             if (!orderExists) {
               newCart();
               return [...prev, order];
             }
-            // If the order exists, return the previous state without changes
             return prev;
           });
         });
@@ -340,6 +344,7 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   const onAcceptOrder = (order: any) => {
+    driverStatusToggle(isDriverOnline)
     setLoading(true);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
@@ -393,11 +398,8 @@ const PetPujaScreen = ({navigation}: any) => {
   const orderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
       console.log('orders>>>>', parseSocketMessage(message));
-
       let body1 = parseSocketMessage(message);
       let body = body1.message;
-      console.log('<<<<<<<<<>>>>>>>>>', body);
-
       switch (body1.type) {
         case 'accept-order-response':
           {
@@ -412,7 +414,7 @@ const PetPujaScreen = ({navigation}: any) => {
               setCartVisible(false);
               Toast.show({
                 type: 'error',
-                text1: `${body.message} !`,
+                text1: 'Order not found !',
                 visibilityTime: 5000,
               });
             } else if (body.driverId != userId && !orderStarted) {
@@ -427,9 +429,16 @@ const PetPujaScreen = ({navigation}: any) => {
               setCartVisible(false);
               Toast.show({
                 type: 'error',
-                text1: `${body.message} !`,
+                text1: ` order not available!`,
                 visibilityTime: 5000,
               });
+            }  else if (body?.status == 404) {
+              Toast.show({
+                type: 'error',
+                text1: 'You are already on an ongoing order !',
+                visibilityTime: 5000,
+              });
+              dispatch(removeOrderDetails());
             } else {
               if (
                 body.driverId &&
@@ -453,15 +462,6 @@ const PetPujaScreen = ({navigation}: any) => {
                 });
               }
             }
-
-            if (body?.status == 404) {
-              Toast.show({
-                type: 'error',
-                text1: 'Order not available !',
-                visibilityTime: 5000,
-              });
-              dispatch(removeOrderDetails());
-            }
             setLoading(false);
           }
           break;
@@ -479,9 +479,12 @@ const PetPujaScreen = ({navigation}: any) => {
               setOrderStarted(false);
               setPath([]);
               dispatch(removeOrderDetails());
+              dispatch(setOrderStatus(''));
+              dispatch(setDriverPath([]));
               setSlideCount(0);
               setButtonText('ACCEPT ORDER');
-
+              setAvailableOrders([]);
+              getAllOrders();
               return;
             } else {
               if (body.driverId && body.driverId.toString() == userId) {
@@ -627,7 +630,6 @@ const PetPujaScreen = ({navigation}: any) => {
 
     intervalId = setInterval(() => {
       emitLiveLocation();
-      // driverStatusToggle(isDriverOnline);
       driverLivelocation();
     }, 10000);
     return () => {
@@ -665,7 +667,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     getAllOrders();
-  }, [notificationData, orderStarted]);
+  }, [notificationOrder, orderStarted]);
 
   return (
     <>

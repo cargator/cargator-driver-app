@@ -55,6 +55,7 @@ import store, {
   removeUserData,
   setDriverAppFlow,
   setNotificationData,
+  setNotificationOrder,
 } from './src/redux/redux';
 import {getDriverAppFlowAPI} from './src/services/userservices';
 import {requestUserPermission} from './src/utils/firebase-config';
@@ -74,7 +75,7 @@ const Appdrawercontent = (props: any) => {
 
 
     messaging().onNotificationOpenedApp((remoteMessage: any) => {
-      dispatch(setNotificationData(JSON.parse(remoteMessage.data.data)));
+      dispatch(setNotificationOrder(JSON.parse(remoteMessage.data.data)));   
       props.navigation.navigate('Home');
     });
 
