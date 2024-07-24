@@ -47,7 +47,6 @@ function socketConnection(token) {
 }
 
 export async function getSocketInstance(token) {
-  console.log("called to reconnect");
   if (socket && socket.connected) {
     return socket;
   } else {
@@ -57,6 +56,7 @@ export async function getSocketInstance(token) {
 
 export async function socketDisconnect() {
   if (socket && socket.connected) {
+    console.log("socket disconnected>>>>>>>>>>>>>>");
     await socket.disconnect();
   }
 }
