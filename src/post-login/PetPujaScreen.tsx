@@ -376,6 +376,7 @@ const PetPujaScreen = ({navigation}: any) => {
         setSlideCount(0);
         setButtonText('ACCEPT ORDER');
         setAvailableOrders([]);
+        await getSocketInstance(loginToken);
         return;
       }
       if (
