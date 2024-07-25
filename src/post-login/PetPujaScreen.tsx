@@ -388,7 +388,7 @@ const PetPujaScreen = ({navigation}: any) => {
               setAvailableOrders((allOrders: any[]) =>
                 allOrders.filter(ele => ele._id != body.order.orderId),
               );
-              // getAllOrders()
+              getAllOrders()
               setLoading(false);
               setCartVisible(false);
               Toast.show({
@@ -397,7 +397,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 visibilityTime: 5000,
               });
             }
-             else if (body.order.orderId && !orderStartedRef.current) {
+             else if (body.driverId != userId && !orderStartedRef.current) {
               console.log("2222222222222222");
               ordersList.current = [];
               dispatch(setNotificationData(null));
