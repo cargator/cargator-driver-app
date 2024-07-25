@@ -381,7 +381,7 @@ const PetPujaScreen = ({navigation}: any) => {
       switch (body1.type) {
         case 'accept-order-response':
           {
-            if (!body.driverId) {
+            if (!body.driverId && !orderStartedRef.current) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
               setAvailableOrders((allOrders: any[]) =>
