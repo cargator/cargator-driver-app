@@ -629,7 +629,6 @@ const PetPujaScreen = ({navigation}: any) => {
     });
 
     intervalId = setInterval(() => {
-      getSocketInstance(loginToken);
       emitLiveLocation();
       driverLivelocation();
     }, 10000);
