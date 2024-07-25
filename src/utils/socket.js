@@ -9,12 +9,38 @@ function socketConnection(token) {
       `https://sukam-api.cargator.org/?token=${token}`,
       // `http://192.168.1.101:3002?token=${token}`,
       // `https://bfd9-114-79-174-61.ngrok-free.app?token=${token}`,
-      {transports: ['websocket'], forceNew: true},
+      {transports: ['websocket'], forceNew: true,jsonp: true},
     );
+
+    socket
 
     socket.on('connect', () => {
       console.log('socket connected');
       socketDetails.status = 'connected';
+      const engine = socket.io.engine;
+  console.log('first name :>>',engine.transport.name); // in most cases, prints "polling"
+
+  engine.once("upgrade", () => {
+    // called when the transport is upgraded (i.e. from HTTP long-polling to WebSocket)
+    console.log('name: >>',engine.transport.name); // in most cases, prints "websocket"
+  });
+
+  engine.on("packet", ({ type, data }) => {
+    // called for each packet received
+  });
+
+  engine.on("packetCreate", ({ type, data }) => {
+    // called for each packet sent
+  });
+
+  engine.on("drain", () => {
+    // called when the write buffer is drained
+  });
+
+  engine.on("close", (reason) => {
+    console.log('reason :>> ', reason);
+    // called when the underlying connection is closed
+  });
       // Toast.show({
       //   type: 'success',
       //   text1: 'You are online',

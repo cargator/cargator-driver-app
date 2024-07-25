@@ -344,7 +344,7 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   const onAcceptOrder = (order: any) => {
-    driverStatusToggle(isDriverOnline)
+    // driverStatusToggle(isDriverOnline)
     setLoading(true);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
@@ -397,7 +397,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const orderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
-      console.log('orders>>>>', parseSocketMessage(message));
+      // console.log('orders>>>>', parseSocketMessage(message));
       let body1 = parseSocketMessage(message);
       let body = body1.message;
       switch (body1.type) {
@@ -638,17 +638,6 @@ const PetPujaScreen = ({navigation}: any) => {
     };
   }, []);
 
-  // useEffect hook to subscribe to network status changes
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
-      setConnected(isConnected);
-      driverStatusToggle(isConnected);
-      setIsDisabled(!isConnected);
-    });
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     if (Object.keys(notificationData || {}).length) {
