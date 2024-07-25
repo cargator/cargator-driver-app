@@ -384,9 +384,9 @@ const PetPujaScreen = ({navigation}: any) => {
             if (!body.driverId && !orderStartedRef.current) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
-              // setAvailableOrders((allOrders: any[]) =>
-              //   allOrders.filter(ele => ele._id != body.order.orderId),
-              // );
+              setAvailableOrders((allOrders: any[]) =>
+                allOrders.filter(ele => ele._id != body.order.orderId),
+              );
               getAllOrders()
               setLoading(false);
               setCartVisible(false);
@@ -395,21 +395,23 @@ const PetPujaScreen = ({navigation}: any) => {
                 text1: 'Order not found !',
                 visibilityTime: 5000,
               });
-            } else if (body.driverId != userId && !orderStartedRef.current) {
-              ordersList.current = [];
-              dispatch(setNotificationData(null));
-              setAvailableOrders((allOrders: any[]) =>
-                allOrders.filter(ele => ele._id != body.order._id),
-              );
-              newCart();
-              setLoading(false);
-              setCartVisible(false);
-              Toast.show({
-                type: 'error',
-                text1: ` order not available!`,
-                visibilityTime: 5000,
-              });
-            } else if (body?.status == 404) {
+            }
+            //  else if (body.driverId != userId && !orderStartedRef.current) {
+            //   ordersList.current = [];
+            //   dispatch(setNotificationData(null));
+            //   setAvailableOrders((allOrders: any[]) =>
+            //     allOrders.filter(ele => ele._id != body.order._id),
+            //   );
+            //   newCart();
+            //   setLoading(false);
+            //   setCartVisible(false);
+            //   Toast.show({
+            //     type: 'error',
+            //     text1: ` order not available!`,
+            //     visibilityTime: 5000,
+            //   });
+            // }
+             else if (body?.status == 404) {
               Toast.show({
                 type: 'error',
                 text1: 'You are already on an ongoing order !',
