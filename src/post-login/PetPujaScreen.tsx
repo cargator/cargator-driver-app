@@ -381,13 +381,14 @@ const PetPujaScreen = ({navigation}: any) => {
       switch (body1.type) {
         case 'accept-order-response':
           {
+            console.log("11111111111111111111111");
             if (!body.driverId && !orderStartedRef.current) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
               setAvailableOrders((allOrders: any[]) =>
                 allOrders.filter(ele => ele._id != body.order.orderId),
               );
-              getAllOrders()
+              // getAllOrders()
               setLoading(false);
               setCartVisible(false);
               Toast.show({
@@ -396,21 +397,22 @@ const PetPujaScreen = ({navigation}: any) => {
                 visibilityTime: 5000,
               });
             }
-            //  else if (body.driverId != userId && !orderStartedRef.current) {
-            //   ordersList.current = [];
-            //   dispatch(setNotificationData(null));
-            //   setAvailableOrders((allOrders: any[]) =>
-            //     allOrders.filter(ele => ele._id != body.order._id),
-            //   );
-            //   newCart();
-            //   setLoading(false);
-            //   setCartVisible(false);
-            //   Toast.show({
-            //     type: 'error',
-            //     text1: ` order not available!`,
-            //     visibilityTime: 5000,
-            //   });
-            // }
+             else if (body.order.orderId && !orderStartedRef.current) {
+              console.log("2222222222222222");
+              ordersList.current = [];
+              dispatch(setNotificationData(null));
+              setAvailableOrders((allOrders: any[]) =>
+                allOrders.filter(ele => ele._id != body.order._id),
+              );
+              newCart();
+              setLoading(false);
+              setCartVisible(false);
+              Toast.show({
+                type: 'error',
+                text1: ` order not available!`,
+                visibilityTime: 5000,
+              });
+            }
              else if (body?.status == 404) {
               Toast.show({
                 type: 'error',
