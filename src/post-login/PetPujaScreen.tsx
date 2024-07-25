@@ -384,9 +384,10 @@ const PetPujaScreen = ({navigation}: any) => {
             if (!body.driverId && !orderStartedRef.current) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
-              setAvailableOrders((allOrders: any[]) =>
-                allOrders.filter(ele => ele._id != body.order.orderId),
-              );
+              // setAvailableOrders((allOrders: any[]) =>
+              //   allOrders.filter(ele => ele._id != body.order.orderId),
+              // );
+              getAllOrders()
               setLoading(false);
               setCartVisible(false);
               Toast.show({
@@ -541,6 +542,9 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     driverStatusToggle(isDriverOnline);
+    if(isDriverOnline){
+      getAllOrders()
+    }
   }, [isDriverOnline]);
 
   const fetchData = async () => {
