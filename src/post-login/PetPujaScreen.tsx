@@ -80,14 +80,12 @@ const PetPujaScreen = ({navigation}: any) => {
   );
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
-  const isFirstRender = useRef(true);
   const mapRef = useRef<any>(null);
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
   const [heading, setHeading] = useState<any>(0);
   const [region, setRegion] = useState<any>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
-  const [driverStatus, setDriverStatus] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<any[]>([]);
@@ -101,15 +99,12 @@ const PetPujaScreen = ({navigation}: any) => {
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
   const [isDisabled, setIsDisabled] = useState(false);
-  const [intervalState, setIntervalState] = useState();
-  const [newNotificationData, setNewNotificationData] = useState();
+  const rejectAnimation = useRef<any>(true);
+  const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
     longitude: 72.0,
   });
-
-  const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
-  const [cartVisible, setCartVisible] = useState(true);
 
   const animateCart = (toValue: number, callback: any = undefined) => {
     Animated.timing(animation, {
@@ -119,15 +114,23 @@ const PetPujaScreen = ({navigation}: any) => {
     }).start(callback);
   };
 
-  const newCart = () => {
-    setCartVisible(true);
-    animation.setValue(-200); // Reset position to off-screen left
+  const orderAcceptAnimation = () => {
+    animation.setValue(-500); // Reset position to off-screen left
     animateCart(0); // Move on-screen
+  };
+
+
+  const orderRejectAnimation = () => {
+    animation.setValue(500); // Reset position to off-screen below
+    Animated.timing(animation, {
+      toValue: 0, // Move on-screen
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handleLogout = async () => {
     try {
-      // await RNFetchBlob.fs.unlink(`file://${userImg}`);
       await socketDisconnect();
       dispatch(removeUserData());
     } catch (err) {
@@ -140,7 +143,6 @@ const PetPujaScreen = ({navigation}: any) => {
       setLoading(true);
       const response = await getProgressDetails();
       setProgressData(response.data);
-      // setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
     }
@@ -292,7 +294,7 @@ const PetPujaScreen = ({navigation}: any) => {
       console.warn(err);
     }
   }, []);
-  
+
   const getAllOrders = async () => {
     try {
       if (!orderStarted) {
@@ -309,7 +311,7 @@ const PetPujaScreen = ({navigation}: any) => {
             );
 
             if (!orderExists) {
-              newCart();
+              orderAcceptAnimation();
               return [...prev, order];
             }
             return prev;
@@ -322,7 +324,6 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   const onAcceptOrder = (order: any) => {
-    // driverStatusToggle(isDriverOnline)
     setLoading(true);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
@@ -345,7 +346,7 @@ const PetPujaScreen = ({navigation}: any) => {
         slideCount >= SliderText.length - 1 &&
         orderDetails.order_details.payment_status
       ) {
-        setOrderStarted(false)
+        setOrderStarted(false);
         orderStartedRef.current = false;
         getAllOrders();
         setPath([]);
@@ -387,31 +388,27 @@ const PetPujaScreen = ({navigation}: any) => {
               setAvailableOrders((allOrders: any[]) =>
                 allOrders.filter(ele => ele._id != body.order.orderId),
               );
-              getAllOrders()
+              getAllOrders();
               setLoading(false);
-              setCartVisible(false);
               Toast.show({
                 type: 'error',
                 text1: 'Order not found !',
                 visibilityTime: 5000,
               });
-            }
-             else if (body.driverId != userId && !orderStartedRef.current) {
+            } else if (body.driverId != userId && !orderStartedRef.current) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
               setAvailableOrders((allOrders: any[]) =>
                 allOrders.filter(ele => ele._id != body.order._id),
               );
-              newCart();
+              orderAcceptAnimation();
               setLoading(false);
-              setCartVisible(false);
               Toast.show({
                 type: 'error',
                 text1: ` order not available!`,
                 visibilityTime: 5000,
               });
-            }
-             else if (body?.status == 404) {
+            } else if (body?.status == 404) {
               Toast.show({
                 type: 'error',
                 text1: 'You are already on an ongoing order !',
@@ -427,8 +424,8 @@ const PetPujaScreen = ({navigation}: any) => {
                 dispatch(setNotificationData(null));
                 dispatch(setOrderDetails(body.order));
                 dispatch(setDriverPath(body?.path?.coords || []));
-                setOrderStarted(true)
-                orderStartedRef.current = true
+                setOrderStarted(true);
+                orderStartedRef.current = true;
                 setPath(body?.path?.coords);
                 setButtonText(SliderText[slideCount + 1].flowName);
                 setSlideCount(slideCount + 1);
@@ -457,7 +454,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 visibilityTime: 5000,
               });
               orderStartedRef.current = false;
-              setOrderStarted(false)
+              setOrderStarted(false);
               setPath([]);
               dispatch(removeOrderDetails());
               dispatch(setOrderStatus(''));
@@ -497,11 +494,14 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const onRejectOrder = async (order: any) => {
     try {
-      newCart();
+      // rejectAnimation.current = true;
+      orderRejectAnimation()
       dispatch(setNotificationData(null));
       setAvailableOrders((allOrders: any[]) =>
         allOrders.filter(ele => ele._id != order._id),
       );
+      // rejectAnimation.current = false;
+      // orderAcceptAnimation();
       ordersList.current = [];
     } catch (error) {
       console.log(error);
@@ -519,7 +519,6 @@ const PetPujaScreen = ({navigation}: any) => {
       console.log(error);
     }
   };
-
 
   const startSocketListeners = () => {
     orderStatusListener();
@@ -544,8 +543,8 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     driverStatusToggle(isDriverOnline);
-    if(isDriverOnline){
-      getAllOrders()
+    if (isDriverOnline) {
+      getAllOrders();
     }
   }, [isDriverOnline]);
 
@@ -614,7 +613,7 @@ const PetPujaScreen = ({navigation}: any) => {
       );
       // If the order doesn't exist, add it to the array
       if (!orderExists) {
-        newCart();
+        orderAcceptAnimation();
         ordersList.current = [...ordersList.current, notificationData];
       }
       setAvailableOrders(ordersList.current);
@@ -1014,6 +1013,166 @@ const PetPujaScreen = ({navigation}: any) => {
           <>
             {loading ? (
               <LoaderComponent />
+            ) : rejectAnimation.current ? (
+              <Animated.View style={{transform: [{translateY: animation}]}}>
+                <ImageBackground source={require('../images/Sukam.jpg')}>
+                  <View
+                    key={`order_${0 + 1}`}
+                    style={[styles.modalView, {opacity: 2}]}>
+                    {/* orderId Text */}
+                    <View style={{top: wp(3)}}>
+                      <Text
+                        style={{
+                          fontFamily: 'Roboto Mono',
+                          fontSize: hp(2.5),
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          color: '#212121',
+                        }}>
+                        Order Id :{' '}
+                        <Text
+                          style={{
+                            fontFamily: 'RobotoMono-Regular',
+                            fontWeight: '700',
+                            color: '#118F5E',
+                            fontSize: 20,
+                          }}>
+                          {availableOrders[0].order_details?.vendor_order_id.slice(
+                            -6,
+                          )}
+                        </Text>
+                      </Text>
+                    </View>
+                    {/* Circul data */}
+                    <View style={styles.circleModel}>
+                      <View style={styles.circle}>
+                        <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                        <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#000000',
+                            fontSize: 15,
+                          }}>
+                          {'₹ '}0
+                        </Text>
+                      </View>
+                    </View>
+                    {/* <View style={styles.text}>
+              <View
+                style={{
+                  width: wp(30),
+                  height: hp(4),
+                  backgroundColor: '#F5FFFB',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 15,
+                }}>
+                <Text>Time : {1}-HRS.</Text>
+              </View>
+              <View
+                style={{
+                  width: wp(38),
+                  height: hp(4),
+                  backgroundColor: '#F5FFFB',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 15,
+                }}>
+                <Text>Distance :{15}-KM.</Text>
+              </View>
+            </View> */}
+
+                    <View style={{alignItems: 'center'}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Pickup
+                        Location
+                      </Text>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
+                        }}>
+                        {availableOrders[0].pickup_details?.address}
+                      </Text>
+                    </View>
+                    <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Drop
+                        Location
+                      </Text>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
+                        }}>
+                        {availableOrders[0].drop_details?.address}
+                      </Text>
+                    </View>
+                    {/* SliderButton */}
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'flex-end',
+                        marginBottom: hp(0),
+                      }}>
+                      <SlideButton
+                        width={290}
+                        height={50}
+                        r
+                        animationDuration={180}
+                        autoResetDelay={1080}
+                        animation={true}
+                        autoReset={true}
+                        borderRadius={15}
+                        sliderWidth={50}
+                        icon={
+                          <Image
+                            source={require('../svg/Arrow.png')}
+                            style={styles.thumbImage}
+                          />
+                        } // Adjust width and height as needed
+                        onReachedToEnd={handleEndReached}
+                        containerStyle={{
+                          backgroundColor: '#118F5E',
+                          color: 'red',
+                        }}
+                        underlayStyle={{backgroundColor: 'Red'}}
+                        title={buttonText}
+                        slideDirection="right"></SlideButton>
+
+                      <SlideButton
+                        width={290}
+                        height={50}
+                        borderRadius={15}
+                        animationDuration={180}
+                        autoResetDelay={1080}
+                        animation={true}
+                        autoReset={true}
+                        sliderWidth={50}
+                        icon={
+                          <Image
+                            source={require('../svg/Arrow.png')}
+                            style={styles.thumbImage}
+                          />
+                        } // Adjust width and height as needed
+                        onReachedToEnd={() => onRejectOrder(availableOrders[0])}
+                        containerStyle={{
+                          backgroundColor: '#D11A2A',
+                          color: 'red',
+                        }}
+                        underlayStyle={{backgroundColor: 'Red'}}
+                        title="Reject Order"
+                        titleStyle={{color: 'white'}}
+                        slideDirection="right">
+                        <Text style={{color: 'red', fontSize: 18}}></Text>
+                      </SlideButton>
+                    </View>
+                  </View>
+                </ImageBackground>
+              </Animated.View>
             ) : (
               <Animated.View style={{transform: [{translateX: animation}]}}>
                 <ImageBackground source={require('../images/Sukam.jpg')}>
