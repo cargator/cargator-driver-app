@@ -75,7 +75,9 @@ const PetPujaScreen = ({navigation}: any) => {
   const orderStatus = useSelector((store: any) => store.orderStatus);
   const DriverPath = useSelector((store: any) => store.driverPath);
   const notificationData = useSelector((store: any) => store.notificationData);
-  const notificationOrder = useSelector((store: any) => store.notificationOrder);
+  const notificationOrder = useSelector(
+    (store: any) => store.notificationOrder,
+  );
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
   const isFirstRender = useRef(true);
@@ -91,6 +93,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const [availableOrders, setAvailableOrders] = useState<any[]>([]);
   const ordersList = useRef<any>([]);
   const [orderStarted, setOrderStarted] = useState<boolean>(false);
+  const orderStartedRef = useRef<any>(false);
   const [slideCount, setSlideCount] = useState<any>(0);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
@@ -289,32 +292,7 @@ const PetPujaScreen = ({navigation}: any) => {
       console.warn(err);
     }
   }, []);
-
-  // const newOrdersListener = () => {
-  //   try {
-  //     socketInstance.on('order-request', async (orders: []) => {
-  //       // console.log('>>>>>>>>>>>', orders);
-  //       orders.map((order: any) => {
-  //         setAvailableOrders((prev: any) => {
-  //           // Check if the order already exists in the array
-  //           const orderExists = prev.some(
-  //             (existingOrder: any) => existingOrder._id === order._id,
-  //           );
-  //           // If the order doesn't exist, add it to the array
-  //           if (!orderExists) {
-  //             newCart();
-  //             return [...prev, order];
-  //           }
-  //           // If the order exists, return the previous state without changes
-  //           return prev;
-  //         });
-  //       });
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
+  
   const getAllOrders = async () => {
     try {
       if (!orderStarted) {
@@ -367,7 +345,7 @@ const PetPujaScreen = ({navigation}: any) => {
         slideCount >= SliderText.length - 1 &&
         orderDetails.order_details.payment_status
       ) {
-        setOrderStarted(false);
+        orderStartedRef.current = false;
         getAllOrders();
         setPath([]);
         dispatch(removeOrderDetails());
@@ -397,7 +375,6 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const orderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
-      // console.log('orders>>>>', parseSocketMessage(message));
       let body1 = parseSocketMessage(message);
       let body = body1.message;
       switch (body1.type) {
@@ -406,7 +383,6 @@ const PetPujaScreen = ({navigation}: any) => {
             if (!body.driverId) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
-              // setAvailableOrders([])
               setAvailableOrders((allOrders: any[]) =>
                 allOrders.filter(ele => ele._id != body.order.orderId),
               );
@@ -417,10 +393,9 @@ const PetPujaScreen = ({navigation}: any) => {
                 text1: 'Order not found !',
                 visibilityTime: 5000,
               });
-            } else if (body.driverId != userId && !orderStarted) {
+            } else if (body.driverId != userId && !orderStartedRef.current) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
-              // setAvailableOrders([])
               setAvailableOrders((allOrders: any[]) =>
                 allOrders.filter(ele => ele._id != body.order._id),
               );
@@ -432,7 +407,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 text1: ` order not available!`,
                 visibilityTime: 5000,
               });
-            }  else if (body?.status == 404) {
+            } else if (body?.status == 404) {
               Toast.show({
                 type: 'error',
                 text1: 'You are already on an ongoing order !',
@@ -448,7 +423,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 dispatch(setNotificationData(null));
                 dispatch(setOrderDetails(body.order));
                 dispatch(setDriverPath(body?.path?.coords || []));
-                setOrderStarted(true);
+                orderStartedRef.current = true
                 setPath(body?.path?.coords);
                 setButtonText(SliderText[slideCount + 1].flowName);
                 setSlideCount(slideCount + 1);
@@ -476,7 +451,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 text1: 'Order cancelled by customer!',
                 visibilityTime: 5000,
               });
-              setOrderStarted(false);
+              orderStartedRef.current = false;
               setPath([]);
               dispatch(removeOrderDetails());
               dispatch(setOrderStatus(''));
@@ -539,21 +514,6 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
-  // Function to show the alert
-  // const showAlert = () => {
-  //   Alert.alert(
-  //     'No Internet Connection',
-  //     'Please check your internet connection.',
-  //     [
-  //       {
-  //         text: 'OK',
-  //         onPress: () => {},
-  //         style: 'cancel',
-  //       },
-  //     ],
-  //     {cancelable: false},
-  //   );
-  // };
 
   const startSocketListeners = () => {
     orderStatusListener();
@@ -637,7 +597,6 @@ const PetPujaScreen = ({navigation}: any) => {
       if (unsubscribe) return unsubscribe();
     };
   }, []);
-
 
   useEffect(() => {
     if (Object.keys(notificationData || {}).length) {
