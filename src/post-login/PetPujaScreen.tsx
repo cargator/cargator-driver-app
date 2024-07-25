@@ -381,7 +381,6 @@ const PetPujaScreen = ({navigation}: any) => {
       switch (body1.type) {
         case 'accept-order-response':
           {
-            console.log("11111111111111111111111");
             if (!body.driverId && !orderStartedRef.current) {
               ordersList.current = [];
               dispatch(setNotificationData(null));
@@ -398,7 +397,6 @@ const PetPujaScreen = ({navigation}: any) => {
               });
             }
              else if (body.driverId != userId && !orderStartedRef.current) {
-              console.log("2222222222222222");
               ordersList.current = [];
               dispatch(setNotificationData(null));
               setAvailableOrders((allOrders: any[]) =>
