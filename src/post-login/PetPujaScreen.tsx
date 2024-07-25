@@ -345,6 +345,7 @@ const PetPujaScreen = ({navigation}: any) => {
         slideCount >= SliderText.length - 1 &&
         orderDetails.order_details.payment_status
       ) {
+        setOrderStarted(false)
         orderStartedRef.current = false;
         getAllOrders();
         setPath([]);
@@ -423,6 +424,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 dispatch(setNotificationData(null));
                 dispatch(setOrderDetails(body.order));
                 dispatch(setDriverPath(body?.path?.coords || []));
+                setOrderStarted(true)
                 orderStartedRef.current = true
                 setPath(body?.path?.coords);
                 setButtonText(SliderText[slideCount + 1].flowName);
@@ -452,6 +454,7 @@ const PetPujaScreen = ({navigation}: any) => {
                 visibilityTime: 5000,
               });
               orderStartedRef.current = false;
+              setOrderStarted(false)
               setPath([]);
               dispatch(removeOrderDetails());
               dispatch(setOrderStatus(''));
