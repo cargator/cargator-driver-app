@@ -1,18 +1,17 @@
 import messaging from '@react-native-firebase/messaging';
 import {updateFcmToken} from '../services/rideservices';
 import {PermissionsAndroid, Platform} from 'react-native';
-console.log(' iam in firerv=base');
 
 export async function requestUserPermission() {
-  console.log(
-    'PermissionsAndroid.RESULTS.granted',
-    PermissionsAndroid.RESULTS.GRANTED,
-  );
+  // console.log(
+  //   'PermissionsAndroid.RESULTS.granted',
+  //   PermissionsAndroid.RESULTS.GRANTED,
+  // );
   if (Platform.OS == 'android' && Platform.Version >= 33) {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
     );
-    console.log('grantedgranted', granted);
+  
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
       getFcmToken();
     } else {
