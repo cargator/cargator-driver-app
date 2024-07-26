@@ -38,7 +38,10 @@ import {
   setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
-import {getProgressDetails} from '../services/rideservices';
+import {
+  getProgressDetails,
+  updateOrderStatusAPI,
+} from '../services/rideservices';
 import {
   driverLivelocationAPI,
   getAllOrdersAPI,
@@ -49,6 +52,7 @@ import SidebarIcon from '../svg/SidebarIcon';
 import Spinner from '../svg/spinner';
 import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
+import { useFocusEffect } from '@react-navigation/native';
 export let socketInstance: any;
 let intervalId: any;
 
@@ -199,6 +203,8 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   const driverLivelocation = async () => {
+    console.log("driverLivelocation called");
+    
     try {
       let coordinates = [mylocation.latitude, mylocation.longitude];
       const data = {coordinates};
@@ -316,7 +322,7 @@ const PetPujaScreen = ({navigation}: any) => {
             );
 
             if (!orderExists) {
-              if(availableOrders.length === 0){
+              if (availableOrders.length === 0) {
                 orderAcceptAnimation();
               }
               return [...prev, order];
@@ -336,8 +342,9 @@ const PetPujaScreen = ({navigation}: any) => {
       id: order._id.toString(),
       driverLoc: mylocation,
     });
-    // setAvailableOrders([]);
-    // ordersList.current = [];
+    setAvailableOrders((allOrders: any[]) =>
+      allOrders.filter(ele => ele._id !== order._id),
+    );
   };
 
   const updateOrderStatus = async () => {
@@ -347,11 +354,13 @@ const PetPujaScreen = ({navigation}: any) => {
         id: orderDetails._id,
         status: SliderText[slideCount]?.flowName,
       };
-      socketInstance?.emit('update-order-status', status);
-
+      // socketInstance?.emit('update-order-status', status);
+      const updateResponse = await updateOrderStatusAPI(status);
+      console.log("response after update>>>>>>>>>", JSON.stringify(updateResponse.data));
       if (
-        slideCount >= SliderText.length - 1 &&
-        orderDetails.order_details.payment_status
+        (slideCount >= SliderText.length - 1 &&
+          orderDetails.order_details.payment_status) ||
+        updateResponse.data.order.status == 405
       ) {
         setOrderStarted(false);
         orderStartedRef.current = false;
@@ -362,20 +371,33 @@ const PetPujaScreen = ({navigation}: any) => {
         dispatch(setDriverPath([]));
         setSlideCount(0);
         setButtonText('ACCEPT ORDER');
-        setAvailableOrders([]);
+        if(updateResponse.data.status == 405){
+          Toast.show({
+            type: 'error',
+            text1: 'Order cancelled by customer!',
+            visibilityTime: 5000,
+          });
+        }
         return;
-      }
-      if (
+      } else if (
         slideCount >= SliderText.length - 1 &&
         !orderDetails.order_details.payment_status
       ) {
         setLoading(false);
         setcod(false);
-      }
-      if (slideCount <= SliderText.length - 2) {
+      } else {
+        dispatch(setOrderDetails(updateResponse.data.order));
+        dispatch(setDriverPath(updateResponse?.data?.path?.coords || []));
         setSlideCount(slideCount + 1);
         setButtonText(SliderText[slideCount + 1].flowName);
+        setPath(updateResponse?.data?.path?.coords || []);
         dispatch(setOrderStatus(slideCount));
+        setLoading(false);
+        Toast.show({
+          type: 'success',
+          text1: `ORDER SUCCESSFULLY ${updateResponse.data.order.status} !`,
+          visibilityTime: 5000,
+        });
       }
     } catch (error) {
       console.log('Error', error);
@@ -468,7 +490,6 @@ const PetPujaScreen = ({navigation}: any) => {
               dispatch(setDriverPath([]));
               setSlideCount(0);
               setButtonText('ACCEPT ORDER');
-              setAvailableOrders([]);
               getAllOrders();
               return;
             } else {
@@ -545,13 +566,13 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(()  => {
     driverStatusToggle(isDriverOnline);
-    console.log('isDriverOnline>>>>>>', isDriverOnline);
     if (isDriverOnline) {
       getAllOrders();
     }
-  }, [isDriverOnline]);
+  }, [isDriverOnline]));
 
   const fetchData = async () => {
     setLoading(true);
@@ -567,7 +588,8 @@ const PetPujaScreen = ({navigation}: any) => {
     fetchData();
   }, [orderStarted]);
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     if (orderStatus === Number('0')) {
       setOrderStarted(true);
       setPath(DriverPath);
@@ -589,9 +611,7 @@ const PetPujaScreen = ({navigation}: any) => {
       setButtonText(SliderText[orderStatus + 1]?.flowName);
       setAvailableOrders(orderDetails);
     }
-  }, []);
 
-  useEffect(() => {
     Geolocation.clearWatch(geolocationWatchId);
     getCurrentPosition();
     let unsubscribe: any;
@@ -600,7 +620,6 @@ const PetPujaScreen = ({navigation}: any) => {
       setConnected(isConnected);
       setIsDisabled(!isConnected);
     });
-
     intervalId = setInterval(() => {
       emitLiveLocation();
       driverLivelocation();
@@ -609,7 +628,8 @@ const PetPujaScreen = ({navigation}: any) => {
       clearInterval(intervalId);
       if (unsubscribe) return unsubscribe();
     };
-  }, []);
+  }, []));
+
 
   useEffect(() => {
     if (Object.keys(notificationData || {}).length) {

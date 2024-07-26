@@ -6,9 +6,9 @@ let socketDetails = {status: 'disconnected'};
 function socketConnection(token) {
   return new Promise((resolve, reject) => {
     socket = io.connect(
-      `https://sukam-api.cargator.org/?token=${token}`,
-      // `http://192.168.1.101:3001?token=${token}`,
-      // `https://818f-182-48-211-210.ngrok-free.app?token=${token}`,
+      // `https://sukam-api.cargator.org/?token=${token}`,
+      `http://192.168.1.101:3001?token=${token}`,
+      // `https://6d14-182-48-214-176.ngrok-free.app?token=${token}`,
       {transports: ['websocket'], forceNew: true,jsonp: true},
     );
 
