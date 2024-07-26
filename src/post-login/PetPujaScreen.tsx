@@ -119,7 +119,6 @@ const PetPujaScreen = ({navigation}: any) => {
     animateCart(0); // Move on-screen
   };
 
-
   const orderRejectAnimation = () => {
     animation.setValue(500); // Reset position to off-screen below
     Animated.timing(animation, {
@@ -329,8 +328,8 @@ const PetPujaScreen = ({navigation}: any) => {
       id: order._id.toString(),
       driverLoc: mylocation,
     });
-    setAvailableOrders([]);
-    ordersList.current = [];
+    // setAvailableOrders([]);
+    // ordersList.current = [];
   };
 
   const updateOrderStatus = async () => {
@@ -495,7 +494,7 @@ const PetPujaScreen = ({navigation}: any) => {
   const onRejectOrder = async (order: any) => {
     try {
       // rejectAnimation.current = true;
-      orderRejectAnimation()
+      orderRejectAnimation();
       dispatch(setNotificationData(null));
       setAvailableOrders((allOrders: any[]) =>
         allOrders.filter(ele => ele._id != order._id),
