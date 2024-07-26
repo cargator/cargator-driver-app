@@ -7,6 +7,7 @@ const customAxios = axios.create({
   // baseURL: `https://818f-182-48-211-210.ngrok-free.app`
   // baseURL: `https://bfd9-114-79-174-61.ngrok-free.app`,
   baseURL: `https://sukam-api.cargator.org/`,
+  timeout: 30000,
 });
 
 customAxios.interceptors.request.use(

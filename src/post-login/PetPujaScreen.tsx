@@ -296,8 +296,14 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const getAllOrders = async () => {
     try {
+      console.log('get All order order>>>');
+
       if (!orderStarted) {
-        const orders: any = await getAllOrdersAPI();
+        console.log('before pending orders api called');
+
+        const orders = await getAllOrdersAPI();
+        console.log('1111111111111111', orders);
+
         orders.data.forEach((order: any) => {
           setAvailableOrders((prev: any) => {
             console.log('Previous state:', prev);
@@ -310,7 +316,9 @@ const PetPujaScreen = ({navigation}: any) => {
             );
 
             if (!orderExists) {
-              orderAcceptAnimation();
+              if(availableOrders.length === 0){
+                orderAcceptAnimation();
+              }
               return [...prev, order];
             }
             return prev;
@@ -493,14 +501,11 @@ const PetPujaScreen = ({navigation}: any) => {
 
   const onRejectOrder = async (order: any) => {
     try {
-      // rejectAnimation.current = true;
       orderRejectAnimation();
       dispatch(setNotificationData(null));
       setAvailableOrders((allOrders: any[]) =>
         allOrders.filter(ele => ele._id != order._id),
       );
-      // rejectAnimation.current = false;
-      // orderAcceptAnimation();
       ordersList.current = [];
     } catch (error) {
       console.log(error);
@@ -542,6 +547,7 @@ const PetPujaScreen = ({navigation}: any) => {
 
   useEffect(() => {
     driverStatusToggle(isDriverOnline);
+    console.log('isDriverOnline>>>>>>', isDriverOnline);
     if (isDriverOnline) {
       getAllOrders();
     }
@@ -612,7 +618,9 @@ const PetPujaScreen = ({navigation}: any) => {
       );
       // If the order doesn't exist, add it to the array
       if (!orderExists) {
-        orderAcceptAnimation();
+        if (availableOrders.length === 0) {
+          orderAcceptAnimation();
+        }
         ordersList.current = [...ordersList.current, notificationData];
       }
       setAvailableOrders(ordersList.current);
@@ -652,6 +660,7 @@ const PetPujaScreen = ({navigation}: any) => {
               setDeleteModal(true);
               setIsProfileModal(false);
             }}>
+            <Text style={styles.deleteText}>{userId.slice(-6)}</Text>
             <Text style={styles.deleteText}>Delete</Text>
           </TouchableOpacity>
         </View>

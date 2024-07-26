@@ -47,6 +47,8 @@ export const driverLivelocationAPI = (liveLocation: any) => {
 }
 
 export const getAllOrdersAPI = () => {
+    console.log("calling api>>>>>>>>>");
+    
     return customAxios.get('/get-pending-orders')
 }
 
