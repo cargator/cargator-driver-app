@@ -884,7 +884,6 @@ const PetPujaScreen = ({navigation}: any) => {
                         <SlideButton
                           width={290}
                           height={50}
-                          r
                           animationDuration={180}
                           autoResetDelay={1080}
                           animation={true}
@@ -897,23 +896,7 @@ const PetPujaScreen = ({navigation}: any) => {
                               style={styles.thumbImage}
                             />
                           } // Adjust width and height as needed
-                          onReachedToEnd={async () => {
-                            setSliderButtonLoader(true);
-                            const status = {
-                              id: currentOnGoingOrderDetails._id,
-                              status:
-                                nextOrderStatus[
-                                  currentOnGoingOrderDetails.status
-                                ],
-                            };
-                            await updateOrderStatusAPI(status);
-                            setButtonText(
-                              nextOrderStatus[
-                                currentOnGoingOrderDetails.status
-                              ],
-                            );
-                            setSliderButtonLoader(false);
-                          }}
+                          onReachedToEnd={onAcceptOrder}
                           containerStyle={{
                             backgroundColor: '#118F5E',
                             color: 'red',
@@ -1295,7 +1278,19 @@ const PetPujaScreen = ({navigation}: any) => {
                           style={styles.thumbImage}
                         />
                       } // Adjust width and height as needed
-                      onReachedToEnd={() => {}}
+                      onReachedToEnd={async () => {
+                        setSliderButtonLoader(true);
+                        const status = {
+                          id: currentOnGoingOrderDetails._id,
+                          status:
+                            nextOrderStatus[currentOnGoingOrderDetails.status],
+                        };
+                        await updateOrderStatusAPI(status);
+                        setButtonText(
+                          nextOrderStatus[currentOnGoingOrderDetails.status],
+                        );
+                        setSliderButtonLoader(false);
+                      }}
                       containerStyle={{
                         backgroundColor: '#118F5E',
                         color: 'red',
