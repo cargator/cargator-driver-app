@@ -17,7 +17,12 @@ import {
 } from 'react-native-responsive-screen';
 import Toast from 'react-native-toast-message';
 import {useDispatch} from 'react-redux';
-import {setLoginToken, setUserData, setUserId} from '../redux/redux';
+import {
+  resetAllOrders,
+  setLoginToken,
+  setUserData,
+  setUserId,
+} from '../redux/redux';
 import {login, verifyOtp} from '../services/userservices';
 import RightArrow from '../svg/RightArrow';
 import {getFcmTokenAndSendToBackend} from '../utils/firebase-config';
@@ -69,11 +74,11 @@ const LoginOtpScreen = ({route}: any) => {
         dispatch(setUserData(res.user));
         dispatch(setUserId(res.user._id));
         dispatch(setLoginToken(res.token));
+        dispatch(resetAllOrders());
         setTimeout(async () => {
           setIsOtpEntered(false);
-        await getFcmTokenAndSendToBackend();
+          await getFcmTokenAndSendToBackend();
         }, 1000);
-
       }
     } catch (error: any) {
       setOTP('');

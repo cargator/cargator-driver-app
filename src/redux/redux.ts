@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { configureStore, createSlice } from '@reduxjs/toolkit';
-import { persistReducer, persistStore } from 'redux-persist';
+import {configureStore, createSlice} from '@reduxjs/toolkit';
+import {persistReducer, persistStore} from 'redux-persist';
 
 const persistConfig = {
   key: 'root',
@@ -12,27 +12,23 @@ const authSlice = createSlice({
   initialState: {
     userData: {},
     phoneNumber: '',
-    infoVisible: false,
     userId: '',
     rideDetails: {},
     locationPermission: false,
     gpsPermission: false,
     pendingPayment: false,
     loginToken: '',
-    livelocation: {},
+    livelocation: {longitude: 72.870729, latitude: 19.051322},
     messages: [],
     unseenMessagesCount: 0,
     userImage: {
       exists: false,
       path: '',
     },
-    driverPath: [],
-    rideStatus:'',
-    driverAppFlow:'',
-    orderDetails: {},
+    rideStatus: '',
+    driverAppFlow: '',
+    currentOnGoingOrderDetails: {},
     orderStatus: '',
-    notificationData: null,
-    notificationOrder: null
   },
   reducers: {
     setUserData: (state, action) => {
@@ -41,7 +37,6 @@ const authSlice = createSlice({
     removeUserData: state => {
       state.userData = {};
       state.phoneNumber = '';
-      state.infoVisible = false;
       state.userId = '';
       state.rideDetails = {};
       state.pendingPayment = false;
@@ -52,16 +47,17 @@ const authSlice = createSlice({
         exists: false,
         path: '',
       };
-      state.orderDetails = {};
+      state.currentOnGoingOrderDetails = {};
+    },
+    resetAllOrders: state => {
+      state.currentOnGoingOrderDetails = {};
+      state.orderStatus = '';
     },
     setPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
     },
     removePhoneNumber: state => {
       state.phoneNumber = '';
-    },
-    setInfoVisible: (state, action) => {
-      state.infoVisible = action.payload;
     },
     setUserId: (state, action) => {
       state.userId = action.payload;
@@ -85,7 +81,7 @@ const authSlice = createSlice({
       state.loginToken = action.payload;
     },
     setlivelocation: (state, action) => {
-      state.livelocation = action.payload;
+      state.livelocation = {longitude: 72.870729, latitude: 19.051322};
     },
     setMessagesInRedux: (state, action) => {
       state.messages = action.payload;
@@ -96,31 +92,19 @@ const authSlice = createSlice({
     setUserImgExists: (state, action) => {
       state.userImage = action.payload;
     },
-    setDriverPath: (state, action) => {
-      state.driverPath = action.payload;
-    },
     setRideStatus: (state, action) => {
       state.rideStatus = action.payload;
     },
     setDriverAppFlow: (state, action) => {
       state.driverAppFlow = action.payload;
     },
-    setNotificationData: (state, action) => {
-      state.notificationData = action.payload;
+    setCurrentOnGoingOrderDetails: (state, action) => {
+      state.currentOnGoingOrderDetails = action.payload;
     },
-    setNotificationOrder: (state, action) => {
-      state.notificationOrder = action.payload;
+    removeCurrentOnGoingOrderDetails: state => {
+      state.currentOnGoingOrderDetails = {};
     },
-    setOrderDetails: (state, action) => {
-      state.orderDetails = action.payload;
-    },
-    removeOrderDetails: state => {
-      state.orderDetails = {};
-    },
-    setOrderStatus: (state, action) => {
-      state.orderStatus = action.payload;
-    }
-  }, 
+  },
 });
 
 const persistedReducer = persistReducer(persistConfig, authSlice.reducer);
@@ -130,7 +114,6 @@ export const {
   removeUserData,
   setPhoneNumber,
   removePhoneNumber,
-  setInfoVisible,
   setUserId,
   setRideDetails,
   removeRideDetails,
@@ -142,14 +125,11 @@ export const {
   setMessagesInRedux,
   setUnseenMessagesCountInRedux,
   setUserImgExists,
-  setDriverPath,
   setRideStatus,
   setDriverAppFlow,
-  setNotificationData,
-  setNotificationOrder,
-  setOrderDetails,
-  setOrderStatus,
-  removeOrderDetails,
+  setCurrentOnGoingOrderDetails,
+  removeCurrentOnGoingOrderDetails,
+  resetAllOrders,
 } = authSlice.actions;
 
 const store = configureStore({

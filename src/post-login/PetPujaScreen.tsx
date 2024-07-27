@@ -2,7 +2,7 @@ import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import * as geolib from 'geolib';
 import {isEmpty as _isEmpty} from 'lodash';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,7 +10,6 @@ import {
   Image,
   ImageBackground,
   Linking,
-  PermissionsAndroid,
   Pressable,
   StyleSheet,
   Text,
@@ -29,13 +28,10 @@ import {useDispatch, useSelector} from 'react-redux';
 import SlideButton from 'rn-slide-button';
 import LoaderComponent from '../components/LoaderComponent';
 import {
-  removeOrderDetails,
+  removeCurrentOnGoingOrderDetails,
   removeUserData,
-  setDriverPath,
+  setCurrentOnGoingOrderDetails,
   setLocationPermission,
-  setNotificationData,
-  setOrderDetails,
-  setOrderStatus,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
 import {
@@ -45,6 +41,7 @@ import {
 import {
   driverLivelocationAPI,
   getAllOrdersAPI,
+  getMyPendingOrdersFromAPI,
   setDriverOffline,
 } from '../services/userservices';
 import Navigate from '../svg/Navigate';
@@ -52,17 +49,38 @@ import SidebarIcon from '../svg/SidebarIcon';
 import Spinner from '../svg/spinner';
 import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
-import { useFocusEffect } from '@react-navigation/native';
 export let socketInstance: any;
-let intervalId: any;
 
-export const SliderText = [
-  {flowName: 'ACCEPT ORDER'},
-  {flowName: 'ARRIVED'},
-  {flowName: 'DISPATCHED'},
-  {flowName: 'ARRIVED_CUSTOMER_DOORSTEP'},
-  {flowName: 'DELIVERED'},
-];
+const OrderStatusEnum = {
+  ORDER_ACCEPTED: 'ACCEPTED', //(Order Created Successfully.)
+  ORDER_ALLOTTED: 'ALLOTTED', //(Rider Alloted to pick up the items.)
+  ARRIVED: 'ARRIVED', //(Rider has reached the pickup location.)
+  DISPATCHED: 'DISPATCHED', //(Order is picked up by the rider.)
+  ARRIVED_CUSTOMER_DOORSTEP: 'ARRIVED_CUSTOMER_DOORSTEP', //(Rider has reached the drop-off location.)
+  DELIVERED: 'DELIVERED', // (Successfully delivered and transaction has concluded.)
+  ORDER_CANCELLED: 'CANCELLED', // (Order is cancelled.)
+  RECEIVER_NOT_AVAILABLE: 'RECEIVER_NOT_AVAILABLE', //(Receiver is not available.)
+  RETURNED_TO_SELLER: 'RETURNED_TO_SELLER', //(Order was returned to Restaurant.)
+};
+
+const nextOrderStatus: any = {
+  ORDER_ACCEPTED: 'ALLOTTED',
+  ORDER_ALLOTTED: 'ARRIVED',
+  ARRIVED: 'DISPATCHED',
+  DISPATCHED: 'ARRIVED_CUSTOMER_DOORSTEP',
+  ARRIVED_CUSTOMER_DOORSTEP: 'DELIVERED',
+  DELIVERED: 'CANCELLED',
+  ORDER_CANCELLED: 'RECEIVER_NOT_AVAILABLE',
+  RECEIVER_NOT_AVAILABLE: 'RETURNED_TO_SELLER',
+};
+
+export const SliderText = {
+  [OrderStatusEnum.ORDER_ACCEPTED]: 'ACCEPT ORDER',
+  [OrderStatusEnum.ORDER_ALLOTTED]: 'ARRIVED AT PICKUP LOCATION',
+  [OrderStatusEnum.ARRIVED]: 'ORDER DISPATCHED',
+  [OrderStatusEnum.DISPATCHED]: 'ARRIVED AT CUSTOMER LOCATION',
+  [OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]: 'ORDER DELIVERED',
+};
 
 export const dialCall = (number: string) => {
   let phoneNumber = `tel:${number}`;
@@ -72,38 +90,27 @@ export const dialCall = (number: string) => {
 };
 
 const PetPujaScreen = ({navigation}: any) => {
-  const orderDetails = useSelector((store: any) => store.orderDetails);
+  const currentOnGoingOrderDetails = useSelector(
+    (store: any) => store.currentOnGoingOrderDetails,
+  );
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
-  const orderStatus = useSelector((store: any) => store.orderStatus);
-  const DriverPath = useSelector((store: any) => store.driverPath);
-  const notificationData = useSelector((store: any) => store.notificationData);
-  const notificationOrder = useSelector(
-    (store: any) => store.notificationOrder,
-  );
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
   const mapRef = useRef<any>(null);
-  const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
-  const [heading, setHeading] = useState<any>(0);
-  const [region, setRegion] = useState<any>({});
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<any[]>([]);
-  const ordersList = useRef<any>([]);
   const [orderStarted, setOrderStarted] = useState<boolean>(false);
   const orderStartedRef = useRef<any>(false);
-  const [slideCount, setSlideCount] = useState<any>(0);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
-  const [isDisabled, setIsDisabled] = useState(false);
-  const rejectAnimation = useRef<any>(true);
   const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
   const [mylocation, setMyLocation] = useState({
     latitude: 19.0,
@@ -181,8 +188,7 @@ const PetPujaScreen = ({navigation}: any) => {
         await setDriverOffline();
       } else {
         socketInstance = await getSocketInstance(loginToken);
-        startSocketListeners();
-        // emitLiveLocation();
+        startOrderStatusListener();
       }
     } catch (error) {
       console.log(`driverStatusToggle error :>> `, error);
@@ -202,45 +208,30 @@ const PetPujaScreen = ({navigation}: any) => {
     });
   };
 
-  const driverLivelocation = async () => {
-    console.log("driverLivelocation called");
-    
-    try {
-      let coordinates = [mylocation.latitude, mylocation.longitude];
-      const data = {coordinates};
-      const res = await driverLivelocationAPI(data);
-    } catch (error) {
-      console.log('Error', error);
-    }
-  };
-
   const emitLiveLocation = () => {
     let prevLocation: any = null;
     try {
       const watchId = Geolocation.watchPosition(
         position => {
-          const {latitude, longitude, heading} = position.coords;
+          const {latitude, longitude} = position.coords;
           const newLocation = {latitude, longitude};
-          socketInstance?.emit('emit-driver-live-location', {
-            coordinates: [position.coords.latitude, position.coords.longitude],
-          });
           setMyLocation(newLocation);
-          setHeading(heading);
-          if (orderStarted) {
-            if (prevLocation) {
-              const distance = geolib.getDistance(prevLocation, newLocation);
-              if (distance >= 15) {
-                setMyLocation(newLocation);
-                prevLocation = newLocation;
-              }
-            } else {
-              setMyLocation(newLocation);
+          if (prevLocation) {
+            const distance = geolib.getDistance(prevLocation, newLocation);
+            if (distance >= 15) {
               prevLocation = newLocation;
+              driverLivelocationAPI({
+                coordinates: [newLocation.latitude, newLocation.longitude],
+              });
             }
+          } else {
+            prevLocation = newLocation;
+            driverLivelocationAPI({
+              coordinates: [newLocation.latitude, newLocation.longitude],
+            });
           }
         },
         error => {
-          console.log(`emitLiveLocation error :>> `, error);
           if (error.message == 'Location permission not granted.') {
             Toast.show({
               type: 'error',
@@ -256,83 +247,9 @@ const PetPujaScreen = ({navigation}: any) => {
           distanceFilter: 15,
         },
       );
-      setLoading(false);
-      setGeolocationWatchId(watchId);
-      return () => {
-        Geolocation.clearWatch(watchId);
-      };
+      return watchId;
     } catch (error) {
       console.log(`emitLiveLocation error :>> `, error);
-      setLoading(false);
-    }
-  };
-
-  const getCurrentPosition = useCallback(async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Location Permission',
-          message: 'This app needs access to your location',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        Geolocation.getCurrentPosition(
-          position => {
-            setMyLocation({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-          },
-          (error: any) => console.log('location err', error),
-          {
-            enableHighAccuracy: false,
-            timeout: 10000,
-          },
-        );
-      } else {
-        console.log('Location permission denied');
-      }
-    } catch (err) {
-      console.warn(err);
-    }
-  }, []);
-
-  const getAllOrders = async () => {
-    try {
-      console.log('get All order order>>>');
-
-      if (!orderStarted) {
-        console.log('before pending orders api called');
-
-        const orders = await getAllOrdersAPI();
-        console.log('1111111111111111', orders);
-
-        orders.data.forEach((order: any) => {
-          setAvailableOrders((prev: any) => {
-            console.log('Previous state:', prev);
-
-            if (!Array.isArray(prev)) {
-              prev = [];
-            }
-            const orderExists = prev.some(
-              (existingOrder: any) => existingOrder._id === order._id,
-            );
-
-            if (!orderExists) {
-              if (availableOrders.length === 0) {
-                orderAcceptAnimation();
-              }
-              return [...prev, order];
-            }
-            return prev;
-          });
-        });
-      }
-    } catch (error) {
-      console.log('Error', error);
     }
   };
 
@@ -342,223 +259,57 @@ const PetPujaScreen = ({navigation}: any) => {
       id: order._id.toString(),
       driverLoc: mylocation,
     });
-    setAvailableOrders((allOrders: any[]) =>
-      allOrders.filter(ele => ele._id !== order._id),
-    );
   };
 
-  const updateOrderStatus = async () => {
-    try {
-      setLoading(true);
-      const status = {
-        id: orderDetails._id,
-        status: SliderText[slideCount]?.flowName,
-      };
-      // socketInstance?.emit('update-order-status', status);
-      const updateResponse = await updateOrderStatusAPI(status);
-      console.log("response after update>>>>>>>>>", JSON.stringify(updateResponse.data));
-      if (
-        (slideCount >= SliderText.length - 1 &&
-          orderDetails.order_details.payment_status) ||
-        updateResponse.data.order.status == 405
-      ) {
-        setOrderStarted(false);
-        orderStartedRef.current = false;
-        getAllOrders();
-        setPath([]);
-        dispatch(removeOrderDetails());
-        dispatch(setOrderStatus(''));
-        dispatch(setDriverPath([]));
-        setSlideCount(0);
-        setButtonText('ACCEPT ORDER');
-        if(updateResponse.data.status == 405){
-          Toast.show({
-            type: 'error',
-            text1: 'Order cancelled by customer!',
-            visibilityTime: 5000,
-          });
-        }
-        return;
-      } else if (
-        slideCount >= SliderText.length - 1 &&
-        !orderDetails.order_details.payment_status
-      ) {
-        setLoading(false);
-        setcod(false);
-      } else {
-        dispatch(setOrderDetails(updateResponse.data.order));
-        dispatch(setDriverPath(updateResponse?.data?.path?.coords || []));
-        setSlideCount(slideCount + 1);
-        setButtonText(SliderText[slideCount + 1].flowName);
-        setPath(updateResponse?.data?.path?.coords || []);
-        dispatch(setOrderStatus(slideCount));
-        setLoading(false);
-        Toast.show({
-          type: 'success',
-          text1: `ORDER SUCCESSFULLY ${updateResponse.data.order.status} !`,
-          visibilityTime: 5000,
-        });
-      }
-    } catch (error) {
-      console.log('Error', error);
-    }
-  };
-
-  const orderStatusListener = async () => {
+  const startOrderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
       let body = body1.message;
-      switch (body1.type) {
-        case 'accept-order-response':
-          {
-            if (!body.driverId && !orderStartedRef.current) {
-              ordersList.current = [];
-              dispatch(setNotificationData(null));
-              setAvailableOrders((allOrders: any[]) =>
-                allOrders.filter(ele => ele._id != body.order.orderId),
-              );
-              getAllOrders();
-              setLoading(false);
-              Toast.show({
-                type: 'error',
-                text1: 'Order not found !',
-                visibilityTime: 5000,
-              });
-            } else if (body.driverId != userId && !orderStartedRef.current) {
-              ordersList.current = [];
-              dispatch(setNotificationData(null));
-              setAvailableOrders((allOrders: any[]) =>
-                allOrders.filter(ele => ele._id != body.order._id),
-              );
-              orderAcceptAnimation();
-              setLoading(false);
-              Toast.show({
-                type: 'error',
-                text1: ` order not available!`,
-                visibilityTime: 5000,
-              });
-            } else if (body?.status == 404) {
-              Toast.show({
-                type: 'error',
-                text1: 'You are already on an ongoing order !',
-                visibilityTime: 5000,
-              });
-              dispatch(removeOrderDetails());
-            } else {
-              if (
-                body.driverId &&
-                body.driverId.toString() == userId &&
-                body.order
-              ) {
-                dispatch(setNotificationData(null));
-                dispatch(setOrderDetails(body.order));
-                dispatch(setDriverPath(body?.path?.coords || []));
-                setOrderStarted(true);
-                orderStartedRef.current = true;
-                setPath(body?.path?.coords);
-                setButtonText(SliderText[slideCount + 1].flowName);
-                setSlideCount(slideCount + 1);
-                dispatch(setOrderStatus(slideCount));
-                // setDriverStatus(true)
-                setLoading(false);
-                Toast.show({
-                  type: 'success',
-                  text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
-                  visibilityTime: 5000,
-                });
-              }
-            }
-            setLoading(false);
-          }
-          break;
-
-        case 'order-update-response':
-          {
-            setSliderButtonLoader(false);
-            setLoading(false);
-            if (body.status === 405) {
-              Toast.show({
-                type: 'error',
-                text1: 'Order cancelled by customer!',
-                visibilityTime: 5000,
-              });
-              orderStartedRef.current = false;
-              setOrderStarted(false);
-              setPath([]);
-              dispatch(removeOrderDetails());
-              dispatch(setOrderStatus(''));
-              dispatch(setDriverPath([]));
-              setSlideCount(0);
-              setButtonText('ACCEPT ORDER');
-              getAllOrders();
-              return;
-            } else {
-              if (body.driverId && body.driverId.toString() == userId) {
-                if (body.order.status === 'DISPATCHED') {
-                  dispatch(setDriverPath(body?.path?.coords || []));
-                  setPath(body?.path?.coords);
-                }
-                Toast.show({
-                  type: 'success',
-                  text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
-                  visibilityTime: 5000,
-                });
-                setLoading(false);
-              }
-            }
-          }
-          break;
-        default:
-          if (body.message.status === 404) {
-            Toast.show({
-              type: 'error',
-              text1: body.message.message,
-            });
-          }
-          break;
+      if (body.order.status === OrderStatusEnum['ORDER_ALLOTTED']) {
+        if (body.driverId === userId) {
+          setOrderStarted(true);
+          orderStartedRef.current = true;
+          setPath(body?.path?.coords);
+          setButtonText(nextOrderStatus[body.order.status]);
+          dispatch(setCurrentOnGoingOrderDetails(body.order));
+          setLoading(false);
+          Toast.show({
+            type: 'success',
+            text1: `ORDER SUCCESSFULLY ${body.order.status} !`,
+            visibilityTime: 5000,
+          });
+        } else {
+          setAvailableOrders((allOrders: any[]) =>
+            allOrders.filter(ele => ele._id != body.order._id),
+          );
+          orderAcceptAnimation();
+          setLoading(false);
+          Toast.show({
+            type: 'error',
+            text1: ` Order already assigned to someone!`,
+            visibilityTime: 5000,
+          });
+        }
       }
     });
   };
 
-  const onRejectOrder = async (order: any) => {
+  const onRejectOrder = async () => {
     try {
       orderRejectAnimation();
-      dispatch(setNotificationData(null));
-      setAvailableOrders((allOrders: any[]) =>
-        allOrders.filter(ele => ele._id != order._id),
-      );
-      ordersList.current = [];
+      setAvailableOrders([...availableOrders.shift()]);
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const handleEndReached = async () => {
-    try {
-      if (slideCount === 0) {
-        onAcceptOrder(availableOrders[0]);
-      } else if (slideCount >= 1) {
-        updateOrderStatus();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const startSocketListeners = () => {
-    orderStatusListener();
   };
 
   const paymentButton = () => {
     try {
       setcod(true);
-      socketInstance.emit('payment-status', orderDetails);
+      socketInstance.emit('payment-status', currentOnGoingOrderDetails);
       setOrderStarted(false);
       setPath([]);
-      dispatch(removeOrderDetails());
-      dispatch(setOrderStatus(''));
-      dispatch(setDriverPath([]));
-      setSlideCount(0);
+      dispatch(removeCurrentOnGoingOrderDetails());
       setButtonText('ACCEPT ORDER');
       setAvailableOrders([]);
     } catch (error) {
@@ -566,91 +317,71 @@ const PetPujaScreen = ({navigation}: any) => {
     }
   };
 
-  useFocusEffect(
-    useCallback(()  => {
-    driverStatusToggle(isDriverOnline);
-    if (isDriverOnline) {
-      getAllOrders();
-    }
-  }, [isDriverOnline]));
-
-  const fetchData = async () => {
-    setLoading(true);
+  const handleMyPendingOrder = (order: any) => {
     try {
-      getProgressDetail();
+      setOrderStarted(true);
+      orderStartedRef.current = true;
+      dispatch(setCurrentOnGoingOrderDetails(order));
+      setPath(order?.path?.coords);
+
+      switch (order.status) {
+        case OrderStatusEnum.ORDER_ALLOTTED:
+          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
+          break;
+        case OrderStatusEnum.ARRIVED:
+          setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+          break;
+        case OrderStatusEnum.DISPATCHED:
+          setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+          break;
+        case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
+          setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+          break;
+        default:
+          break;
+      }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.log('error', error);
     }
-    setLoading(false);
+  };
+
+  const startProcessing = async () => {
+    try {
+      let resp = await getMyPendingOrdersFromAPI();
+      if (resp.data) {
+        handleMyPendingOrder(resp.data);
+        return;
+      }
+      resp = await getAllOrdersAPI();
+
+      setAvailableOrders(resp.data);
+      socketInstance = await getSocketInstance(loginToken);
+      startOrderStatusListener();
+    } catch (error) {
+      console.log('error', error);
+    }
   };
 
   useEffect(() => {
-    fetchData();
-  }, [orderStarted]);
+    getProgressDetail();
+    startProcessing();
 
-  useFocusEffect(
-  useCallback(() => {
-    if (orderStatus === Number('0')) {
-      setOrderStarted(true);
-      setPath(DriverPath);
-      setSlideCount(orderStatus + 1);
-      setButtonText(SliderText[orderStatus + 1]?.flowName);
-      setAvailableOrders(orderDetails);
-    } else if (orderStatus === SliderText.length - 1) {
-      setOrderStarted(false);
-      setPath([]);
-      dispatch(removeOrderDetails());
-      dispatch(setOrderStatus(''));
-      setButtonText(SliderText[0]?.flowName);
-      dispatch(setDriverPath([]));
-      setSlideCount(0);
-    } else if (orderStatus > Number('0')) {
-      setOrderStarted(true);
-      setPath(DriverPath);
-      setSlideCount(orderStatus + 1);
-      setButtonText(SliderText[orderStatus + 1]?.flowName);
-      setAvailableOrders(orderDetails);
-    }
+    let unsubscribe: any, watchId: any;
 
-    Geolocation.clearWatch(geolocationWatchId);
-    getCurrentPosition();
-    let unsubscribe: any;
     unsubscribe = NetInfo.addEventListener(state => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
       setConnected(isConnected);
-      setIsDisabled(!isConnected);
     });
-    intervalId = setInterval(() => {
-      emitLiveLocation();
-      driverLivelocation();
-    }, 10000);
+
+    watchId = emitLiveLocation();
+
     return () => {
-      clearInterval(intervalId);
-      if (unsubscribe) return unsubscribe();
-    };
-  }, []));
-
-
-  useEffect(() => {
-    if (Object.keys(notificationData || {}).length) {
-      const orderExists = ordersList.current.some(
-        (existingOrder: any) => existingOrder._id === notificationData._id,
-      );
-      // If the order doesn't exist, add it to the array
-      if (!orderExists) {
-        if (availableOrders.length === 0) {
-          orderAcceptAnimation();
-        }
-        ordersList.current = [...ordersList.current, notificationData];
+      Geolocation.clearWatch(watchId);
+      if (unsubscribe) {
+        unsubscribe();
       }
-      setAvailableOrders(ordersList.current);
-      dispatch(setNotificationData(null));
-    }
-  }, [notificationData]);
-
-  useEffect(() => {
-    getAllOrders();
-  }, [notificationOrder, orderStarted]);
+    };
+  }, []);
 
   return (
     <>
@@ -724,7 +455,7 @@ const PetPujaScreen = ({navigation}: any) => {
           </View>
 
           {/* {isDriverOnline && !assignedRide && ( */}
-          {_isEmpty(orderDetails) && (
+          {_isEmpty(currentOnGoingOrderDetails) && (
             <OnlineOfflineSwitch
               isDriverOnline={isDriverOnline}
               driverStatusToggle={driverStatusToggle}
@@ -873,7 +604,7 @@ const PetPujaScreen = ({navigation}: any) => {
           Hello {userData.firstName.split(' ')[0]}!
         </Text> */}
         {isDriverOnline &&
-          _isEmpty(orderDetails) &&
+          _isEmpty(currentOnGoingOrderDetails) &&
           _isEmpty(availableOrders) &&
           !orderStarted && (
             <View style={styles.offlineModalView}>
@@ -1037,56 +768,60 @@ const PetPujaScreen = ({navigation}: any) => {
             </View>
           )}
 
-        {_isEmpty(orderDetails) && availableOrders[0] && !orderStarted && (
-          <>
-            {loading ? (
-              <LoaderComponent />
-            ) : rejectAnimation.current ? (
-              <Animated.View style={{transform: [{translateY: animation}]}}>
-                <ImageBackground source={require('../images/Sukam.jpg')}>
-                  <View
-                    key={`order_${0 + 1}`}
-                    style={[styles.modalView, {opacity: 2}]}>
-                    {/* orderId Text */}
-                    <View style={{top: wp(3)}}>
-                      <Text
-                        style={{
-                          fontFamily: 'Roboto Mono',
-                          fontSize: hp(2.5),
-                          fontWeight: '600',
-                          textAlign: 'center',
-                          color: '#212121',
-                        }}>
-                        Order Id :{' '}
+        {_isEmpty(currentOnGoingOrderDetails) &&
+          availableOrders[0] &&
+          !orderStarted && (
+            <>
+              {loading ? (
+                <LoaderComponent />
+              ) : (
+                <Animated.View style={{transform: [{translateX: animation}]}}>
+                  <ImageBackground source={require('../images/Sukam.jpg')}>
+                    <View
+                      key={`order_${0 + 1}`}
+                      style={[styles.modalView, {opacity: 2}]}>
+                      {/* orderId Text */}
+                      <View style={{top: wp(3)}}>
                         <Text
                           style={{
-                            fontFamily: 'RobotoMono-Regular',
-                            fontWeight: '700',
-                            color: '#118F5E',
-                            fontSize: 20,
-                          }}>
-                          {availableOrders[0].order_details?.vendor_order_id.slice(
-                            -6,
-                          )}
-                        </Text>
-                      </Text>
-                    </View>
-                    {/* Circul data */}
-                    <View style={styles.circleModel}>
-                      <View style={styles.circle}>
-                        <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                        <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
-                        <Text
-                          style={{
+                            fontFamily: 'Roboto Mono',
+                            fontSize: hp(2.5),
                             fontWeight: '600',
-                            color: '#000000',
-                            fontSize: 15,
+                            textAlign: 'center',
+                            color: '#212121',
                           }}>
-                          {'₹ '}0
+                          Order Id :{' '}
+                          <Text
+                            style={{
+                              fontFamily: 'RobotoMono-Regular',
+                              fontWeight: '700',
+                              color: '#118F5E',
+                              fontSize: 20,
+                            }}>
+                            {availableOrders[0].order_details?.vendor_order_id.slice(
+                              -6,
+                            )}
+                          </Text>
                         </Text>
                       </View>
-                    </View>
-                    {/* <View style={styles.text}>
+                      {/* Circul data */}
+                      <View style={styles.circleModel}>
+                        <View style={styles.circle}>
+                          <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                          <Text style={{alignItems: 'center'}}>
+                            {'Earning'}
+                          </Text>
+                          <Text
+                            style={{
+                              fontWeight: '600',
+                              color: '#000000',
+                              fontSize: 15,
+                            }}>
+                            {'₹ '}0
+                          </Text>
+                        </View>
+                      </View>
+                      {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -1111,269 +846,129 @@ const PetPujaScreen = ({navigation}: any) => {
               </View>
             </View> */}
 
-                    <View style={{alignItems: 'center'}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Pickup
-                        Location
-                      </Text>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
-                        }}>
-                        {availableOrders[0].pickup_details?.address}
-                      </Text>
-                    </View>
-                    <View style={{alignItems: 'center', marginTop: hp(2)}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Drop
-                        Location
-                      </Text>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
-                        }}>
-                        {availableOrders[0].drop_details?.address}
-                      </Text>
-                    </View>
-                    {/* SliderButton */}
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'flex-end',
-                        marginBottom: hp(0),
-                      }}>
-                      <SlideButton
-                        width={290}
-                        height={50}
-                        r
-                        animationDuration={180}
-                        autoResetDelay={1080}
-                        animation={true}
-                        autoReset={true}
-                        borderRadius={15}
-                        sliderWidth={50}
-                        icon={
-                          <Image
-                            source={require('../svg/Arrow.png')}
-                            style={styles.thumbImage}
-                          />
-                        } // Adjust width and height as needed
-                        onReachedToEnd={handleEndReached}
-                        containerStyle={{
-                          backgroundColor: '#118F5E',
-                          color: 'red',
-                        }}
-                        underlayStyle={{backgroundColor: 'Red'}}
-                        title={buttonText}
-                        slideDirection="right"></SlideButton>
-
-                      <SlideButton
-                        width={290}
-                        height={50}
-                        borderRadius={15}
-                        animationDuration={180}
-                        autoResetDelay={1080}
-                        animation={true}
-                        autoReset={true}
-                        sliderWidth={50}
-                        icon={
-                          <Image
-                            source={require('../svg/Arrow.png')}
-                            style={styles.thumbImage}
-                          />
-                        } // Adjust width and height as needed
-                        onReachedToEnd={() => onRejectOrder(availableOrders[0])}
-                        containerStyle={{
-                          backgroundColor: '#D11A2A',
-                          color: 'red',
-                        }}
-                        underlayStyle={{backgroundColor: 'Red'}}
-                        title="Reject Order"
-                        titleStyle={{color: 'white'}}
-                        slideDirection="right">
-                        <Text style={{color: 'red', fontSize: 18}}></Text>
-                      </SlideButton>
-                    </View>
-                  </View>
-                </ImageBackground>
-              </Animated.View>
-            ) : (
-              <Animated.View style={{transform: [{translateX: animation}]}}>
-                <ImageBackground source={require('../images/Sukam.jpg')}>
-                  <View
-                    key={`order_${0 + 1}`}
-                    style={[styles.modalView, {opacity: 2}]}>
-                    {/* orderId Text */}
-                    <View style={{top: wp(3)}}>
-                      <Text
-                        style={{
-                          fontFamily: 'Roboto Mono',
-                          fontSize: hp(2.5),
-                          fontWeight: '600',
-                          textAlign: 'center',
-                          color: '#212121',
-                        }}>
-                        Order Id :{' '}
-                        <Text
-                          style={{
-                            fontFamily: 'RobotoMono-Regular',
-                            fontWeight: '700',
-                            color: '#118F5E',
-                            fontSize: 20,
-                          }}>
-                          {availableOrders[0].order_details?.vendor_order_id.slice(
-                            -6,
-                          )}
+                      <View style={{alignItems: 'center'}}>
+                        <Text>
+                          <Image source={require('../images/cart.png')} />{' '}
+                          Pickup Location
                         </Text>
-                      </Text>
-                    </View>
-                    {/* Circul data */}
-                    <View style={styles.circleModel}>
-                      <View style={styles.circle}>
-                        <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                        <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
                         <Text
                           style={{
                             fontWeight: '600',
-                            color: '#000000',
+                            color: '#333333',
                             fontSize: 15,
                           }}>
-                          {'₹ '}0
+                          {availableOrders[0].pickup_details?.address}
                         </Text>
                       </View>
-                    </View>
-                    {/* <View style={styles.text}>
-              <View
-                style={{
-                  width: wp(30),
-                  height: hp(4),
-                  backgroundColor: '#F5FFFB',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 15,
-                }}>
-                <Text>Time : {1}-HRS.</Text>
-              </View>
-              <View
-                style={{
-                  width: wp(38),
-                  height: hp(4),
-                  backgroundColor: '#F5FFFB',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 15,
-                }}>
-                <Text>Distance :{15}-KM.</Text>
-              </View>
-            </View> */}
-
-                    <View style={{alignItems: 'center'}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Pickup
-                        Location
-                      </Text>
-                      <Text
+                      <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                        <Text>
+                          <Image source={require('../images/cart.png')} /> Drop
+                          Location
+                        </Text>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#333333',
+                            fontSize: 15,
+                          }}>
+                          {availableOrders[0].drop_details?.address}
+                        </Text>
+                      </View>
+                      {/* SliderButton */}
+                      <View
                         style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
+                          flex: 1,
+                          justifyContent: 'flex-end',
+                          marginBottom: hp(0),
                         }}>
-                        {availableOrders[0].pickup_details?.address}
-                      </Text>
-                    </View>
-                    <View style={{alignItems: 'center', marginTop: hp(2)}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Drop
-                        Location
-                      </Text>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
-                        }}>
-                        {availableOrders[0].drop_details?.address}
-                      </Text>
-                    </View>
-                    {/* SliderButton */}
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'flex-end',
-                        marginBottom: hp(0),
-                      }}>
-                      <SlideButton
-                        width={290}
-                        height={50}
-                        r
-                        animationDuration={180}
-                        autoResetDelay={1080}
-                        animation={true}
-                        autoReset={true}
-                        borderRadius={15}
-                        sliderWidth={50}
-                        icon={
-                          <Image
-                            source={require('../svg/Arrow.png')}
-                            style={styles.thumbImage}
-                          />
-                        } // Adjust width and height as needed
-                        onReachedToEnd={handleEndReached}
-                        containerStyle={{
-                          backgroundColor: '#118F5E',
-                          color: 'red',
-                        }}
-                        underlayStyle={{backgroundColor: 'Red'}}
-                        title={buttonText}
-                        slideDirection="right"></SlideButton>
+                        <SlideButton
+                          width={290}
+                          height={50}
+                          r
+                          animationDuration={180}
+                          autoResetDelay={1080}
+                          animation={true}
+                          autoReset={true}
+                          borderRadius={15}
+                          sliderWidth={50}
+                          icon={
+                            <Image
+                              source={require('../svg/Arrow.png')}
+                              style={styles.thumbImage}
+                            />
+                          } // Adjust width and height as needed
+                          onReachedToEnd={async () => {
+                            setSliderButtonLoader(true);
+                            const status = {
+                              id: currentOnGoingOrderDetails._id,
+                              status:
+                                nextOrderStatus[
+                                  currentOnGoingOrderDetails.status
+                                ],
+                            };
+                            await updateOrderStatusAPI(status);
+                            setButtonText(
+                              nextOrderStatus[
+                                currentOnGoingOrderDetails.status
+                              ],
+                            );
+                            setSliderButtonLoader(false);
+                          }}
+                          containerStyle={{
+                            backgroundColor: '#118F5E',
+                            color: 'red',
+                          }}
+                          underlayStyle={{backgroundColor: 'Red'}}
+                          title={buttonText}
+                          slideDirection="right"></SlideButton>
 
-                      <SlideButton
-                        width={290}
-                        height={50}
-                        borderRadius={15}
-                        animationDuration={180}
-                        autoResetDelay={1080}
-                        animation={true}
-                        autoReset={true}
-                        sliderWidth={50}
-                        icon={
-                          <Image
-                            source={require('../svg/Arrow.png')}
-                            style={styles.thumbImage}
-                          />
-                        } // Adjust width and height as needed
-                        onReachedToEnd={() => onRejectOrder(availableOrders[0])}
-                        containerStyle={{
-                          backgroundColor: '#D11A2A',
-                          color: 'red',
-                        }}
-                        underlayStyle={{backgroundColor: 'Red'}}
-                        title="Reject Order"
-                        titleStyle={{color: 'white'}}
-                        slideDirection="right">
-                        <Text style={{color: 'red', fontSize: 18}}></Text>
-                      </SlideButton>
+                        <SlideButton
+                          width={290}
+                          height={50}
+                          borderRadius={15}
+                          animationDuration={180}
+                          autoResetDelay={1080}
+                          animation={true}
+                          autoReset={true}
+                          sliderWidth={50}
+                          icon={
+                            <Image
+                              source={require('../svg/Arrow.png')}
+                              style={styles.thumbImage}
+                            />
+                          } // Adjust width and height as needed
+                          onReachedToEnd={() => onRejectOrder()}
+                          containerStyle={{
+                            backgroundColor: '#D11A2A',
+                            color: 'red',
+                          }}
+                          underlayStyle={{backgroundColor: 'Red'}}
+                          title="Reject Order"
+                          titleStyle={{color: 'white'}}
+                          slideDirection="right">
+                          <Text style={{color: 'red', fontSize: 18}}></Text>
+                        </SlideButton>
+                      </View>
                     </View>
-                  </View>
-                </ImageBackground>
-              </Animated.View>
-            )}
-          </>
-        )}
+                  </ImageBackground>
+                </Animated.View>
+              )}
+            </>
+          )}
 
         {/* // If order Accepted */}
-        {orderStarted && !_isEmpty(orderDetails) && (
+        {orderStarted && !_isEmpty(currentOnGoingOrderDetails) && (
           <View>
             {loading ? (
               <LoaderComponent />
             ) : (
               <>
                 {/* order Details card */}
-                {slideCount <= 2 && (
+                {[
+                  OrderStatusEnum.ORDER_ACCEPTED,
+                  OrderStatusEnum.ARRIVED,
+                  OrderStatusEnum.ORDER_ALLOTTED,
+                ].includes(currentOnGoingOrderDetails.status) && (
                   <View style={styles.orderDetailsCard}>
                     <View
                       style={{
@@ -1391,7 +986,7 @@ const PetPujaScreen = ({navigation}: any) => {
                             color: '#118F5E',
                             fontSize: 15,
                           }}>
-                          {orderDetails?.order_details.vendor_order_id.slice(
+                          {currentOnGoingOrderDetails?.order_details.vendor_order_id.slice(
                             -6,
                           )}
                         </Text>
@@ -1432,14 +1027,17 @@ const PetPujaScreen = ({navigation}: any) => {
                           color: '#333333',
                           fontSize: 15,
                         }}>
-                        {orderDetails?.pickup_details?.address}
+                        {currentOnGoingOrderDetails?.pickup_details?.address}
                       </Text>
                     </View>
                     <View style={styles.line1} />
                     <View style={styles.contactNumber}>
                       <TouchableOpacity
                         onPress={() =>
-                          dialCall(orderDetails.pickup_details.contact_number)
+                          dialCall(
+                            currentOnGoingOrderDetails.pickup_details
+                              .contact_number,
+                          )
                         }>
                         <Image
                           source={require('../images/callicon.png')}
@@ -1448,102 +1046,123 @@ const PetPujaScreen = ({navigation}: any) => {
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() =>
-                          dialCall(orderDetails.pickup_details.contact_number)
+                          dialCall(
+                            currentOnGoingOrderDetails.pickup_details
+                              .contact_number,
+                          )
                         }>
                         <Text style={{color: '#333333'}}>
                           {' '}
-                          +91{orderDetails.pickup_details.contact_number}
+                          +91
+                          {
+                            currentOnGoingOrderDetails.pickup_details
+                              .contact_number
+                          }
                         </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 )}
-                {slideCount > 2 && cod && (
-                  <View style={styles.orderDetailsCard}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        // left: wp(7),
-                        top: hp(2),
-                      }}>
-                      <Text style={{left: wp(6)}}>
-                        Order ID:{' '}
+                {[
+                  OrderStatusEnum.DISPATCHED,
+                  OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                ].includes(currentOnGoingOrderDetails.status) &&
+                  cod && (
+                    <View style={styles.orderDetailsCard}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          // left: wp(7),
+                          top: hp(2),
+                        }}>
+                        <Text style={{left: wp(6)}}>
+                          Order ID:{' '}
+                          <Text
+                            style={{
+                              fontFamily: 'RobotoMono-Regular',
+                              fontWeight: '700',
+                              color: '#118F5E',
+                              fontSize: 15,
+                            }}>
+                            {currentOnGoingOrderDetails?.order_details.vendor_order_id.slice(
+                              -6,
+                            )}
+                          </Text>
+                        </Text>
+                        <Text style={{color: '#828282', right: wp(6)}}>
+                          {/* <Image source={require('../images/Rupay.png')} /> */}
+                          {'₹'} {'Earning'}
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          top: hp(2),
+                          alignSelf: 'flex-end',
+                          alignItems: 'center',
+                          right: wp(6),
+                          width: wp(15),
+                        }}>
                         <Text
                           style={{
+                            color: '#000000',
                             fontFamily: 'RobotoMono-Regular',
                             fontWeight: '700',
-                            color: '#118F5E',
+                            fontSize: 16,
+                          }}>
+                          {currentOnGoingOrderDetails.order_details.order_total}
+                          {'₹'}
+                        </Text>
+                      </View>
+                      <View style={styles.line} />
+                      <View style={{alignItems: 'center', top: hp(6)}}>
+                        <Text>
+                          <Image source={require('../images/cart.png')} /> Food
+                          Drop Location
+                        </Text>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#333333',
                             fontSize: 15,
                           }}>
-                          {orderDetails?.order_details.vendor_order_id.slice(
-                            -6,
-                          )}
+                          {currentOnGoingOrderDetails?.drop_details?.address}
                         </Text>
-                      </Text>
-                      <Text style={{color: '#828282', right: wp(6)}}>
-                        {/* <Image source={require('../images/Rupay.png')} /> */}
-                        {'₹'} {'Earning'}
-                      </Text>
+                      </View>
+                      <View style={styles.line1} />
+                      <View style={styles.contactNumber}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            dialCall(
+                              currentOnGoingOrderDetails.drop_details
+                                .contact_number,
+                            )
+                          }>
+                          <Image
+                            source={require('../images/callicon.png')}
+                            style={styles.callIcon}
+                          />
+                        </TouchableOpacity>
+                        {/* <callLogo /> */}
+                        <TouchableOpacity
+                          onPress={() =>
+                            dialCall(
+                              currentOnGoingOrderDetails.drop_details
+                                .contact_number,
+                            )
+                          }>
+                          <Text style={{color: '#333333'}}>
+                            {' '}
+                            +91
+                            {
+                              currentOnGoingOrderDetails.drop_details
+                                .contact_number
+                            }
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                    <View
-                      style={{
-                        top: hp(2),
-                        alignSelf: 'flex-end',
-                        alignItems: 'center',
-                        right: wp(6),
-                        width: wp(15),
-                      }}>
-                      <Text
-                        style={{
-                          color: '#000000',
-                          fontFamily: 'RobotoMono-Regular',
-                          fontWeight: '700',
-                          fontSize: 16,
-                        }}>
-                        {orderDetails.order_details.order_total}
-                        {'₹'}
-                      </Text>
-                    </View>
-                    <View style={styles.line} />
-                    <View style={{alignItems: 'center', top: hp(6)}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Food
-                        Drop Location
-                      </Text>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
-                        }}>
-                        {orderDetails?.drop_details?.address}
-                      </Text>
-                    </View>
-                    <View style={styles.line1} />
-                    <View style={styles.contactNumber}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          dialCall(orderDetails.drop_details.contact_number)
-                        }>
-                        <Image
-                          source={require('../images/callicon.png')}
-                          style={styles.callIcon}
-                        />
-                      </TouchableOpacity>
-                      {/* <callLogo /> */}
-                      <TouchableOpacity
-                        onPress={() =>
-                          dialCall(orderDetails.drop_details.contact_number)
-                        }>
-                        <Text style={{color: '#333333'}}>
-                          {' '}
-                          +91{orderDetails.drop_details.contact_number}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
+                  )}
                 {!cod && (
                   <View style={styles.paymentWindiw}>
                     <Text style={styles.paymentText}>Cash</Text>
@@ -1551,7 +1170,7 @@ const PetPujaScreen = ({navigation}: any) => {
                       Please collect the order amount from the customer.
                     </Text>
                     <Text style={styles.totalorder}>
-                      ₹ {orderDetails.order_details.order_total}
+                      ₹ {currentOnGoingOrderDetails.order_details.order_total}
                     </Text>
                     <Pressable
                       style={styles.paymentButton}
@@ -1575,10 +1194,10 @@ const PetPujaScreen = ({navigation}: any) => {
                     longitudeDelta: 0.0121,
                   }}
                   region={{
-                    latitude: region.latitude || mylocation.latitude,
-                    longitude: region.longitude || mylocation.longitude,
-                    latitudeDelta: region.latitudeDelta || 0.0122,
-                    longitudeDelta: region.longitudeDelta || 0.0121,
+                    latitude: mylocation.latitude,
+                    longitude: mylocation.longitude,
+                    latitudeDelta: 0.0122,
+                    longitudeDelta: 0.0121,
                   }}
                   mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
                   <Marker
@@ -1587,22 +1206,32 @@ const PetPujaScreen = ({navigation}: any) => {
                     icon={require('../images/MapDriverIcon.png')}
                   />
 
-                  {slideCount <= 2 && (
+                  {[
+                    OrderStatusEnum.DISPATCHED,
+                    OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                  ].includes(currentOnGoingOrderDetails.status) && (
                     <Marker
                       identifier="pickUpLocationMarker"
                       coordinate={{
-                        latitude: orderDetails?.pickup_details?.latitude,
-                        longitude: orderDetails?.pickup_details?.longitude,
+                        latitude:
+                          currentOnGoingOrderDetails?.pickup_details?.latitude,
+                        longitude:
+                          currentOnGoingOrderDetails?.pickup_details?.longitude,
                       }}
                       icon={require('../images/MapPickupDropLocationIcon.png')}
                     />
                   )}
-                  {slideCount > 2 && (
+                  {[
+                    OrderStatusEnum.DISPATCHED,
+                    OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                  ].includes(currentOnGoingOrderDetails.status) && (
                     <Marker
                       identifier="pickUpLocationMarker"
                       coordinate={{
-                        latitude: orderDetails?.drop_details?.latitude,
-                        longitude: orderDetails?.drop_details?.longitude,
+                        latitude:
+                          currentOnGoingOrderDetails?.drop_details?.latitude,
+                        longitude:
+                          currentOnGoingOrderDetails?.drop_details?.longitude,
                       }}
                       icon={require('../images/MapPickupDropLocationIcon.png')}
                     />
@@ -1619,14 +1248,23 @@ const PetPujaScreen = ({navigation}: any) => {
                   style={styles.directionButton}
                   onPress={() =>
                     navigateToGoogleMaps(
-                      slideCount <= 2
+                      [
+                        OrderStatusEnum.DISPATCHED,
+                        OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                      ].includes(currentOnGoingOrderDetails.status)
                         ? {
-                            latitude: orderDetails.pickup_details.latitude,
-                            longitude: orderDetails.pickup_details.longitude,
+                            latitude:
+                              currentOnGoingOrderDetails.pickup_details
+                                .latitude,
+                            longitude:
+                              currentOnGoingOrderDetails.pickup_details
+                                .longitude,
                           }
                         : {
-                            latitude: orderDetails.drop_details.latitude,
-                            longitude: orderDetails.drop_details.longitude,
+                            latitude:
+                              currentOnGoingOrderDetails.drop_details.latitude,
+                            longitude:
+                              currentOnGoingOrderDetails.drop_details.longitude,
                           },
                     )
                   }>
@@ -1657,7 +1295,7 @@ const PetPujaScreen = ({navigation}: any) => {
                           style={styles.thumbImage}
                         />
                       } // Adjust width and height as needed
-                      onReachedToEnd={handleEndReached}
+                      onReachedToEnd={() => {}}
                       containerStyle={{
                         backgroundColor: '#118F5E',
                         color: 'red',
@@ -1671,7 +1309,7 @@ const PetPujaScreen = ({navigation}: any) => {
                         )
                       }
                       slideDirection="right"
-                      disabled={isDisabled}></SlideButton>
+                      disabled={connected}></SlideButton>
                   </View>
                 )}
               </>

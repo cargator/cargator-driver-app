@@ -1,21 +1,21 @@
-import {PermissionsAndroid, Platform, Linking} from 'react-native';
+import {Linking, PermissionsAndroid, Platform} from 'react-native';
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Geolocation from 'react-native-geolocation-service';
-import {
-  setGpsPermission,
-  setLocationPermission,
-  setUserImgExists,
-  setlivelocation,
-} from '../redux/redux';
-import {Toast} from 'react-native-toast-message/lib/src/Toast';
 import {
   check,
   checkMultiple,
   PERMISSIONS,
   RESULTS,
 } from 'react-native-permissions';
-import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import {getPreSignedUrl} from '../services/userservices';
+import {Toast} from 'react-native-toast-message/lib/src/Toast';
 import RNFetchBlob from 'rn-fetch-blob';
+import {
+  setGpsPermission,
+  setlivelocation,
+  setLocationPermission,
+  setUserImgExists,
+} from '../redux/redux';
+import {getPreSignedUrl} from '../services/userservices';
 // import {dummy_Path} from '../map-screen/dummyData';
 
 export const requestGpsPermission = async (dispatch: any) => {
@@ -91,6 +91,7 @@ export const checkLocationPermission = async (dispatch: any) => {
           },
           (error: any) => {
             console.log(`checkLocationPermission error :>> `, error);
+            dispatch(setlivelocation({}));
             if (error.message == 'Location permission not granted.') {
               dispatch(setLocationPermission(false));
             }
@@ -103,7 +104,6 @@ export const checkLocationPermission = async (dispatch: any) => {
         );
         // if (Platform.OS == 'android' &&Platform.Version > 29 && BackgroundLocation != 'granted') {}
         dispatch(setLocationPermission(true));
-        // dispatch(setInfoVisible(true));
       } else {
         // Toast.show({
         //   type: 'error',
@@ -196,6 +196,8 @@ export const requestLocationPermission = async (dispatch: any) => {
         },
         (error: any) => {
           console.log(`requestLocationPermission error :>> `, error);
+          dispatch(setlivelocation({}));
+
           if (error.message == 'Location permission not granted.') {
             // Toast.show({
             //   type: 'error',
@@ -213,7 +215,6 @@ export const requestLocationPermission = async (dispatch: any) => {
       );
       // if (Platform.OS == 'android' &&Platform.Version > 29 && BackgroundLocation != 'granted') {}
       dispatch(setLocationPermission(true));
-      // dispatch(setInfoVisible(true));
     } else {
       Toast.show({
         type: 'error',

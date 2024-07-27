@@ -3,7 +3,7 @@ import store from '../redux/redux';
 
 const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
-  baseURL: `http://192.168.1.101:3001`,
+  baseURL: `http://192.168.0.150:3001`,
   // baseURL: `https://818f-182-48-211-210.ngrok-free.app`
   // baseURL: `https://6d14-182-48-214-176.ngrok-free.app`,
   // baseURL: `https://sukam-api.cargator.org/`,

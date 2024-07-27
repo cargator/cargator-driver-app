@@ -1,26 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
+import {Formik} from 'formik';
+import React, {useEffect, useRef, useState} from 'react';
 import {
+  ActivityIndicator,
+  ImageBackground,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Keyboard,
-  ImageBackground
 } from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import { useDispatch, useSelector } from 'react-redux';
-import { setPhoneNumber } from '../redux/redux';
-import { Formik } from 'formik';
-import * as Yup from 'yup';
 import Toast from 'react-native-toast-message';
-import PhoneIcon from '../svg/PhoneIcon';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { getcountryCodeAPI, login } from '../services/userservices';
+import {useDispatch, useSelector} from 'react-redux';
+import * as Yup from 'yup';
+import {setPhoneNumber} from '../redux/redux';
+import {getcountryCodeAPI, login} from '../services/userservices';
 
 const initialCountryCode = '+91'; // Default country code/
 const countryCodeList: any = []; // List of country codes
@@ -30,10 +29,12 @@ const LoginScreen = ({navigation}: any) => {
   const scrollViewRef = useRef<any>();
   const refTextInput: any = React.useRef(null);
   const liveLocation = useSelector((store: any) => store.livelocation);
+  console.log('liveLocation', liveLocation);
   const [isSendOtpClicked, setIsSendOtpClicked] = useState(false);
   const [isTextInputSelected, setIsTextInputSelected] = useState(false);
   const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
-  const [selectedCountryCode, setSelectedCountryCode] = useState(initialCountryCode);
+  const [selectedCountryCode, setSelectedCountryCode] =
+    useState(initialCountryCode);
 
   const handlePhoneAndCodeView = () => {
     if (isTextInputSelected) {
@@ -49,7 +50,7 @@ const LoginScreen = ({navigation}: any) => {
     setShowCountryCodeDropdown(!showCountryCodeDropdown);
   };
 
-  const handleCountryCodeSelection = (code:any) => {
+  const handleCountryCodeSelection = (code: any) => {
     setSelectedCountryCode(code);
     toggleCountryCodeDropdown();
   };
@@ -60,19 +61,18 @@ const LoginScreen = ({navigation}: any) => {
       for (let i = 0; i < res.data.length; i++) {
         countryCodeList.push(res.data[i].countryCode);
       }
-      } catch (error: any) {
-        console.log(error);
-        Toast.show({
-          type: 'error',
-          text1: error.response.data.error,
-        });
-      }
+    } catch (error: any) {
+      console.log(error);
+      Toast.show({
+        type: 'error',
+        text1: error.response.data.error,
+      });
     }
-
+  };
 
   useEffect(() => {
-      getCountryCode()
-    }, [])
+    getCountryCode();
+  }, []);
 
   const loginSchema = Yup.object().shape({
     mobileNumber: Yup.string()
@@ -89,22 +89,17 @@ const LoginScreen = ({navigation}: any) => {
       setIsSendOtpClicked(true);
       Keyboard.dismiss();
       // const formattedMobileNumber = `${countryCode}${formValues.mobileNumber}`;
-
       let test = [liveLocation.longitude, liveLocation.latitude];
-      const loginData={
+      const loginData = {
         mobileNumber: formValues.mobileNumber,
         type: 'driver',
         liveLocation: test,
-      }
+      };
       // API Call to request OTP for Login.
-      const res: any = await login(loginData)
-      console.log('res', res);
-
+      const res: any = await login(loginData);
       dispatch(setPhoneNumber(formValues.mobileNumber));
-      // dispatch(setPhoneNumber(formattedMobileNumber));
       navigation.navigate('LoginOtpScreen', {
         mobileNumber: formValues.mobileNumber,
-        // formattedMobileNumber,
       });
       setTimeout(() => {
         setIsSendOtpClicked(false);
@@ -160,25 +155,41 @@ const LoginScreen = ({navigation}: any) => {
                   <Text style={styles.textContinue}>to continue</Text>
                 </View>
 
-                
                 <View style={styles.countryCodeView}>
-                  <TouchableOpacity
-                    onPress={toggleCountryCodeDropdown}>
+                  <TouchableOpacity onPress={toggleCountryCodeDropdown}>
                     {/* <PhoneIcon /> */}
                     <Text style={styles.mobileInputCountryCode}>
                       {selectedCountryCode}
                     </Text>
-                    <Text style={{ position: 'absolute', right: -17, bottom: -1, color: 'grey', fontSize: 22 }}>▼</Text>
+                    <Text
+                      style={{
+                        position: 'absolute',
+                        right: -17,
+                        bottom: -1,
+                        color: 'grey',
+                        fontSize: 22,
+                      }}>
+                      ▼
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 {showCountryCodeDropdown && (
                   <View style={styles.countryCodeDropdown}>
-                    {countryCodeList.map((code:any, index:any) => (
-                      <TouchableOpacity key={index} onPress={() => handleCountryCodeSelection(code)}>
-                        <Text style={code === selectedCountryCode ? { fontWeight: 'bold' } : {}}>{code}</Text>
+                    {countryCodeList.map((code: any, index: any) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => handleCountryCodeSelection(code)}>
+                        <Text
+                          style={
+                            code === selectedCountryCode
+                              ? {fontWeight: 'bold'}
+                              : {}
+                          }>
+                          {code}
+                        </Text>
                       </TouchableOpacity>
                     ))}
-                    </View>
+                  </View>
                 )}
                 <View style={styles.mobileInputContainer}>
                   {/* <View
@@ -268,8 +279,8 @@ const styles = StyleSheet.create({
   mobileInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width:wp(67),
-    marginLeft: wp(20)
+    width: wp(67),
+    marginLeft: wp(20),
   },
   mobileInputView: {
     zIndex: 1,
@@ -320,14 +331,14 @@ const styles = StyleSheet.create({
   countryCodeDropdown: {
     position: 'absolute',
     bottom: hp(16.5),
-    width:wp(13),
+    width: wp(13),
     left: wp(4),
     backgroundColor: 'white',
     borderWidth: 1,
     borderColor: 'white',
     padding: 10,
     borderRadius: 5,
-    textColor: "grey"
+    textColor: 'grey',
   },
   countryCodeView: {
     height: hp(5.6),
