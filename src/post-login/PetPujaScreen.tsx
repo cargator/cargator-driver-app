@@ -369,10 +369,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
   };
 
   useEffect(() => {
-    if (route.params?.refresh) {
-      // Handle refresh logic here
-      console.log('Refresh the home screen data');
+    if (orderStartedRef.current) {
+      return;
     }
+
     getProgressDetail();
     startProcessing();
 
