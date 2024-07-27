@@ -12,10 +12,10 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {socketInstance} from './MapScreen';
 import Toast from 'react-native-toast-message';
 import LoaderComponent from '../components/LoaderComponent';
 import BackArrow from '../svg/BackArrow';
+import {socketInstance} from './PetPujaScreen';
 let timerTime: number;
 
 const Pickup = ({
@@ -145,7 +145,12 @@ const Pickup = ({
             <TouchableOpacity
               style={{flex: 1, justifyContent: 'center'}}
               onPress={() => setIsTimerRunning(!isTimerRunning)}>
-              <Text style={{fontFamily: 'RobotoMono-Regular',textAlign: 'center', color: 'white'}}>
+              <Text
+                style={{
+                  fontFamily: 'RobotoMono-Regular',
+                  textAlign: 'center',
+                  color: 'white',
+                }}>
                 Toggle Timer
               </Text>
             </TouchableOpacity>

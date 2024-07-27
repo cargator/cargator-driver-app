@@ -59,20 +59,20 @@ const OrderStatusEnum = {
   DISPATCHED: 'DISPATCHED', //(Order is picked up by the rider.)
   ARRIVED_CUSTOMER_DOORSTEP: 'ARRIVED_CUSTOMER_DOORSTEP', //(Rider has reached the drop-off location.)
   DELIVERED: 'DELIVERED', // (Successfully delivered and transaction has concluded.)
-  ORDER_CANCELLED: 'CANCELLED', // (Order is cancelled.)
-  RECEIVER_NOT_AVAILABLE: 'RECEIVER_NOT_AVAILABLE', //(Receiver is not available.)
-  RETURNED_TO_SELLER: 'RETURNED_TO_SELLER', //(Order was returned to Restaurant.)
+  // ORDER_CANCELLED: 'CANCELLED', // (Order is cancelled.)
+  // RECEIVER_NOT_AVAILABLE: 'RECEIVER_NOT_AVAILABLE', //(Receiver is not available.)
+  // RETURNED_TO_SELLER: 'RETURNED_TO_SELLER', //(Order was returned to Restaurant.)
 };
 
 const nextOrderStatus: any = {
-  ORDER_ACCEPTED: 'ALLOTTED',
-  ORDER_ALLOTTED: 'ARRIVED',
+  ACCEPTED: 'ALLOTTED',
+  ALLOTTED: 'ARRIVED',
   ARRIVED: 'DISPATCHED',
   DISPATCHED: 'ARRIVED_CUSTOMER_DOORSTEP',
   ARRIVED_CUSTOMER_DOORSTEP: 'DELIVERED',
-  DELIVERED: 'CANCELLED',
-  ORDER_CANCELLED: 'RECEIVER_NOT_AVAILABLE',
-  RECEIVER_NOT_AVAILABLE: 'RETURNED_TO_SELLER',
+  // DELIVERED: 'CANCELLED',
+  // ORDER_CANCELLED: 'RECEIVER_NOT_AVAILABLE',
+  // RECEIVER_NOT_AVAILABLE: 'RETURNED_TO_SELLER',
 };
 
 export const SliderText = {
@@ -255,7 +255,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const onAcceptOrder = (order: any) => {
     setLoading(true);
-    console.log('driverLoc', myLocation);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
       driverLoc: myLocation.current,
@@ -265,8 +264,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const startOrderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
-      console.log('accept order', body1);
-
       let body = body1.message;
       if (body.order.status === OrderStatusEnum['ORDER_ALLOTTED']) {
         if (body.driverId === userId) {
@@ -297,6 +294,57 @@ const PetPujaScreen = ({navigation, route}: any) => {
     });
   };
 
+  const updateOrderStatus = async () => {
+    try {
+      setLoading(true);
+      const req = {
+        id: currentOnGoingOrderDetails._id,
+        status: nextOrderStatus[currentOnGoingOrderDetails.status],
+      };
+
+      const response = await updateOrderStatusAPI(req);
+      if (
+        (response.data.order.status === OrderStatusEnum.DELIVERED &&
+          currentOnGoingOrderDetails.order_details.payment_status) ||
+        response.data.order.status === 'CANCELLED'
+      ) {
+        dispatch(removeCurrentOnGoingOrderDetails());
+        startProcessing();
+        setOrderStarted(false);
+        orderStartedRef.current = false;
+        setButtonText('');
+        if (response.data.order.status === 'CANCELLED') {
+          Toast.show({
+            type: 'error',
+            text1: 'Order cancelled by customer!',
+            visibilityTime: 5000,
+          });
+          return;
+        }
+      } else if (
+        response.data.order.status === OrderStatusEnum.DELIVERED &&
+        !currentOnGoingOrderDetails.order_details.payment_status
+      ) {
+        setLoading(false);
+        setcod(false);
+      } else {
+        setButtonText(nextOrderStatus[response.data.order.status]);
+        setLoading(false);
+        dispatch(setCurrentOnGoingOrderDetails(response.data.order));
+        Toast.show({
+          type: 'success',
+          text1: `ORDER SUCCESSFULLY ${
+            nextOrderStatus[currentOnGoingOrderDetails.status]
+          } !`,
+          visibilityTime: 5000,
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
+  };
+
   const onRejectOrder = async () => {
     try {
       orderRejectAnimation();
@@ -313,10 +361,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setcod(true);
       socketInstance.emit('payment-status', currentOnGoingOrderDetails);
       setOrderStarted(false);
+      orderStartedRef.current = false;
       setPath([]);
       dispatch(removeCurrentOnGoingOrderDetails());
       setButtonText('ACCEPT ORDER');
       setAvailableOrders([]);
+      startProcessing();
     } catch (error) {
       console.log(error);
     }
@@ -358,7 +408,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
         return;
       }
       resp = await getAllOrdersAPI();
-
       setAvailableOrders(resp.data);
       orderAcceptAnimation();
       socketInstance = await getSocketInstance(loginToken);
@@ -1291,23 +1340,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         />
                       } // Adjust width and height as needed
                       onReachedToEnd={async () => {
-                        setSliderButtonLoader(true);
-                        const status = {
-                          id: currentOnGoingOrderDetails._id,
-                          status:
-                            nextOrderStatus[currentOnGoingOrderDetails.status],
-                        };
-                        console.log(
-                          'updateOrderStatusAPI',
-                          currentOnGoingOrderDetails,
-                          status,
-                        );
-
-                        await updateOrderStatusAPI(status);
-                        setButtonText(
-                          nextOrderStatus[currentOnGoingOrderDetails.status],
-                        );
-                        setSliderButtonLoader(false);
+                        await updateOrderStatus();
                       }}
                       containerStyle={{
                         backgroundColor: '#118F5E',
