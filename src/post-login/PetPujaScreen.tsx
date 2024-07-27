@@ -114,7 +114,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [connected, setConnected] = useState<boolean>(true);
   const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
 
-  const myLocation = useRef<any>({});
+  const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
 
   const animateCart = (toValue: number, callback: any = undefined) => {
     Animated.timing(animation, {
