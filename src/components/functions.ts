@@ -11,7 +11,6 @@ import {Toast} from 'react-native-toast-message/lib/src/Toast';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   setGpsPermission,
-  setlivelocation,
   setLocationPermission,
   setUserImgExists,
 } from '../redux/redux';
@@ -34,25 +33,25 @@ export const requestGpsPermission = async (dispatch: any) => {
           //  - "enabled" if user has clicked on OK button in the popup
           // console.log(`promptForEnableLocationIfNeeded data :>> `, data);
 
-          Geolocation.getCurrentPosition(
-            position => {
-              const {coords} = position;
-              // console.log(`requestGpsPermission position :>> `, position);
-              dispatch(setlivelocation(coords));
-            },
-            (error: any) => {
-              console.log(`requestGpsPermission error :>> `, error);
-              if (error.message == 'Location permission not granted.') {
-                dispatch(setLocationPermission(false));
-              }
-              if (error.code == 2) {
-                // console.log(`requestGpsPermission error.code == 2`);
-                dispatch(setGpsPermission(false));
-              }
-            },
-            // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-            {enableHighAccuracy: false, timeout: 15000},
-          );
+          // Geolocation.getCurrentPosition(
+          //   position => {
+          //     const {coords} = position;
+          //     // console.log(`requestGpsPermission position :>> `, position);
+          //     dispatch(setlivelocation(coords));
+          //   },
+          //   (error: any) => {
+          //     console.log(`requestGpsPermission error :>> `, error);
+          //     if (error.message == 'Location permission not granted.') {
+          //       dispatch(setLocationPermission(false));
+          //     }
+          //     if (error.code == 2) {
+          //       // console.log(`requestGpsPermission error.code == 2`);
+          //       dispatch(setGpsPermission(false));
+          //     }
+          //   },
+          //   // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+          //   {enableHighAccuracy: false, timeout: 15000},
+          // );
 
           dispatch(setGpsPermission(true));
         })
@@ -83,25 +82,25 @@ export const checkLocationPermission = async (dispatch: any) => {
 
       if (locationPermission == 'granted') {
         dispatch(setGpsPermission(true));
-        Geolocation.getCurrentPosition(
-          position => {
-            const {coords} = position;
-            // console.log(`checkLocationPermission position :>> `, position);
-            dispatch(setlivelocation(coords));
-          },
-          (error: any) => {
-            console.log(`checkLocationPermission error :>> `, error);
-            dispatch(setlivelocation({}));
-            if (error.message == 'Location permission not granted.') {
-              dispatch(setLocationPermission(false));
-            }
-            if (error.code == 2) {
-              dispatch(setGpsPermission(false));
-            }
-          },
-          // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-          {enableHighAccuracy: false, timeout: 15000},
-        );
+        // Geolocation.getCurrentPosition(
+        //   position => {
+        //     const {coords} = position;
+        //     // console.log(`checkLocationPermission position :>> `, position);
+        //     dispatch(setlivelocation(coords));
+        //   },
+        //   (error: any) => {
+        //     console.log(`checkLocationPermission error :>> `, error);
+        //     dispatch(setlivelocation({}));
+        //     if (error.message == 'Location permission not granted.') {
+        //       dispatch(setLocationPermission(false));
+        //     }
+        //     if (error.code == 2) {
+        //       dispatch(setGpsPermission(false));
+        //     }
+        //   },
+        //   // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+        //   {enableHighAccuracy: false, timeout: 15000},
+        // );
         // if (Platform.OS == 'android' &&Platform.Version > 29 && BackgroundLocation != 'granted') {}
         dispatch(setLocationPermission(true));
       } else {
@@ -188,31 +187,31 @@ export const requestLocationPermission = async (dispatch: any) => {
     // console.log(`requestLocationPermission locationPermission :>> `, locationPermission);
 
     if (locationPermission == 'granted') {
-      Geolocation.getCurrentPosition(
-        position => {
-          const {coords} = position;
-          // console.log(`checkLocationPermission position :>> `, position);
-          dispatch(setlivelocation(coords));
-        },
-        (error: any) => {
-          console.log(`requestLocationPermission error :>> `, error);
-          dispatch(setlivelocation({}));
+      // Geolocation.getCurrentPosition(
+      //   position => {
+      //     const {coords} = position;
+      //     // console.log(`checkLocationPermission position :>> `, position);
+      //     dispatch(setlivelocation(coords));
+      //   },
+      //   (error: any) => {
+      //     console.log(`requestLocationPermission error :>> `, error);
+      //     dispatch(setlivelocation({}));
 
-          if (error.message == 'Location permission not granted.') {
-            // Toast.show({
-            //   type: 'error',
-            //   text1: 'Please allow location permission.',
-            // });
-            dispatch(setLocationPermission(false));
-          }
-          if (error.code == 2) {
-            // console.log(`requestLocationPermission error.code == 2`);
-            dispatch(setGpsPermission(false));
-          }
-        },
-        // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-        {enableHighAccuracy: false, timeout: 15000},
-      );
+      //     if (error.message == 'Location permission not granted.') {
+      //       // Toast.show({
+      //       //   type: 'error',
+      //       //   text1: 'Please allow location permission.',
+      //       // });
+      //       dispatch(setLocationPermission(false));
+      //     }
+      //     if (error.code == 2) {
+      //       // console.log(`requestLocationPermission error.code == 2`);
+      //       dispatch(setGpsPermission(false));
+      //     }
+      //   },
+      //   // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+      //   {enableHighAccuracy: false, timeout: 15000},
+      // );
       // if (Platform.OS == 'android' &&Platform.Version > 29 && BackgroundLocation != 'granted') {}
       dispatch(setLocationPermission(true));
     } else {

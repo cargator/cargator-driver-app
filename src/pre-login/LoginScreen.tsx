@@ -16,7 +16,7 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Toast from 'react-native-toast-message';
-import {useDispatch, useSelector} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import * as Yup from 'yup';
 import {setPhoneNumber} from '../redux/redux';
 import {getcountryCodeAPI, login} from '../services/userservices';
@@ -28,8 +28,6 @@ const LoginScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
   const scrollViewRef = useRef<any>();
   const refTextInput: any = React.useRef(null);
-  const liveLocation = useSelector((store: any) => store.livelocation);
-  console.log('liveLocation', liveLocation);
   const [isSendOtpClicked, setIsSendOtpClicked] = useState(false);
   const [isTextInputSelected, setIsTextInputSelected] = useState(false);
   const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
@@ -89,11 +87,9 @@ const LoginScreen = ({navigation}: any) => {
       setIsSendOtpClicked(true);
       Keyboard.dismiss();
       // const formattedMobileNumber = `${countryCode}${formValues.mobileNumber}`;
-      let test = [liveLocation.longitude, liveLocation.latitude];
       const loginData = {
         mobileNumber: formValues.mobileNumber,
         type: 'driver',
-        liveLocation: test,
       };
       // API Call to request OTP for Login.
       const res: any = await login(loginData);

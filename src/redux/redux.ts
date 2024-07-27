@@ -80,9 +80,6 @@ const authSlice = createSlice({
     setLoginToken: (state, action) => {
       state.loginToken = action.payload;
     },
-    setlivelocation: (state, action) => {
-      state.livelocation = {longitude: 72.870729, latitude: 19.051322};
-    },
     setMessagesInRedux: (state, action) => {
       state.messages = action.payload;
     },
@@ -121,7 +118,6 @@ export const {
   setGpsPermission,
   setPendingPayment,
   setLoginToken,
-  setlivelocation,
   setMessagesInRedux,
   setUnseenMessagesCountInRedux,
   setUserImgExists,
