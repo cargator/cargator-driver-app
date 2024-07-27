@@ -255,6 +255,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const onAcceptOrder = (order: any) => {
     setLoading(true);
+    console.log('driverLoc', myLocation);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
       driverLoc: myLocation.current,
@@ -390,7 +391,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         unsubscribe();
       }
     };
-  }, []);
+  }, [route.params?.refresh]);
 
   return (
     <>
