@@ -14,7 +14,7 @@ import {
 } from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Appearance,
   Platform,
@@ -60,27 +60,8 @@ const Appdrawercontent = (props: any) => {
       setVersionNumber(version);
     };
 
-    messaging().setBackgroundMessageHandler(
-      () => new Promise<void>(resolve => resolve()),
-    );
-
-    messaging().onNotificationOpenedApp((remoteMessage: any) => {
-      props.navigation.navigate('Home', {notification: true});
-    });
-
-    messaging()
-      .getInitialNotification()
-      .then((remoteMessage: any) => {
-        props.navigation.navigate('Home', {notification: true});
-      });
-
     requestUserPermission();
     getVersion();
-    const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
-      props.navigation.navigate('Home', {notification: true});
-    });
-
-    return unsubscribe;
   }, []);
 
   const userImg = useSelector((store: any) => store.userImage.path);
@@ -131,15 +112,51 @@ export const Routing = () => {
   const locationPermission = useSelector(
     (store: any) => store.locationPermission,
   );
+  const navigationRef = useRef<any>(null);
+
   useEffect(() => {
     SplashScreen.hide();
     requestLocationPermission(dispatch);
     checkLocationPermission(dispatch);
+    messaging().setBackgroundMessageHandler(
+      () => new Promise<void>(resolve => resolve()),
+    );
+
+    messaging().onNotificationOpenedApp((remoteMessage: any) => {
+      if (navigationRef.current?.getCurrentRoute().name === 'Home') {
+        // Force update or refresh home screen state
+        navigationRef.current?.navigate('Home', {refresh: true});
+      } else {
+        navigationRef.current?.navigate('Home');
+      }
+    });
+
+    messaging()
+      .getInitialNotification()
+      .then((remoteMessage: any) => {
+        if (navigationRef.current?.getCurrentRoute().name === 'Home') {
+          // Force update or refresh home screen state
+          navigationRef.current?.navigate('Home', {refresh: true});
+        } else {
+          navigationRef.current?.navigate('Home');
+        }
+      });
+
+    const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
+      if (navigationRef.current?.getCurrentRoute().name === 'Home') {
+        // Force update or refresh home screen state
+        navigationRef.current?.navigate('Home', {refresh: true});
+      } else {
+        navigationRef.current?.navigate('Home');
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   return (
     <SafeAreaProvider style={{backgroundColor: '#ffffff'}}>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <Stack.Navigator
           initialRouteName="LoginScreen"
           // initialRouteName="PetPujaScreen"

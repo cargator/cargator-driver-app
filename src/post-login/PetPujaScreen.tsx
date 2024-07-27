@@ -90,11 +90,7 @@ export const dialCall = (number: string) => {
   });
 };
 
-const PetPujaScreen = ({navigation}: any) => {
-  console.log(
-    'navigation.state.params.user.name',
-    navigation.state.params.user.name,
-  );
+const PetPujaScreen = ({navigation, route}: any) => {
   const currentOnGoingOrderDetails = useSelector(
     (store: any) => store.currentOnGoingOrderDetails,
   );
@@ -369,6 +365,10 @@ const PetPujaScreen = ({navigation}: any) => {
   };
 
   useEffect(() => {
+    if (route.params?.refresh) {
+      // Handle refresh logic here
+      console.log('Refresh the home screen data');
+    }
     getProgressDetail();
     startProcessing();
 
