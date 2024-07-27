@@ -113,10 +113,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
   const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
-  const [mylocation, setMyLocation] = useState({
-    latitude: 19.0,
-    longitude: 72.0,
-  });
+
+  const myLocation = useRef<any>({});
 
   const animateCart = (toValue: number, callback: any = undefined) => {
     Animated.timing(animation, {
@@ -217,7 +215,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         position => {
           const {latitude, longitude} = position.coords;
           const newLocation = {latitude, longitude};
-          setMyLocation(newLocation);
+          myLocation.current = newLocation;
           if (prevLocation) {
             const distance = geolib.getDistance(prevLocation, newLocation);
             if (distance >= 15) {
@@ -259,7 +257,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     setLoading(true);
     socketInstance?.emit('accept-order', {
       id: order._id.toString(),
-      driverLoc: mylocation,
+      driverLoc: myLocation.current,
     });
   };
 
@@ -1183,15 +1181,15 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     longitudeDelta: 0.0121,
                   }}
                   region={{
-                    latitude: mylocation.latitude,
-                    longitude: mylocation.longitude,
+                    latitude: myLocation.current.latitude,
+                    longitude: myLocation.current.longitude,
                     latitudeDelta: 0.0122,
                     longitudeDelta: 0.0121,
                   }}
                   mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
                   <Marker
                     identifier="myLocationMarker"
-                    coordinate={mylocation}
+                    coordinate={myLocation.current}
                     icon={require('../images/MapDriverIcon.png')}
                   />
 
