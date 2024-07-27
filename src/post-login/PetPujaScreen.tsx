@@ -43,6 +43,7 @@ import {
   getAllOrdersAPI,
   getMyPendingOrdersFromAPI,
   setDriverOffline,
+  setDriverOnline,
 } from '../services/userservices';
 import Navigate from '../svg/Navigate';
 import SidebarIcon from '../svg/SidebarIcon';
@@ -187,6 +188,7 @@ const PetPujaScreen = ({navigation}: any) => {
         await socketDisconnect();
         await setDriverOffline();
       } else {
+        await setDriverOnline();
         socketInstance = await getSocketInstance(loginToken);
         startOrderStatusListener();
       }
