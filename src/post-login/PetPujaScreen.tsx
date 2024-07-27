@@ -91,6 +91,10 @@ export const dialCall = (number: string) => {
 };
 
 const PetPujaScreen = ({navigation}: any) => {
+  console.log(
+    'navigation.state.params.user.name',
+    navigation.state.params.user.name,
+  );
   const currentOnGoingOrderDetails = useSelector(
     (store: any) => store.currentOnGoingOrderDetails,
   );

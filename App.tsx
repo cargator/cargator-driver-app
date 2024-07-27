@@ -65,19 +65,19 @@ const Appdrawercontent = (props: any) => {
     );
 
     messaging().onNotificationOpenedApp((remoteMessage: any) => {
-      props.navigation.navigate('Home');
+      props.navigation.navigate('Home', {notification: true});
     });
 
     messaging()
       .getInitialNotification()
       .then((remoteMessage: any) => {
-        props.navigation.navigate('Home');
+        props.navigation.navigate('Home', {notification: true});
       });
 
     requestUserPermission();
     getVersion();
     const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
-      props.navigation.navigate('Home');
+      props.navigation.navigate('Home', {notification: true});
     });
 
     return unsubscribe;
