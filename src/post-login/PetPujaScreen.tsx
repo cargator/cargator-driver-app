@@ -264,6 +264,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const startOrderStatusListener = async () => {
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
+      console.log('accept order', body1);
+
       let body = body1.message;
       if (body.order.status === OrderStatusEnum['ORDER_ALLOTTED']) {
         if (body.driverId === userId) {
@@ -297,7 +299,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const onRejectOrder = async () => {
     try {
       orderRejectAnimation();
-      setAvailableOrders([...availableOrders.shift()]);
+      const resp = availableOrders.shift();
+
+      setAvailableOrders([...availableOrders]);
     } catch (error) {
       console.log(error);
     }
@@ -355,6 +359,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       resp = await getAllOrdersAPI();
 
       setAvailableOrders(resp.data);
+      orderAcceptAnimation();
       socketInstance = await getSocketInstance(loginToken);
       startOrderStatusListener();
     } catch (error) {
@@ -900,7 +905,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               style={styles.thumbImage}
                             />
                           } // Adjust width and height as needed
-                          onReachedToEnd={onAcceptOrder}
+                          onReachedToEnd={() =>
+                            onAcceptOrder(availableOrders[0])
+                          }
                           containerStyle={{
                             backgroundColor: '#118F5E',
                             color: 'red',
@@ -1289,6 +1296,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           status:
                             nextOrderStatus[currentOnGoingOrderDetails.status],
                         };
+                        console.log(
+                          'updateOrderStatusAPI',
+                          currentOnGoingOrderDetails,
+                          status,
+                        );
+
                         await updateOrderStatusAPI(status);
                         setButtonText(
                           nextOrderStatus[currentOnGoingOrderDetails.status],
@@ -1308,7 +1321,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         )
                       }
                       slideDirection="right"
-                      disabled={connected}></SlideButton>
+                      disabled={!connected}></SlideButton>
                   </View>
                 )}
               </>
