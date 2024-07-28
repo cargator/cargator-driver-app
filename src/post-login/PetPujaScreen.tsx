@@ -317,6 +317,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         setOrderStarted(false);
         orderStartedRef.current = false;
         setButtonText('');
+        setLoading(false);
         if (response.data.order.status === 'CANCELLED') {
           Toast.show({
             type: 'error',
@@ -359,8 +360,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const onRejectOrder = async () => {
     try {
       orderRejectAnimation();
-      const resp = availableOrders.shift();
-
+      availableOrders.shift();
       setAvailableOrders([...availableOrders]);
     } catch (error) {
       console.log(error);
