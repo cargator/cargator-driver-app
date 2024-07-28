@@ -325,12 +325,14 @@ const PetPujaScreen = ({navigation, route}: any) => {
           });
           return;
         }
+        getProgressDetail();
       } else if (
         response.data.order.status === OrderStatusEnum.DELIVERED &&
         !currentOnGoingOrderDetails.order_details.payment_status
       ) {
         setLoading(false);
         setcod(false);
+        getProgressDetail();
         Toast.show({
           type: 'success',
           text1: `ORDER DELIVERED SUCCESSFULLY!`,
