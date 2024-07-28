@@ -331,6 +331,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
       ) {
         setLoading(false);
         setcod(false);
+        Toast.show({
+          type: 'success',
+          text1: `ORDER DELIVERED SUCCESSFULLY!`,
+          visibilityTime: 5000,
+        });
       } else {
         setButtonText(nextOrderStatus[response.data.order.status]);
         setLoading(false);
@@ -375,6 +380,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setButtonText('ACCEPT ORDER');
       setAvailableOrders([]);
       setLoading(false);
+      Toast.show({
+        type: 'success',
+        text1: `PAYMENT DONE!`,
+        visibilityTime: 5000,
+      });
       startProcessing();
     } catch (error) {
       console.log(error);
@@ -423,7 +433,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
       resp = await getAllOrdersAPI();
       setAvailableOrders(resp.data);
-      orderAcceptAnimation();
+      if (availableOrders.length < 1) {
+        orderAcceptAnimation();
+      }
       socketInstance = await getSocketInstance(loginToken);
       startOrderStatusListener();
     } catch (error) {
@@ -846,56 +858,54 @@ const PetPujaScreen = ({navigation, route}: any) => {
           availableOrders[0] &&
           !orderStarted && (
             <>
-              {loading ? (
+              {/* {loading ? (
                 <LoaderComponent />
-              ) : (
-                <Animated.View style={{transform: [{translateY: animation}]}}>
-                  <ImageBackground source={require('../images/Sukam.jpg')}>
-                    <View
-                      key={`order_${0 + 1}`}
-                      style={[styles.modalView, {opacity: 2}]}>
-                      {/* orderId Text */}
-                      <View style={{top: wp(3)}}>
+              )  */}
+              <Animated.View style={{transform: [{translateY: animation}]}}>
+                <ImageBackground source={require('../images/Sukam.jpg')}>
+                  <View
+                    key={`order_${0 + 1}`}
+                    style={[styles.modalView, {opacity: 2}]}>
+                    {/* orderId Text */}
+                    <View style={{top: wp(3)}}>
+                      <Text
+                        style={{
+                          fontFamily: 'Roboto Mono',
+                          fontSize: hp(2.5),
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          color: '#212121',
+                        }}>
+                        Order Id :{' '}
                         <Text
                           style={{
-                            fontFamily: 'Roboto Mono',
-                            fontSize: hp(2.5),
-                            fontWeight: '600',
-                            textAlign: 'center',
-                            color: '#212121',
+                            fontFamily: 'RobotoMono-Regular',
+                            fontWeight: '700',
+                            color: '#118F5E',
+                            fontSize: 20,
                           }}>
-                          Order Id :{' '}
-                          <Text
-                            style={{
-                              fontFamily: 'RobotoMono-Regular',
-                              fontWeight: '700',
-                              color: '#118F5E',
-                              fontSize: 20,
-                            }}>
-                            {availableOrders[0].order_details?.vendor_order_id.slice(
-                              -6,
-                            )}
-                          </Text>
+                          {availableOrders[0].order_details?.vendor_order_id.slice(
+                            -6,
+                          )}
+                        </Text>
+                      </Text>
+                    </View>
+                    {/* Circul data */}
+                    <View style={styles.circleModel}>
+                      <View style={styles.circle}>
+                        <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                        <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#000000',
+                            fontSize: 15,
+                          }}>
+                          {'₹ '}0
                         </Text>
                       </View>
-                      {/* Circul data */}
-                      <View style={styles.circleModel}>
-                        <View style={styles.circle}>
-                          <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                          <Text style={{alignItems: 'center'}}>
-                            {'Earning'}
-                          </Text>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              color: '#000000',
-                              fontSize: 15,
-                            }}>
-                            {'₹ '}0
-                          </Text>
-                        </View>
-                      </View>
-                      {/* <View style={styles.text}>
+                    </View>
+                    {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -920,98 +930,96 @@ const PetPujaScreen = ({navigation, route}: any) => {
               </View>
             </View> */}
 
-                      <View style={{alignItems: 'center'}}>
-                        <Text>
-                          <Image source={require('../images/cart.png')} />{' '}
-                          Pickup Location
-                        </Text>
-                        <Text
-                          style={{
-                            fontWeight: '600',
-                            color: '#333333',
-                            fontSize: 15,
-                          }}>
-                          {availableOrders[0].pickup_details?.address}
-                        </Text>
-                      </View>
-                      <View style={{alignItems: 'center', marginTop: hp(2)}}>
-                        <Text>
-                          <Image source={require('../images/cart.png')} /> Drop
-                          Location
-                        </Text>
-                        <Text
-                          style={{
-                            fontWeight: '600',
-                            color: '#333333',
-                            fontSize: 15,
-                          }}>
-                          {availableOrders[0].drop_details?.address}
-                        </Text>
-                      </View>
-                      {/* SliderButton */}
-                      <View
+                    <View style={{alignItems: 'center'}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Pickup
+                        Location
+                      </Text>
+                      <Text
                         style={{
-                          flex: 1,
-                          justifyContent: 'flex-end',
-                          marginBottom: hp(0),
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
                         }}>
-                        <SlideButton
-                          width={290}
-                          height={50}
-                          animationDuration={180}
-                          autoResetDelay={1080}
-                          animation={true}
-                          autoReset={true}
-                          borderRadius={15}
-                          sliderWidth={50}
-                          icon={
-                            <Image
-                              source={require('../svg/Arrow.png')}
-                              style={styles.thumbImage}
-                            />
-                          } // Adjust width and height as needed
-                          onReachedToEnd={() =>
-                            onAcceptOrder(availableOrders[0])
-                          }
-                          containerStyle={{
-                            backgroundColor: '#118F5E',
-                            color: 'red',
-                          }}
-                          underlayStyle={{backgroundColor: 'Red'}}
-                          title={buttonText}
-                          slideDirection="right"></SlideButton>
-
-                        <SlideButton
-                          width={290}
-                          height={50}
-                          borderRadius={15}
-                          animationDuration={180}
-                          autoResetDelay={1080}
-                          animation={true}
-                          autoReset={true}
-                          sliderWidth={50}
-                          icon={
-                            <Image
-                              source={require('../svg/Arrow.png')}
-                              style={styles.thumbImage}
-                            />
-                          } // Adjust width and height as needed
-                          onReachedToEnd={() => onRejectOrder()}
-                          containerStyle={{
-                            backgroundColor: '#D11A2A',
-                            color: 'red',
-                          }}
-                          underlayStyle={{backgroundColor: 'Red'}}
-                          title="Reject Order"
-                          titleStyle={{color: 'white'}}
-                          slideDirection="right">
-                          <Text style={{color: 'red', fontSize: 18}}></Text>
-                        </SlideButton>
-                      </View>
+                        {availableOrders[0].pickup_details?.address}
+                      </Text>
                     </View>
-                  </ImageBackground>
-                </Animated.View>
-              )}
+                    <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                      <Text>
+                        <Image source={require('../images/cart.png')} /> Drop
+                        Location
+                      </Text>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          color: '#333333',
+                          fontSize: 15,
+                        }}>
+                        {availableOrders[0].drop_details?.address}
+                      </Text>
+                    </View>
+                    {/* SliderButton */}
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'flex-end',
+                        marginBottom: hp(0),
+                      }}>
+                      <SlideButton
+                        width={290}
+                        height={50}
+                        animationDuration={180}
+                        autoResetDelay={1080}
+                        animation={true}
+                        autoReset={true}
+                        borderRadius={15}
+                        sliderWidth={50}
+                        icon={
+                          <Image
+                            source={require('../svg/Arrow.png')}
+                            style={styles.thumbImage}
+                          />
+                        } // Adjust width and height as needed
+                        onReachedToEnd={() => onAcceptOrder(availableOrders[0])}
+                        containerStyle={{
+                          backgroundColor: '#118F5E',
+                          color: 'red',
+                        }}
+                        underlayStyle={{backgroundColor: 'Red'}}
+                        title={buttonText}
+                        slideDirection="right"></SlideButton>
+
+                      <SlideButton
+                        width={290}
+                        height={50}
+                        borderRadius={15}
+                        animationDuration={180}
+                        autoResetDelay={1080}
+                        animation={true}
+                        autoReset={true}
+                        sliderWidth={50}
+                        icon={
+                          <Image
+                            source={require('../svg/Arrow.png')}
+                            style={styles.thumbImage}
+                          />
+                        } // Adjust width and height as needed
+                        onReachedToEnd={() => onRejectOrder()}
+                        containerStyle={{
+                          backgroundColor: '#D11A2A',
+                          color: 'red',
+                        }}
+                        underlayStyle={{backgroundColor: 'Red'}}
+                        title="Reject Order"
+                        titleStyle={{color: 'white'}}
+                        slideDirection="right">
+                        <Text style={{color: 'red', fontSize: 18}}></Text>
+                      </SlideButton>
+                    </View>
+                  </View>
+                </ImageBackground>
+              </Animated.View>
+              {/* )} */}
             </>
           )}
 
