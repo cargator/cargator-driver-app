@@ -450,7 +450,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
     dispatch(setCurrentOnGoingOrderDetails({}));
     getProgressDetail();
-    startProcessing();
+    if (isDriverOnline) {
+      startProcessing();
+    }
 
     let unsubscribe: any, watchId: any;
 
@@ -467,7 +469,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         unsubscribe();
       }
     };
-  }, [route.params?.refresh]);
+  }, [route.params?.refresh, isDriverOnline]);
 
   return (
     <>
