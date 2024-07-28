@@ -316,7 +316,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         startProcessing();
         setOrderStarted(false);
         orderStartedRef.current = false;
-        setButtonText('');
+        setButtonText('ACCEPT ORDER');
         setLoading(false);
         if (response.data.order.status === 'CANCELLED') {
           Toast.show({
