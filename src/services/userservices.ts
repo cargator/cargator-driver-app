@@ -74,3 +74,7 @@ export const setDriverOnline = () => {
 export const getMyPendingOrdersFromAPI = () => {
   return customAxios.get('/get-my-pending-order');
 };
+
+export const updatePaymentStatusInDB = (body: any) => {
+  return customAxios.post('/update-payment-status-of-order', body);
+};

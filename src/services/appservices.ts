@@ -4,10 +4,10 @@ import store from '../redux/redux';
 const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
   // baseURL: `http://192.168.0.102:3001`,
-  baseURL: `https://d4ab-103-134-130-212.ngrok-free.app`,
+  // baseURL: `https://green-beans-rhyme.loca.lt`,
   // baseURL: `https://818f-182-48-211-210.ngrok-free.app`
   // baseURL: `https://6d14-182-48-214-176.ngrok-free.app`,
-  // baseURL: `https://sukam-api.cargator.org/`,
+  baseURL: `https://sukam-api.cargator.org/`,
   timeout: 30000,
 });
 

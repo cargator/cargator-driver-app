@@ -44,6 +44,7 @@ import {
   getMyPendingOrdersFromAPI,
   setDriverOffline,
   setDriverOnline,
+  updatePaymentStatusInDB,
 } from '../services/userservices';
 import Navigate from '../svg/Navigate';
 import SidebarIcon from '../svg/SidebarIcon';
@@ -189,6 +190,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         await setDriverOnline();
         socketInstance = await getSocketInstance(loginToken);
         startOrderStatusListener();
+        startProcessing();
       }
     } catch (error) {
       console.log(`driverStatusToggle error :>> `, error);
@@ -279,16 +281,18 @@ const PetPujaScreen = ({navigation, route}: any) => {
             visibilityTime: 5000,
           });
         } else {
-          setAvailableOrders((allOrders: any[]) =>
-            allOrders.filter(ele => ele._id != body.order._id),
-          );
-          orderAcceptAnimation();
-          setLoading(false);
-          Toast.show({
-            type: 'error',
-            text1: ` Order already assigned to someone!`,
-            visibilityTime: 5000,
-          });
+          if (!orderStartedRef.current) {
+            setAvailableOrders((allOrders: any[]) =>
+              allOrders.filter(ele => ele._id != body.order._id),
+            );
+            orderAcceptAnimation();
+            setLoading(false);
+            Toast.show({
+              type: 'error',
+              text1: `Order already assigned to someone!`,
+              visibilityTime: 5000,
+            });
+          }
         }
       }
     });
@@ -356,16 +360,21 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   };
 
-  const paymentButton = () => {
+  const paymentButton = async () => {
     try {
+      setLoading(true);
+      await updatePaymentStatusInDB({
+        id: currentOnGoingOrderDetails._id,
+        status: true,
+      });
       setcod(true);
-      socketInstance.emit('payment-status', currentOnGoingOrderDetails);
       setOrderStarted(false);
       orderStartedRef.current = false;
       setPath([]);
       dispatch(removeCurrentOnGoingOrderDetails());
       setButtonText('ACCEPT ORDER');
       setAvailableOrders([]);
+      setLoading(false);
       startProcessing();
     } catch (error) {
       console.log(error);
@@ -381,16 +390,21 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
       switch (order.status) {
         case OrderStatusEnum.ORDER_ALLOTTED:
-          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
+          setButtonText(nextOrderStatus[OrderStatusEnum.ORDER_ALLOTTED]);
           break;
         case OrderStatusEnum.ARRIVED:
-          setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+          setButtonText(nextOrderStatus[OrderStatusEnum.ARRIVED]);
           break;
         case OrderStatusEnum.DISPATCHED:
-          setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+          setButtonText(nextOrderStatus[OrderStatusEnum.DISPATCHED]);
           break;
         case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-          setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+          setButtonText(
+            nextOrderStatus[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP],
+          );
+          break;
+        case OrderStatusEnum.DELIVERED:
+          setcod(false);
           break;
         default:
           break;
@@ -422,6 +436,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       return;
     }
 
+    dispatch(setCurrentOnGoingOrderDetails({}));
     getProgressDetail();
     startProcessing();
 
@@ -834,7 +849,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               {loading ? (
                 <LoaderComponent />
               ) : (
-                <Animated.View style={{transform: [{translateX: animation}]}}>
+                <Animated.View style={{transform: [{translateY: animation}]}}>
                   <ImageBackground source={require('../images/Sukam.jpg')}>
                     <View
                       key={`order_${0 + 1}`}

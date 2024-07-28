@@ -113,6 +113,7 @@ export const Routing = () => {
     (store: any) => store.locationPermission,
   );
   const navigationRef = useRef<any>(null);
+  const navigationRefFlag = useRef<any>(true);
 
   useEffect(() => {
     SplashScreen.hide();
@@ -125,7 +126,10 @@ export const Routing = () => {
     messaging().onNotificationOpenedApp((remoteMessage: any) => {
       if (navigationRef.current?.getCurrentRoute().name === 'Home') {
         // Force update or refresh home screen state
-        navigationRef.current?.navigate('Home', {refresh: true});
+        navigationRef.current?.navigate('Home', {
+          refresh: !navigationRefFlag.current,
+        });
+        navigationRefFlag.current = !navigationRefFlag.current;
       } else {
         navigationRef.current?.navigate('Home');
       }
@@ -136,7 +140,10 @@ export const Routing = () => {
       .then((remoteMessage: any) => {
         if (navigationRef.current?.getCurrentRoute().name === 'Home') {
           // Force update or refresh home screen state
-          navigationRef.current?.navigate('Home', {refresh: true});
+          navigationRef.current?.navigate('Home', {
+            refresh: !navigationRefFlag.current,
+          });
+          navigationRefFlag.current = !navigationRefFlag.current;
         } else {
           navigationRef.current?.navigate('Home');
         }
@@ -145,7 +152,10 @@ export const Routing = () => {
     const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
       if (navigationRef.current?.getCurrentRoute().name === 'Home') {
         // Force update or refresh home screen state
-        navigationRef.current?.navigate('Home', {refresh: true});
+        navigationRef.current?.navigate('Home', {
+          refresh: !navigationRefFlag.current,
+        });
+        navigationRefFlag.current = !navigationRefFlag.current;
       } else {
         navigationRef.current?.navigate('Home');
       }
