@@ -616,7 +616,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               setDeleteModal(true);
               setIsProfileModal(false);
             }}>
-            <Text style={styles.deleteText}>{userId.slice(-6)}</Text>
+            {/* <Text style={styles.deleteText}>{userId.slice(-6)}</Text> */}
             <Text style={styles.deleteText}>Delete</Text>
           </TouchableOpacity>
         </View>
