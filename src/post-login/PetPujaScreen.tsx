@@ -190,7 +190,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         socketInstance = await getSocketInstance(loginToken);
         startOrderStatusListener();
         startProcessing();
-      }
+        }
     } catch (error) {
       console.log(`driverStatusToggle error :>> `, error);
     } finally {
@@ -279,6 +279,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       );
       setAvailableOrders([...availableOrdersRef.current]);
     });
+
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
       let body = body1.message;
@@ -289,6 +290,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
           setPath(body?.path?.coords);
           setButtonText(nextOrderStatus[body.order.status]);
           dispatch(setCurrentOnGoingOrderDetails(body.order));
+          availableOrdersRef.current.shift();
+          setAvailableOrders([...availableOrdersRef.current]);
           setLoading(false);
           Toast.show({
             type: 'success',
@@ -296,7 +299,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
             visibilityTime: 5000,
           });
         } else {
-          if (!orderStartedRef.current) {
+          if (!orderStartedRef.current && availableOrdersRef.current.length) {
             availableOrdersRef.current = availableOrdersRef.current.filter(
               (ele: any) => ele._id != body.order._id,
             );
@@ -453,7 +456,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         return;
       }
       resp = await getAllOrdersAPI();
-      if (availableOrdersRef.current.length != resp.data.length) {
+      if (availableOrdersRef.current.length == 0) {
         orderAcceptAnimation();
       }
       setAvailableOrders(resp.data);
@@ -461,6 +464,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
       socketInstance = await getSocketInstance(loginToken);
       startOrderStatusListener();
+      setLoading(false)
     } catch (error) {
       console.log('error', error);
     }
