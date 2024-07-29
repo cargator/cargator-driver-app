@@ -277,10 +277,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
             ) === i,
         );
       });
-      // only show animation if the order list is empty.
-      if (availableOrders.length < 1) {
-        orderAcceptAnimation();
-      }
     });
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
