@@ -277,6 +277,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
             ) === i,
         );
       });
+      orderAcceptAnimation();
     });
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
