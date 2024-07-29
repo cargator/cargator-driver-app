@@ -31,6 +31,7 @@ import {
   removeCurrentOnGoingOrderDetails,
   removeUserData,
   setCurrentOnGoingOrderDetails,
+  setDriverStatus,
   setGpsPermission,
   setLocationPermission,
 } from '../redux/redux';
@@ -96,6 +97,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const currentOnGoingOrderDetails = useSelector(
     (store: any) => store.currentOnGoingOrderDetails,
   );
+  const driverStatus = useSelector((store: any) => store.driverStatus);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
@@ -104,7 +106,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const mapRef = useRef<any>(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
-  const [isDriverOnline, setIsDriverOnline] = useState<boolean>(true);
+  const [isDriverOnline, setIsDriverOnline] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<any[]>([]);
   const [orderStarted, setOrderStarted] = useState<boolean>(false);
@@ -182,6 +184,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     try {
       setLoading(true);
       setIsDriverOnline(event);
+      dispatch(setDriverStatus(event))
       if (!event) {
         setAvailableOrders([]);
         await socketDisconnect();
@@ -221,13 +224,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
             latitude: coords.latitude,
             longitude: coords.longitude,
           };
+          driverLivelocationAPI({
+            coordinates: [message.latitude, message.longitude],
+          });
           console.log('Got current location');
           myLocation.current = message;
         },
         error => {
           console.log('error in getCurrentPosition', error);
         },
-        {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+        {enableHighAccuracy: false, timeout: 30000, maximumAge: 10000},
       );
       let prevLocation: any = null;
       Geolocation.watchPosition(
@@ -237,7 +243,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
             latitude: coords.latitude,
             longitude: coords.longitude,
           };
-          // console.log("<<<<<<<<<<>>>>>>>>>>>>");         
+          console.log("Geolocation.watchPosition called");         
           myLocation.current = message;
           if (prevLocation) {
             const distance = geolib.getDistance(prevLocation, message);
@@ -565,6 +571,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
     unsubscribe = NetInfo.addEventListener(state => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
+      setIsDriverOnline(driverStatus)
       setConnected(isConnected);
       startProcessing();
     });
