@@ -264,6 +264,24 @@ const PetPujaScreen = ({navigation, route}: any) => {
   };
 
   const startOrderStatusListener = async () => {
+    socketInstance.on('new-order', (message: any) => {
+      const order = parseSocketMessage(message);
+      setAvailableOrders((prev: any) => {
+        const tempOrders = [...prev, order.order];
+        return tempOrders.filter(
+          (obj1, i, arr) =>
+            arr.findIndex(
+              obj2 =>
+                obj2.order_details.vendor_order_id ===
+                obj1.order_details.vendor_order_id,
+            ) === i,
+        );
+      });
+      // only show animation if the order list is empty.
+      if (availableOrders.length < 1) {
+        orderAcceptAnimation();
+      }
+    });
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
       let body = body1.message;
@@ -431,10 +449,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
       let resp = await getMyPendingOrdersFromAPI();
       if (resp.data) {
         handleMyPendingOrder(resp.data);
+        setAvailableOrders([]);
         return;
       }
       resp = await getAllOrdersAPI();
       setAvailableOrders(resp.data);
+      // only show animation if the order list is empty.
       if (availableOrders.length < 1) {
         orderAcceptAnimation();
       }
