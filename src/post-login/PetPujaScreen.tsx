@@ -31,6 +31,7 @@ import {
   removeCurrentOnGoingOrderDetails,
   removeUserData,
   setCurrentOnGoingOrderDetails,
+  setGpsPermission,
   setLocationPermission,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
@@ -208,64 +209,130 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     });
   };
-  
 
-  const emitLiveLocation = () => {
-    // console.log('emitLiveLocation function called');
-    return new Promise((resolve, reject) => {
+  const FetchUserLocation = async () => {
+    try {
+      // Sometimes getCurrentPosition from App.tsx requires time....meanwhile user logs in and we dont get location
+      // Also watchPosition sometimes fails to retrieve location ...So added getCurrentPosition again below
+      Geolocation.getCurrentPosition(
+        position => {
+          const {coords} = position;
+          const message = {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          };
+          console.log('Got current location');
+          myLocation.current = message;
+        },
+        error => {
+          console.log('error in getCurrentPosition', error);
+        },
+        {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+      );
       let prevLocation: any = null;
-      try {
-        // console.log('Setting up Geolocation.watchPosition');
-        // Geolocation.getCurrentPosition(info => console.log(info));
-        const watchId = Geolocation.watchPosition(
-          position => {
-            console.log('Geolocation callback triggered');
-            const {latitude, longitude} = position.coords;
-            const newLocation = {latitude, longitude};
-            console.log('emitLiveLocation>>>>>', newLocation);
-            myLocation.current = newLocation;
-            if (prevLocation) {
-              const distance = geolib.getDistance(prevLocation, newLocation);
-              if (distance >= 15) {
-                prevLocation = newLocation;
-                driverLivelocationAPI({
-                  coordinates: [newLocation.latitude, newLocation.longitude],
-                });
-              }
-              resolve(watchId);
-            } else {
-              prevLocation = newLocation;
+      Geolocation.watchPosition(
+        position => {
+          const {coords} = position;
+          const message = {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          };
+          // console.log("<<<<<<<<<<>>>>>>>>>>>>");         
+          myLocation.current = message;
+          if (prevLocation) {
+            const distance = geolib.getDistance(prevLocation, message);
+            if (distance >= 15) {
+              prevLocation = message;
               driverLivelocationAPI({
-                coordinates: [newLocation.latitude, newLocation.longitude],
+                coordinates: [message.latitude, message.longitude],
               });
             }
-          },
-          error => {
-            console.log('Geolocation error:', error.message);
-            if (error.message === 'Location permission not granted.') {
-              Toast.show({
-                type: 'error',
-                text1: 'Please allow location permission.',
-              });
-              dispatch(setLocationPermission(false));
-            }
-            reject(error);
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 20000,
-            maximumAge: 5000,
-            distanceFilter: 15,
-          },
-        );
-        // console.log('Geolocation.watchPosition set up with watchId:', watchId);
-        return watchId;
-      } catch (error) {
-        console.log('emitLiveLocation error :>> ', error);
-        reject(error);
-      }
-    });
+          }
+        },
+        error => {
+          console.log(`FetchUserLocation error :>> `, error);
+          if (error.message == 'Location permission not granted.') {
+            Toast.show({
+              type: 'error',
+              text1: 'Please allow location permission.',
+            });
+            // setTimeout(() => {
+            //   requestLocationPermission();
+            // }, 2000);
+            dispatch(setLocationPermission(false));
+          }
+          if (error.code == 2) {
+            dispatch(setGpsPermission(false));
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 1000,
+          distanceFilter: 10,
+        },
+      );
+    } catch (error) {
+      console.log(`FetchUserLocation error :>> `, error);
+    }
   };
+
+  // const emitLiveLocation = () => {
+  //   // console.log('emitLiveLocation function called');
+  //   return new Promise((resolve, reject) => {
+  //     let prevLocation: any = null;
+  //     try {
+  //       // console.log('Setting up Geolocation.watchPosition');
+  //       // Geolocation.getCurrentPosition(info => console.log(info));
+  //       const watchId = Geolocation.watchPosition(
+  //         position => {
+  //           console.log('Geolocation callback triggered');
+  //           const {latitude, longitude} = position.coords;
+  //           const newLocation = {latitude, longitude};
+  //           console.log('emitLiveLocation>>>>>', newLocation);
+  //           myLocation.current = newLocation;
+  //           if (prevLocation) {
+  //             const distance = geolib.getDistance(prevLocation, newLocation);
+  //             if (distance >= 15) {
+  //               prevLocation = newLocation;
+  //               driverLivelocationAPI({
+  //                 coordinates: [newLocation.latitude, newLocation.longitude],
+  //               });
+  //             }
+  //             resolve(watchId);
+  //           } else {
+  //             prevLocation = newLocation;
+  //             driverLivelocationAPI({
+  //               coordinates: [newLocation.latitude, newLocation.longitude],
+  //             });
+  //           }
+  //         },
+  //         error => {
+  //           console.log('Geolocation error:', error.message);
+  //           if (error.message === 'Location permission not granted.') {
+  //             Toast.show({
+  //               type: 'error',
+  //               text1: 'Please allow location permission.',
+  //             });
+  //             dispatch(setLocationPermission(false));
+  //           }
+  //           reject(error);
+  //         },
+  //         {
+  //           enableHighAccuracy: true,
+  //           timeout: 20000,
+  //           maximumAge: 5000,
+  //           distanceFilter: 15,
+  //         },
+  //       );
+  //       // console.log('Geolocation.watchPosition set up with watchId:', watchId);
+  //       return watchId;
+  //     } catch (error) {
+  //       console.log('emitLiveLocation error :>> ', error);
+  //       reject(error);
+  //     }
+  //   });
+  // };
 
   const onAcceptOrder = (order: any) => {
     setLoading(true);
@@ -502,11 +569,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
       startProcessing();
     });
     // console.log('Calling emitLiveLocation');
-    watchId = emitLiveLocation();
+    // watchId = emitLiveLocation();
+    FetchUserLocation();
 
     return () => {
       // console.log('Cleaning up: clearing watch and unsubscribing');
-      Geolocation.clearWatch(watchId);
+      // Geolocation.clearWatch(watchId);
       if (unsubscribe) {
         unsubscribe();
       }
