@@ -190,7 +190,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         socketInstance = await getSocketInstance(loginToken);
         startOrderStatusListener();
         startProcessing();
-        }
+      }
     } catch (error) {
       console.log(`driverStatusToggle error :>> `, error);
     } finally {
@@ -208,50 +208,63 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     });
   };
+  
 
   const emitLiveLocation = () => {
-    let prevLocation: any = null;
-    try {
-      const watchId = Geolocation.watchPosition(
-        position => {
-          const {latitude, longitude} = position.coords;
-          const newLocation = {latitude, longitude};
-          myLocation.current = newLocation;
-          if (prevLocation) {
-            const distance = geolib.getDistance(prevLocation, newLocation);
-            if (distance >= 15) {
+    // console.log('emitLiveLocation function called');
+    return new Promise((resolve, reject) => {
+      let prevLocation: any = null;
+      try {
+        // console.log('Setting up Geolocation.watchPosition');
+        // Geolocation.getCurrentPosition(info => console.log(info));
+        const watchId = Geolocation.watchPosition(
+          position => {
+            console.log('Geolocation callback triggered');
+            const {latitude, longitude} = position.coords;
+            const newLocation = {latitude, longitude};
+            console.log('emitLiveLocation>>>>>', newLocation);
+            myLocation.current = newLocation;
+            if (prevLocation) {
+              const distance = geolib.getDistance(prevLocation, newLocation);
+              if (distance >= 15) {
+                prevLocation = newLocation;
+                driverLivelocationAPI({
+                  coordinates: [newLocation.latitude, newLocation.longitude],
+                });
+              }
+              resolve(watchId);
+            } else {
               prevLocation = newLocation;
               driverLivelocationAPI({
                 coordinates: [newLocation.latitude, newLocation.longitude],
               });
             }
-          } else {
-            prevLocation = newLocation;
-            driverLivelocationAPI({
-              coordinates: [newLocation.latitude, newLocation.longitude],
-            });
-          }
-        },
-        error => {
-          if (error.message == 'Location permission not granted.') {
-            Toast.show({
-              type: 'error',
-              text1: 'Please allow location permission.',
-            });
-            dispatch(setLocationPermission(false));
-          }
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 20000,
-          maximumAge: 5000,
-          distanceFilter: 15,
-        },
-      );
-      return watchId;
-    } catch (error) {
-      console.log(`emitLiveLocation error :>> `, error);
-    }
+          },
+          error => {
+            console.log('Geolocation error:', error.message);
+            if (error.message === 'Location permission not granted.') {
+              Toast.show({
+                type: 'error',
+                text1: 'Please allow location permission.',
+              });
+              dispatch(setLocationPermission(false));
+            }
+            reject(error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 5000,
+            distanceFilter: 15,
+          },
+        );
+        // console.log('Geolocation.watchPosition set up with watchId:', watchId);
+        return watchId;
+      } catch (error) {
+        console.log('emitLiveLocation error :>> ', error);
+        reject(error);
+      }
+    });
   };
 
   const onAcceptOrder = (order: any) => {
@@ -464,7 +477,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
       socketInstance = await getSocketInstance(loginToken);
       startOrderStatusListener();
-      setLoading(false)
+      setLoading(false);
     } catch (error) {
       console.log('error', error);
     }
@@ -486,11 +499,13 @@ const PetPujaScreen = ({navigation, route}: any) => {
     unsubscribe = NetInfo.addEventListener(state => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
       setConnected(isConnected);
+      startProcessing();
     });
-
+    // console.log('Calling emitLiveLocation');
     watchId = emitLiveLocation();
 
     return () => {
+      // console.log('Cleaning up: clearing watch and unsubscribing');
       Geolocation.clearWatch(watchId);
       if (unsubscribe) {
         unsubscribe();
