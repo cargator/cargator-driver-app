@@ -108,6 +108,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [availableOrders, setAvailableOrders] = useState<any[]>([]);
   const [orderStarted, setOrderStarted] = useState<boolean>(false);
   const orderStartedRef = useRef<any>(false);
+  const availableOrdersRef = useRef<any>([]);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
@@ -150,13 +151,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const getProgressDetail = async () => {
     try {
-      setLoading(true);
       const response = await getProgressDetails();
       setProgressData(response.data);
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
     }
-    setLoading(false);
   };
 
   const handleDelete = async () => {
@@ -266,18 +265,19 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const startOrderStatusListener = async () => {
     socketInstance.on('new-order', (message: any) => {
       const order = parseSocketMessage(message);
-      setAvailableOrders((prev: any) => {
-        const tempOrders = [...prev, order.order];
-        return tempOrders.filter(
-          (obj1, i, arr) =>
-            arr.findIndex(
-              obj2 =>
-                obj2.order_details.vendor_order_id ===
-                obj1.order_details.vendor_order_id,
-            ) === i,
-        );
-      });
-      orderAcceptAnimation();
+      if (availableOrdersRef.current.length == 0) {
+        orderAcceptAnimation();
+      }
+      availableOrdersRef.current.push(order.order);
+      availableOrdersRef.current = availableOrdersRef.current.filter(
+        (obj1: any, i: any, arr: any) =>
+          arr.findIndex(
+            (obj2: any) =>
+              obj2.order_details.vendor_order_id ===
+              obj1.order_details.vendor_order_id,
+          ) === i,
+      );
+      setAvailableOrders([...availableOrdersRef.current]);
     });
     socketInstance.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
@@ -297,9 +297,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
           });
         } else {
           if (!orderStartedRef.current) {
-            setAvailableOrders((allOrders: any[]) =>
-              allOrders.filter(ele => ele._id != body.order._id),
+            availableOrdersRef.current = availableOrdersRef.current.filter(
+              (ele: any) => ele._id != body.order._id,
             );
+            setAvailableOrders([...availableOrdersRef.current]);
             orderAcceptAnimation();
             setLoading(false);
             Toast.show({
@@ -375,8 +376,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const onRejectOrder = async () => {
     try {
       orderRejectAnimation();
-      availableOrders.shift();
-      setAvailableOrders([...availableOrders]);
+      availableOrdersRef.current.shift();
+      setAvailableOrders([...availableOrdersRef.current]);
     } catch (error) {
       console.log(error);
     }
@@ -396,6 +397,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       dispatch(removeCurrentOnGoingOrderDetails());
       setButtonText('ACCEPT ORDER');
       setAvailableOrders([]);
+      availableOrdersRef.current = [];
       setLoading(false);
       Toast.show({
         type: 'success',
@@ -447,14 +449,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
       if (resp.data) {
         handleMyPendingOrder(resp.data);
         setAvailableOrders([]);
+        availableOrdersRef.current = [];
         return;
       }
       resp = await getAllOrdersAPI();
-      setAvailableOrders(resp.data);
-      // only show animation if the order list is empty.
-      if (availableOrders.length < 1) {
+      if (availableOrdersRef.current.length != resp.data.length) {
         orderAcceptAnimation();
       }
+      setAvailableOrders(resp.data);
+      availableOrdersRef.current = [...resp.data];
+
       socketInstance = await getSocketInstance(loginToken);
       startOrderStatusListener();
     } catch (error) {
@@ -879,54 +883,56 @@ const PetPujaScreen = ({navigation, route}: any) => {
           availableOrders[0] &&
           !orderStarted && (
             <>
-              {/* {loading ? (
+              {loading ? (
                 <LoaderComponent />
-              )  */}
-              <Animated.View style={{transform: [{translateY: animation}]}}>
-                <ImageBackground source={require('../images/Sukam.jpg')}>
-                  <View
-                    key={`order_${0 + 1}`}
-                    style={[styles.modalView, {opacity: 2}]}>
-                    {/* orderId Text */}
-                    <View style={{top: wp(3)}}>
-                      <Text
-                        style={{
-                          fontFamily: 'Roboto Mono',
-                          fontSize: hp(2.5),
-                          fontWeight: '600',
-                          textAlign: 'center',
-                          color: '#212121',
-                        }}>
-                        Order Id :{' '}
+              ) : (
+                <Animated.View style={{transform: [{translateY: animation}]}}>
+                  <ImageBackground source={require('../images/Sukam.jpg')}>
+                    <View
+                      key={`order_${0 + 1}`}
+                      style={[styles.modalView, {opacity: 2}]}>
+                      {/* orderId Text */}
+                      <View style={{top: wp(3)}}>
                         <Text
                           style={{
-                            fontFamily: 'RobotoMono-Regular',
-                            fontWeight: '700',
-                            color: '#118F5E',
-                            fontSize: 20,
-                          }}>
-                          {availableOrders[0].order_details?.vendor_order_id.slice(
-                            -6,
-                          )}
-                        </Text>
-                      </Text>
-                    </View>
-                    {/* Circul data */}
-                    <View style={styles.circleModel}>
-                      <View style={styles.circle}>
-                        <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                        <Text style={{alignItems: 'center'}}>{'Earning'}</Text>
-                        <Text
-                          style={{
+                            fontFamily: 'Roboto Mono',
+                            fontSize: hp(2.5),
                             fontWeight: '600',
-                            color: '#000000',
-                            fontSize: 15,
+                            textAlign: 'center',
+                            color: '#212121',
                           }}>
-                          {'₹ '}0
+                          Order Id :{' '}
+                          <Text
+                            style={{
+                              fontFamily: 'RobotoMono-Regular',
+                              fontWeight: '700',
+                              color: '#118F5E',
+                              fontSize: 20,
+                            }}>
+                            {availableOrders[0].order_details?.vendor_order_id.slice(
+                              -6,
+                            )}
+                          </Text>
                         </Text>
                       </View>
-                    </View>
-                    {/* <View style={styles.text}>
+                      {/* Circul data */}
+                      <View style={styles.circleModel}>
+                        <View style={styles.circle}>
+                          <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                          <Text style={{alignItems: 'center'}}>
+                            {'Earning'}
+                          </Text>
+                          <Text
+                            style={{
+                              fontWeight: '600',
+                              color: '#000000',
+                              fontSize: 15,
+                            }}>
+                            {'₹ '}0
+                          </Text>
+                        </View>
+                      </View>
+                      {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -951,96 +957,98 @@ const PetPujaScreen = ({navigation, route}: any) => {
               </View>
             </View> */}
 
-                    <View style={{alignItems: 'center'}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Pickup
-                        Location
-                      </Text>
-                      <Text
+                      <View style={{alignItems: 'center'}}>
+                        <Text>
+                          <Image source={require('../images/cart.png')} />{' '}
+                          Pickup Location
+                        </Text>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#333333',
+                            fontSize: 15,
+                          }}>
+                          {availableOrders[0].pickup_details?.address}
+                        </Text>
+                      </View>
+                      <View style={{alignItems: 'center', marginTop: hp(2)}}>
+                        <Text>
+                          <Image source={require('../images/cart.png')} /> Drop
+                          Location
+                        </Text>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#333333',
+                            fontSize: 15,
+                          }}>
+                          {availableOrders[0].drop_details?.address}
+                        </Text>
+                      </View>
+                      {/* SliderButton */}
+                      <View
                         style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
+                          flex: 1,
+                          justifyContent: 'flex-end',
+                          marginBottom: hp(0),
                         }}>
-                        {availableOrders[0].pickup_details?.address}
-                      </Text>
-                    </View>
-                    <View style={{alignItems: 'center', marginTop: hp(2)}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Drop
-                        Location
-                      </Text>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
-                        }}>
-                        {availableOrders[0].drop_details?.address}
-                      </Text>
-                    </View>
-                    {/* SliderButton */}
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'flex-end',
-                        marginBottom: hp(0),
-                      }}>
-                      <SlideButton
-                        width={290}
-                        height={50}
-                        animationDuration={180}
-                        autoResetDelay={1080}
-                        animation={true}
-                        autoReset={true}
-                        borderRadius={15}
-                        sliderWidth={50}
-                        icon={
-                          <Image
-                            source={require('../svg/Arrow.png')}
-                            style={styles.thumbImage}
-                          />
-                        } // Adjust width and height as needed
-                        onReachedToEnd={() => onAcceptOrder(availableOrders[0])}
-                        containerStyle={{
-                          backgroundColor: '#118F5E',
-                          color: 'red',
-                        }}
-                        underlayStyle={{backgroundColor: 'Red'}}
-                        title={buttonText}
-                        slideDirection="right"></SlideButton>
+                        <SlideButton
+                          width={290}
+                          height={50}
+                          animationDuration={180}
+                          autoResetDelay={1080}
+                          animation={true}
+                          autoReset={true}
+                          borderRadius={15}
+                          sliderWidth={50}
+                          icon={
+                            <Image
+                              source={require('../svg/Arrow.png')}
+                              style={styles.thumbImage}
+                            />
+                          } // Adjust width and height as needed
+                          onReachedToEnd={() =>
+                            onAcceptOrder(availableOrders[0])
+                          }
+                          containerStyle={{
+                            backgroundColor: '#118F5E',
+                            color: 'red',
+                          }}
+                          underlayStyle={{backgroundColor: 'Red'}}
+                          title={buttonText}
+                          slideDirection="right"></SlideButton>
 
-                      <SlideButton
-                        width={290}
-                        height={50}
-                        borderRadius={15}
-                        animationDuration={180}
-                        autoResetDelay={1080}
-                        animation={true}
-                        autoReset={true}
-                        sliderWidth={50}
-                        icon={
-                          <Image
-                            source={require('../svg/Arrow.png')}
-                            style={styles.thumbImage}
-                          />
-                        } // Adjust width and height as needed
-                        onReachedToEnd={() => onRejectOrder()}
-                        containerStyle={{
-                          backgroundColor: '#D11A2A',
-                          color: 'red',
-                        }}
-                        underlayStyle={{backgroundColor: 'Red'}}
-                        title="Reject Order"
-                        titleStyle={{color: 'white'}}
-                        slideDirection="right">
-                        <Text style={{color: 'red', fontSize: 18}}></Text>
-                      </SlideButton>
+                        <SlideButton
+                          width={290}
+                          height={50}
+                          borderRadius={15}
+                          animationDuration={180}
+                          autoResetDelay={1080}
+                          animation={true}
+                          autoReset={true}
+                          sliderWidth={50}
+                          icon={
+                            <Image
+                              source={require('../svg/Arrow.png')}
+                              style={styles.thumbImage}
+                            />
+                          } // Adjust width and height as needed
+                          onReachedToEnd={() => onRejectOrder()}
+                          containerStyle={{
+                            backgroundColor: '#D11A2A',
+                            color: 'red',
+                          }}
+                          underlayStyle={{backgroundColor: 'Red'}}
+                          title="Reject Order"
+                          titleStyle={{color: 'white'}}
+                          slideDirection="right">
+                          <Text style={{color: 'red', fontSize: 18}}></Text>
+                        </SlideButton>
+                      </View>
                     </View>
-                  </View>
-                </ImageBackground>
-              </Animated.View>
-              {/* )} */}
+                  </ImageBackground>
+                </Animated.View>
+              )}
             </>
           )}
 
