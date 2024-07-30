@@ -507,6 +507,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const getDriverStatus = async () => {
     try {
+      setLoading(true)
       driverStatusRef.current = true;
       const res: any = await getDriverStatusAPI();
 
@@ -523,6 +524,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       driverStatusRef.current = false;
       console.error('Error fetching data:', error);
     }
+    setLoading(false)
   };
 
   useEffect(() => {
@@ -602,7 +604,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         </View>
       )} */}
 
-      {deleteModal && (
+      {/* {deleteModal && (
         <View style={styles.deleteContainer}>
           <View style={styles.modalContainer}>
             {deleteModal && (
@@ -626,7 +628,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
             )}
           </View>
         </View>
-      )}
+      )} */}
 
       {
         <View style={styles.headerBar}>
@@ -787,10 +789,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
           </View>
         </View>
       )}
+       {loading ? (
+            <LoaderComponent />
+          ) : (
       <View style={styles.container}>
-        {/* <Text style={styles.offlineModalHeaderText}>
-          Hello {userData.firstName.split(' ')[0]}!
-        </Text> */}
         {isDriverOnline &&
           _isEmpty(currentOnGoingOrderDetails) &&
           _isEmpty(availableOrders) &&
@@ -1498,6 +1500,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
           </View>
         )}
       </View>
+          )}
     </>
   );
 };
