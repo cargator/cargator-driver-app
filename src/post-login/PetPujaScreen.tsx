@@ -183,23 +183,29 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const driverStatusToggle = async (event: boolean) => {
     try {
       setLoading(true);
-      setIsDriverOnline(event);
-      dispatch(setDriverStatus(event))
       if (!event) {
         setAvailableOrders([]);
         await socketDisconnect();
         await setDriverOffline();
       } else {
         await setDriverOnline();
-        socketInstance = await getSocketInstance(loginToken);
-        startOrderStatusListener();
+        if (!socketInstance) {
+          socketInstance = await getSocketInstance(loginToken);
+          startOrderStatusListener();
+        }
         startProcessing();
       }
+      setIsDriverOnline(event);
+      dispatch(setDriverStatus(event));
     } catch (error) {
       console.log(`driverStatusToggle error :>> `, error);
-    } finally {
-      setLoading(false);
     }
+    Toast.show({
+      type: 'success',
+      text1: `Rider status toggled!`,
+      visibilityTime: 5000,
+    });
+    setLoading(false);
   };
 
   const navigateToGoogleMaps = ({latitude, longitude}: any) => {
@@ -243,7 +249,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
             latitude: coords.latitude,
             longitude: coords.longitude,
           };
-          console.log("Geolocation.watchPosition called");         
+          console.log('Geolocation.watchPosition called');
           myLocation.current = message;
           if (prevLocation) {
             const distance = geolib.getDistance(prevLocation, message);
@@ -547,9 +553,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
       setAvailableOrders(resp.data);
       availableOrdersRef.current = [...resp.data];
-
-      socketInstance = await getSocketInstance(loginToken);
-      startOrderStatusListener();
+      if (!socketInstance) {
+        socketInstance = await getSocketInstance(loginToken);
+        startOrderStatusListener();
+      }
       setLoading(false);
     } catch (error) {
       console.log('error', error);
@@ -571,9 +578,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
     unsubscribe = NetInfo.addEventListener(state => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
-      setIsDriverOnline(driverStatus)
+      setIsDriverOnline(isConnected);
       setConnected(isConnected);
-      startProcessing();
+      if (isConnected && !orderStartedRef.current) {
+        startProcessing();
+      }
     });
     // console.log('Calling emitLiveLocation');
     // watchId = emitLiveLocation();
