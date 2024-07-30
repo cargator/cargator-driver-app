@@ -75,7 +75,7 @@ const Appdrawercontent = (props: any) => {
           <DrawerItem
             label="Logout"
             onPress={async () => {
-              await RNFetchBlob.fs.unlink(`file://${userImg}`);
+              // await RNFetchBlob.fs.unlink(`file://${userImg}`);
               await socketDisconnect();
               dispatch(removeUserData());
             }}

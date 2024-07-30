@@ -64,7 +64,7 @@ const LoginOtpScreen = ({route}: any) => {
       if (res.status == 200) {
         Toast.show({
           type: 'success',
-          text1: 'OTP verified. Press continue.',
+          text1: 'Welcome to Sukam-Express!!!',
         });
         setIsOtpVerified(true);
 
