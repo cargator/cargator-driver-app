@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import SidebarIcon from '../svg/SidebarIcon';
 import moment from 'moment';
 import LoaderComponent from '../components/LoaderComponent';
-import { userDetails } from '../services/rideservices';
-import { useIsFocused } from '@react-navigation/native';
+import {userDetails} from '../services/rideservices';
+import {useIsFocused} from '@react-navigation/native';
 import LogOutIcon from '../svg/LogOutIcon';
-import { socketDisconnect } from '../utils/socket';
-import { removeUserData } from '../redux/redux';
-import { Toast } from 'react-native-toast-message/lib/src/Toast';
-import { isEmpty } from 'lodash';
+import {socketDisconnect} from '../utils/socket';
+import {removeUserData} from '../redux/redux';
+import {isEmpty} from 'lodash';
 import RNFetchBlob from 'rn-fetch-blob';
-import { FetchUserImage } from '../components/functions';
+import {FetchUserImage} from '../components/functions';
 const Profile = (props: any) => {
   const userId = useSelector((store: any) => store.userData._id);
   const userImg = useSelector((store: any) => store.userImage.path);
   const profileImageKey = useSelector(
     (store: any) => store.userData.profileImageKey,
   );
+  const userData = useSelector((store: any) => store.userData);
   const [driverDetails, setDriverDetails] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
@@ -57,7 +57,6 @@ const Profile = (props: any) => {
     } else {
       setDriverDetails([]);
     }
-    
   }, [isFocused]);
 
   const checkImageExists = async () => {
@@ -69,10 +68,6 @@ const Profile = (props: any) => {
       }
     } catch (error) {
       console.log('error in checkImageExists', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Something went wrong !',
-      });
     }
   };
   useEffect(() => {
@@ -92,7 +87,7 @@ const Profile = (props: any) => {
             marginLeft: wp(2),
             marginTop: hp(0.4),
           }}>
-          <Text style={{ fontSize: hp(3), fontFamily: 'RobotoMono-Regular' }}>
+          <Text style={{fontSize: hp(3), fontFamily: 'RobotoMono-Regular'}}>
             My Profile
           </Text>
         </View>
@@ -102,11 +97,19 @@ const Profile = (props: any) => {
       ) : (
         <>
           <View style={styles.container}>
-            <View style={{ alignItems: 'center' }}>
-              <Image
-                style={styles.profileView}
-                source={{ uri: `file://${userImg}` }}
-              />
+            <View style={{alignItems: 'center'}}>
+              {userImg ? (
+                <Image
+                  style={styles.profileView}
+                  source={{uri: `file://${userImg}`}}
+                />
+              ) : (
+                <View style={styles.profileIcon}>
+                    <Text style={styles.profileIconText}>
+                      {userData.firstName[0].toUpperCase()}
+                    </Text>
+                </View>
+              )}
 
               <View style={styles.profileDataContainer}>
                 <View style={styles.contentView}>
@@ -125,10 +128,18 @@ const Profile = (props: any) => {
                 <View style={styles.contentView}>
                   <Text style={styles.contentViewHeading}>Vehicle Number</Text>
                   <Text style={styles.contentViewText}>
-                    {driverDetails.vehicleNumber ?
-                      `${driverDetails.vehicleNumber.substring(0, 2)}${driverDetails.vehicleNumber.substring(2, 4)}${driverDetails.vehicleNumber.substring(4, 6)}${driverDetails.vehicleNumber.substring(6)}`
-                      : 'N/A'
-                    }
+                    {driverDetails.vehicleNumber
+                      ? `${driverDetails.vehicleNumber.substring(
+                          0,
+                          2,
+                        )}${driverDetails.vehicleNumber.substring(
+                          2,
+                          4,
+                        )}${driverDetails.vehicleNumber.substring(
+                          4,
+                          6,
+                        )}${driverDetails.vehicleNumber.substring(6)}`
+                      : 'N/A'}
                   </Text>
                 </View>
                 <View style={styles.contentView}>
@@ -159,6 +170,19 @@ const Profile = (props: any) => {
 };
 
 const styles = StyleSheet.create({
+  profileIcon: {
+    width: wp(18),
+    height: wp(18),
+    borderRadius: wp(50),
+    backgroundColor: 'navy',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileIconText: {
+    fontFamily: 'RobotoMono-Regular',
+    color: 'white',
+    fontSize: wp(5),
+  },
   container: {
     // flex: 1,
     flexDirection: 'column',
@@ -187,7 +211,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: hp(10),
   },
-  profileText: { color: '#ffffff', fontSize: wp(10) },
+  profileText: {color: '#ffffff', fontSize: wp(10)},
   horixontalLine: {
     backgroundColor: '#E5E7EB',
     height: 1,
@@ -202,7 +226,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 25,
     width: wp(90),
-    shadowOffset: { width: -2, height: 4 },
+    shadowOffset: {width: -2, height: 4},
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 2,
@@ -219,14 +243,19 @@ const styles = StyleSheet.create({
     fontSize: hp(2.2),
     fontWeight: '500',
   },
-  text: { fontSize: wp(5), color: '#000000' },
-  loaderStyles: { marginTop: hp(40), alignSelf: 'center' },
+  text: {fontSize: wp(5), color: '#000000'},
+  loaderStyles: {marginTop: hp(40), alignSelf: 'center'},
   bottomView: {
     top: hp(15),
     alignSelf: 'center',
     alignItems: 'center',
   },
-  date: { fontFamily: 'RobotoMono-Regular', marginTop: hp(4), color: '#BAB6B6', fontWeight: '600' },
+  date: {
+    fontFamily: 'RobotoMono-Regular',
+    marginTop: hp(4),
+    color: '#BAB6B6',
+    fontWeight: '600',
+  },
 });
 
 export default Profile;
