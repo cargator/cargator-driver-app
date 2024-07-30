@@ -63,12 +63,8 @@ export const updateOrderAPI = (data: any) => {
   return customAxios.post('/order-update', data);
 };
 
-export const setDriverOffline = () => {
-  return customAxios.post('/set-driver-offline');
-};
-
-export const setDriverOnline = () => {
-  return customAxios.post('/set-driver-online');
+export const toggleDriverStatus = () => {
+  return customAxios.post('/toggle-driver-status');
 };
 
 export const getMyPendingOrdersFromAPI = () => {
