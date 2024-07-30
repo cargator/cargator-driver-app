@@ -12,7 +12,6 @@ function socketConnection(token) {
       {transports: ['websocket'], forceNew: true, jsonp: true},
     );
 
-    socket;
 
     socket.on('connect', () => {
       console.log('socket connected');

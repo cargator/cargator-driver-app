@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {Switch} from 'react-native-switch';
 import {
   heightPercentageToDP as hp,
@@ -65,4 +65,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnlineOfflineSwitch;
+export default memo(OnlineOfflineSwitch);

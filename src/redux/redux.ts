@@ -29,7 +29,6 @@ const authSlice = createSlice({
     driverAppFlow: '',
     currentOnGoingOrderDetails: {},
     orderStatus: '',
-    driverStatus: false,
   },
   reducers: {
     setUserData: (state, action) => {
@@ -102,9 +101,6 @@ const authSlice = createSlice({
     removeCurrentOnGoingOrderDetails: state => {
       state.currentOnGoingOrderDetails = {};
     },
-    setDriverStatus: (state, action) => {
-      state.driverStatus = action.payload;
-    },
   },
 });
 
@@ -130,7 +126,6 @@ export const {
   setCurrentOnGoingOrderDetails,
   removeCurrentOnGoingOrderDetails,
   resetAllOrders,
-  setDriverStatus,
 } = authSlice.actions;
 
 const store = configureStore({

@@ -31,7 +31,6 @@ import {
   removeCurrentOnGoingOrderDetails,
   removeUserData,
   setCurrentOnGoingOrderDetails,
-  setDriverStatus,
   setGpsPermission,
   setLocationPermission,
 } from '../redux/redux';
@@ -43,6 +42,7 @@ import {
 import {
   driverLivelocationAPI,
   getAllOrdersAPI,
+  getDriverStatusAPI,
   getMyPendingOrdersFromAPI,
   toggleDriverStatus,
   updatePaymentStatusInDB,
@@ -52,7 +52,6 @@ import SidebarIcon from '../svg/SidebarIcon';
 import Spinner from '../svg/spinner';
 import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
-export let socketInstance: any;
 
 const OrderStatusEnum = {
   ORDER_ACCEPTED: 'ACCEPTED', //(Order Created Successfully.)
@@ -96,7 +95,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const currentOnGoingOrderDetails = useSelector(
     (store: any) => store.currentOnGoingOrderDetails,
   );
-  const driverStatus = useSelector((store: any) => store.driverStatus);
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
@@ -111,6 +109,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [availableOrders, setAvailableOrders] = useState<any[]>([]);
   const [orderStarted, setOrderStarted] = useState<boolean>(false);
   const orderStartedRef = useRef<any>(false);
+  const driverStatusRef = useRef<any>(false);
   const availableOrdersRef = useRef<any>([]);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
@@ -118,6 +117,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
   const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
+  const socketInstance = useRef<any>(undefined);
+  const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
 
@@ -188,31 +189,29 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setIsDriverOnline(event);
       netConnected.current = event;
       if (!event) {
-        if (socketInstance) {
+        if (socketInstance.current?.connected) {
           await socketDisconnect();
         }
       } else {
-        if (!socketInstance) {
-          socketInstance = await getSocketInstance(loginToken);
+        if (!socketInstance.current || !socketInstance.current?.connected) {
+          socketInstance.current = await getSocketInstance(loginToken);
+          setIsSocketConnected(socketInstance.current.connected);
           startOrderStatusListener();
         }
       }
+      const eventStatus = event ? "online" : "offline";
       Toast.show({
         type: 'success',
-        text1: `Rider status toggled!`,
+        text1: `You are ${eventStatus}!`,
         visibilityTime: 5000,
       });
     } catch (error: any) {
       Toast.show({
-        type: 'success',
+        type: 'error',
         text1: error.message || error,
         visibilityTime: 5000,
       });
     }
-
-    setIsDriverOnline(event);
-    dispatch(setDriverStatus(event));
-
     setLoading(false);
   };
 
@@ -293,16 +292,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   };
 
-  const onAcceptOrder = (order: any) => {
+  const onAcceptOrder = async (order: any) => {
     setLoading(true);
-    socketInstance?.emit('accept-order', {
+    socketInstance.current?.emit('accept-order', {
       id: order._id.toString(),
       driverLoc: myLocation.current,
     });
   };
 
   const startOrderStatusListener = async () => {
-    socketInstance.on('new-order', (message: any) => {
+    socketInstance.current.on('new-order', (message: any) => {
       const order = parseSocketMessage(message);
       if (availableOrdersRef.current.length == 0) {
         orderAcceptAnimation();
@@ -319,7 +318,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setAvailableOrders([...availableOrdersRef.current]);
     });
 
-    socketInstance.on('order-update-response', (message: any) => {
+    socketInstance.current.on('order-update-response', (message: any) => {
       let body1 = parseSocketMessage(message);
       let body = body1.message;
       if (body.order.status === OrderStatusEnum['ORDER_ALLOTTED']) {
@@ -506,9 +505,33 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   };
 
+  const getDriverStatus = async () => {
+    try {
+      driverStatusRef.current = true;
+      const res: any = await getDriverStatusAPI();
+
+      const status = res.data.rideStatus === 'offline' ? false : true;
+      setIsDriverOnline(status);
+
+      if (!socketInstance.current || !socketInstance.current?.connected) {
+
+        socketInstance.current = await getSocketInstance(loginToken);
+        setIsSocketConnected(socketInstance.current.connected);
+        startOrderStatusListener();
+      }
+    } catch (error) {
+      driverStatusRef.current = false;
+      console.error('Error fetching data:', error);
+    }
+  };
+
   useEffect(() => {
     if (orderStartedRef.current) {
       return;
+    }
+
+    if (!driverStatusRef.current) {
+      getDriverStatus();
     }
 
     dispatch(setCurrentOnGoingOrderDetails({}));
@@ -521,15 +544,20 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
     unsubscribe = NetInfo.addEventListener(state => {
       const isConnected = state.isConnected ?? false; // Use false if state.isConnected is null
-      if (netConnected.current) {
-        setConnected(isConnected);
+      setConnected(isConnected);
+
+      if (!isConnected) {
+        driverStatusRef.current = false;
+      }
+      if (!driverStatusRef.current) {
         if (isConnected && !orderStartedRef.current) {
+          driverStatusRef.current = true;
           startProcessing();
+          getDriverStatus();
         }
       }
     });
-    // console.log('Calling emitLiveLocation');
-    // watchId = emitLiveLocation();
+
     FetchUserLocation();
 
     return () => {
@@ -1063,6 +1091,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           }}
                           underlayStyle={{backgroundColor: 'Red'}}
                           title={buttonText}
+                          disabled={
+                            !connected || !isSocketConnected
+                          }
                           slideDirection="right"></SlideButton>
 
                         <SlideButton
@@ -1088,6 +1119,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           underlayStyle={{backgroundColor: 'Red'}}
                           title="Reject Order"
                           titleStyle={{color: 'white'}}
+                          disabled={
+                            !connected || !isSocketConnected
+                          }
                           slideDirection="right">
                           <Text style={{color: 'red', fontSize: 18}}></Text>
                         </SlideButton>

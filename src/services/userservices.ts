@@ -67,6 +67,10 @@ export const toggleDriverStatus = () => {
   return customAxios.post('/toggle-driver-status');
 };
 
+export const getDriverStatusAPI = () => {
+  return customAxios.get('/get-driver-status');
+};
+
 export const getMyPendingOrdersFromAPI = () => {
   return customAxios.get('/get-my-pending-order');
 };
