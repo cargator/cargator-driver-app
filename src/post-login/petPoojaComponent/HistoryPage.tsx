@@ -267,16 +267,15 @@ const HistoryPage = (props: any) => {
         <LoaderComponent />
       ) : (
         <>
-          <View></View>
           <View style={styles.container}>
-            <View style={styles.imageContainer}>
+            {/* <View style={styles.imageContainer}>
               <ImageBackground
                 source={require('../../images/orderHistoryBanner.png')}
                 resizeMode="cover"
                 style={styles.image}>
                 <Incentive />
               </ImageBackground>
-            </View>
+            </View> */}
             <FlatList
               data={historyData}
               renderItem={({item}) => <OrderHistoryCart order={item} />}

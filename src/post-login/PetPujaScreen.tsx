@@ -587,7 +587,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
           />
         </View>
       )}
-      {isProfileModal && (
+      {/* {isProfileModal && (
         <View style={styles.profileModalView}>
           <TouchableOpacity onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>
@@ -597,11 +597,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
               setDeleteModal(true);
               setIsProfileModal(false);
             }}>
-            {/* <Text style={styles.deleteText}>{userId.slice(-6)}</Text> */}
             <Text style={styles.deleteText}>Delete</Text>
           </TouchableOpacity>
         </View>
-      )}
+      )} */}
 
       {deleteModal && (
         <View style={styles.deleteContainer}>
@@ -648,7 +647,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
             />
           )}
 
-          <View style={styles.profileIcon}>
+          {/* <View style={styles.profileIcon}>
             <TouchableOpacity
               hitSlop={{
                 left: widthPercentageToDP(10),
@@ -660,6 +659,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                 {userData.firstName[0].toUpperCase()}
               </Text>
             </TouchableOpacity>
+          </View> */}
+          <View style={styles.profileIcon}>
+
           </View>
         </View>
       }
@@ -820,7 +822,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         fontWeight: 'bold',
                         color: '#333333',
                       }}>
-                      Searching for Order ...
+                      Searching for Orders ...
                     </Text>
                   </View>
                 </ImageBackground>
@@ -1550,8 +1552,8 @@ const styles = StyleSheet.create({
   profileIcon: {
     width: wp(8),
     height: wp(8),
-    borderRadius: wp(50),
-    backgroundColor: 'navy',
+    // borderRadius: wp(50),
+    // backgroundColor: 'navy',
     alignItems: 'center',
     justifyContent: 'center',
   },
