@@ -13,20 +13,14 @@ const authSlice = createSlice({
     userData: {},
     phoneNumber: '',
     userId: '',
-    rideDetails: {},
     locationPermission: false,
     gpsPermission: false,
-    pendingPayment: false,
     loginToken: '',
     livelocation: {longitude: 72.870729, latitude: 19.051322},
-    messages: [],
-    unseenMessagesCount: 0,
     userImage: {
       exists: false,
       path: '',
     },
-    rideStatus: '',
-    driverAppFlow: '',
     currentOnGoingOrderDetails: {},
     rejectedOrders: [],
   },
@@ -38,11 +32,7 @@ const authSlice = createSlice({
       state.userData = {};
       state.phoneNumber = '';
       state.userId = '';
-      state.rideDetails = {};
-      state.pendingPayment = false;
       state.loginToken = '';
-      state.messages = [];
-      state.unseenMessagesCount = 0;
       state.userImage = {
         exists: false,
         path: '',
@@ -61,38 +51,17 @@ const authSlice = createSlice({
     setUserId: (state, action) => {
       state.userId = action.payload;
     },
-    setRideDetails: (state, action) => {
-      state.rideDetails = action.payload;
-    },
-    removeRideDetails: state => {
-      state.rideDetails = {};
-    },
     setLocationPermission: (state, action) => {
       state.locationPermission = action.payload;
     },
     setGpsPermission: (state, action) => {
       state.gpsPermission = action.payload;
     },
-    setPendingPayment: (state, action) => {
-      state.pendingPayment = action.payload;
-    },
     setLoginToken: (state, action) => {
       state.loginToken = action.payload;
     },
-    setMessagesInRedux: (state, action) => {
-      state.messages = action.payload;
-    },
-    setUnseenMessagesCountInRedux: (state, action) => {
-      state.unseenMessagesCount = action.payload;
-    },
     setUserImgExists: (state, action) => {
       state.userImage = action.payload;
-    },
-    setRideStatus: (state, action) => {
-      state.rideStatus = action.payload;
-    },
-    setDriverAppFlow: (state, action) => {
-      state.driverAppFlow = action.payload;
     },
     setCurrentOnGoingOrderDetails: (state, action) => {
       state.currentOnGoingOrderDetails = action.payload;
@@ -117,17 +86,10 @@ export const {
   setPhoneNumber,
   removePhoneNumber,
   setUserId,
-  setRideDetails,
-  removeRideDetails,
   setLocationPermission,
   setGpsPermission,
-  setPendingPayment,
   setLoginToken,
-  setMessagesInRedux,
-  setUnseenMessagesCountInRedux,
   setUserImgExists,
-  setRideStatus,
-  setDriverAppFlow,
   setCurrentOnGoingOrderDetails,
   removeCurrentOnGoingOrderDetails,
   resetAllOrders,
