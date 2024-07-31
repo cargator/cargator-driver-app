@@ -29,10 +29,12 @@ import SlideButton from 'rn-slide-button';
 import LoaderComponent from '../components/LoaderComponent';
 import {
   removeCurrentOnGoingOrderDetails,
+  removeRejectedOrders,
   removeUserData,
   setCurrentOnGoingOrderDetails,
   setGpsPermission,
   setLocationPermission,
+  setRejectedOrders,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
 import {
@@ -98,11 +100,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
+  const rejectedOrders = useSelector((store: any) => store.rejectedOrders);
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
   const mapRef = useRef<any>(null);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(false);
   const netConnected = useRef(false);
   const [loading, setLoading] = useState(false);
@@ -111,12 +112,13 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const orderStartedRef = useRef<any>(false);
   const driverStatusRef = useRef<any>(false);
   const availableOrdersRef = useRef<any>([]);
+  const rejectedOrderRef = useRef<any>([]);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
-  const animation = useRef(new Animated.Value(-200)).current; // Start from off-screen left
+  const animation = useRef(new Animated.Value(-200)).current;
   const socketInstance = useRef<any>(undefined);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
 
@@ -199,7 +201,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
           startOrderStatusListener();
         }
       }
-      const eventStatus = event ? "online" : "offline";
+      const eventStatus = event ? 'online' : 'offline';
       Toast.show({
         type: 'success',
         text1: `You are ${eventStatus}!`,
@@ -375,6 +377,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         orderStartedRef.current = false;
         setButtonText('ACCEPT ORDER');
         setLoading(false);
+        removeRejectedOrders();
         if (response.data.order.status === 'CANCELLED') {
           Toast.show({
             type: 'error',
@@ -417,8 +420,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const onRejectOrder = async () => {
     try {
       orderRejectAnimation();
-      availableOrdersRef.current.shift();
+      const rejectedOrder: any = availableOrdersRef.current.shift();
+      rejectedOrderRef.current = [...rejectedOrderRef.current, rejectedOrder];
       setAvailableOrders([...availableOrdersRef.current]);
+      dispatch(setRejectedOrders([...rejectedOrderRef.current]));
     } catch (error) {
       console.log(error);
     }
@@ -486,7 +491,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const startProcessing = async () => {
     try {
-      let resp = await getMyPendingOrdersFromAPI();
+      let resp: any = await getMyPendingOrdersFromAPI();
       if (resp.data) {
         handleMyPendingOrder(resp.data);
         setAvailableOrders([]);
@@ -497,8 +502,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
       if (availableOrdersRef.current.length == 0) {
         orderAcceptAnimation();
       }
-      setAvailableOrders(resp.data);
-      availableOrdersRef.current = [...resp.data];
+
+      const newOrders = resp.data.filter(
+        (element: any) =>
+          !rejectedOrders
+            .map((order: any) => order.order_details.vendor_order_id)
+            .includes(element.order_details.vendor_order_id),
+      );
+
+      setAvailableOrders(newOrders);
+      availableOrdersRef.current = [...newOrders];
       setLoading(false);
     } catch (error) {
       console.log('error', error);
@@ -507,7 +520,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const getDriverStatus = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       driverStatusRef.current = true;
       const res: any = await getDriverStatusAPI();
 
@@ -515,7 +528,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setIsDriverOnline(status);
 
       if (!socketInstance.current || !socketInstance.current?.connected) {
-
         socketInstance.current = await getSocketInstance(loginToken);
         setIsSocketConnected(socketInstance.current.connected);
         startOrderStatusListener();
@@ -524,7 +536,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       driverStatusRef.current = false;
       console.error('Error fetching data:', error);
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -539,6 +551,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     dispatch(setCurrentOnGoingOrderDetails({}));
     getProgressDetail();
     if (isDriverOnline) {
+      rejectedOrderRef.current = rejectedOrders;
       startProcessing();
     }
 
@@ -554,8 +567,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
       if (!driverStatusRef.current) {
         if (isConnected && !orderStartedRef.current) {
           driverStatusRef.current = true;
-          startProcessing();
+          rejectedOrderRef.current = rejectedOrders;
           getDriverStatus();
+          startProcessing();
         }
       }
     });
@@ -563,8 +577,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
     FetchUserLocation();
 
     return () => {
-      // console.log('Cleaning up: clearing watch and unsubscribing');
-      // Geolocation.clearWatch(watchId);
       if (unsubscribe) {
         unsubscribe();
       }
@@ -589,46 +601,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
           />
         </View>
       )}
-      {/* {isProfileModal && (
-        <View style={styles.profileModalView}>
-          <TouchableOpacity onPress={handleLogout}>
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setDeleteModal(true);
-              setIsProfileModal(false);
-            }}>
-            <Text style={styles.deleteText}>Delete</Text>
-          </TouchableOpacity>
-        </View>
-      )} */}
-
-      {/* {deleteModal && (
-        <View style={styles.deleteContainer}>
-          <View style={styles.modalContainer}>
-            {deleteModal && (
-              <View style={styles.modalContent}>
-                <Text style={styles.modalText1}>
-                  Are you sure you want to delete?
-                </Text>
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={handleDelete}>
-                    <Text style={styles.buttonText}>Yes</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => setDeleteModal(false)}>
-                    <Text style={styles.buttonText}>No</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-          </View>
-        </View>
-      )} */}
 
       {
         <View style={styles.headerBar}>
@@ -641,7 +613,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
             </TouchableOpacity>
           </View>
 
-          {/* {isDriverOnline && !assignedRide && ( */}
           {_isEmpty(currentOnGoingOrderDetails) && (
             <OnlineOfflineSwitch
               isDriverOnline={isDriverOnline}
@@ -649,192 +620,25 @@ const PetPujaScreen = ({navigation, route}: any) => {
             />
           )}
 
-          {/* <View style={styles.profileIcon}>
-            <TouchableOpacity
-              hitSlop={{
-                left: widthPercentageToDP(10),
-                right: widthPercentageToDP(5),
-                top: heightPercentageToDP(2),
-              }}
-              onPress={() => setIsProfileModal(!isProfileModal)}>
-              <Text style={styles.profileIconText}>
-                {userData.firstName[0].toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          </View> */}
-          <View style={styles.profileIcon}>
-
-          </View>
+          <View style={styles.profileIcon}></View>
         </View>
       }
 
-      {!isDriverOnline && (
-        <View style={styles.offlineModalView}>
-          <Text style={styles.offlineModalHeaderText}>
-            Hello {userData.firstName.split(' ')[0]}!
-          </Text>
-          {/* Today Model View */}
-          <View style={styles.todayModalView}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                Today Progress{' '}
-              </Text>
-            </View>
-            <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/Rupay.png')} />
-                  <Text> Earning</Text>
-                </View>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.earning || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/watch.png')} />
-                  <Text>Login Hours</Text>
-                </View>
-
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.loginHours || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/order.png')} />
-                  <Text>Orders</Text>
-                </View>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.today?.orders || 0}
-                </Text>
-              </View>
-            </View>
-          </View>
-          {/* Week Model View */}
-          <View style={styles.todayModalView}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                This Week Progress
-              </Text>
-            </View>
-            <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/Rupay.png')} />
-                  <Text> Earning</Text>
-                </View>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.week?.earning || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/watch.png')} />
-                  <Text>Login Hours</Text>
-                </View>
-
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.week?.loginHours || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/order.png')} />
-                  <Text>Orders</Text>
-                </View>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.week?.orders || 0}
-                </Text>
-              </View>
-            </View>
-          </View>
-          {/* Month Model View */}
-          <View style={styles.todayModalView}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                This Month Progress
-              </Text>
-            </View>
-            <View style={styles.circleModel}>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/Rupay.png')} />
-                  <Text> Earning</Text>
-                </View>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.month?.earning || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/watch.png')} />
-                  <Text>Login Hours</Text>
-                </View>
-
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.month?.loginHours || 0}
-                </Text>
-              </View>
-              <View style={styles.circle}>
-                <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                  <Image source={require('../images/order.png')} />
-                  <Text>Orders</Text>
-                </View>
-                <Text style={{fontWeight: 'bold'}}>
-                  {progressData.month?.orders || 0}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
-       {loading ? (
-            <LoaderComponent />
-          ) : (
-      <View style={styles.container}>
-        {isDriverOnline &&
-          _isEmpty(currentOnGoingOrderDetails) &&
-          _isEmpty(availableOrders) &&
-          !orderStarted && (
+      {loading ? (
+        <LoaderComponent />
+      ) : (
+        <>
+          {!isDriverOnline && (
             <View style={styles.offlineModalView}>
               <Text style={styles.offlineModalHeaderText}>
                 Hello {userData.firstName.split(' ')[0]}!
               </Text>
-              {/* Searching for Order */}
-              <View style={styles.SearchingModalView}>
-                <ImageBackground
-                  source={require('../images/map.png')} // Replace 'path_to_your_image' with the actual path or URL of your image
-                  style={{
-                    width: wp(95),
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: hp(8),
-                  }} // Adjust the width and height according to your image dimensions
-                >
-                  <View style={styles.spinnerContainer}>
-                    <Spinner visible={true} />
-                  </View>
-                  <View style={styles.SearchingModalViewChild}>
-                    <Text
-                      style={{
-                        textAlign: 'center',
-                        fontFamily: 'RobotoMono-Regular',
-                        fontSize: wp(4),
-                        fontWeight: 'bold',
-                        color: '#333333',
-                      }}>
-                      Searching for Orders ...
-                    </Text>
-                  </View>
-                </ImageBackground>
-              </View>
               {/* Today Model View */}
               <View style={styles.todayModalView}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text
                     style={{fontSize: 25, color: '#333333', marginLeft: wp(3)}}>
-                    Today Progress
+                    Today Progress{' '}
                   </Text>
                 </View>
                 <View style={styles.circleModel}>
@@ -957,61 +761,266 @@ const PetPujaScreen = ({navigation, route}: any) => {
               </View>
             </View>
           )}
-
-        {_isEmpty(currentOnGoingOrderDetails) &&
-          availableOrders[0] &&
-          !orderStarted && (
-            <>
-              {loading ? (
-                <LoaderComponent />
-              ) : (
-                <Animated.View style={{transform: [{translateY: animation}]}}>
-                  <ImageBackground source={require('../images/Sukam.jpg')}>
-                    <View
-                      key={`order_${0 + 1}`}
-                      style={[styles.modalView, {opacity: 2}]}>
-                      {/* orderId Text */}
-                      <View style={{top: wp(3)}}>
+          <View style={styles.container}>
+            {isDriverOnline &&
+              _isEmpty(currentOnGoingOrderDetails) &&
+              _isEmpty(availableOrders) &&
+              !orderStarted && (
+                <View style={styles.offlineModalView}>
+                  <Text style={styles.offlineModalHeaderText}>
+                    Hello {userData.firstName.split(' ')[0]}!
+                  </Text>
+                  {/* Searching for Order */}
+                  <View style={styles.SearchingModalView}>
+                    <ImageBackground
+                      source={require('../images/map.png')} // Replace 'path_to_your_image' with the actual path or URL of your image
+                      style={{
+                        width: wp(95),
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: hp(8),
+                      }} // Adjust the width and height according to your image dimensions
+                    >
+                      <View style={styles.spinnerContainer}>
+                        <Spinner visible={true} />
+                      </View>
+                      <View style={styles.SearchingModalViewChild}>
                         <Text
                           style={{
-                            fontFamily: 'Roboto Mono',
-                            fontSize: hp(2.5),
-                            fontWeight: '600',
                             textAlign: 'center',
-                            color: '#212121',
+                            fontFamily: 'RobotoMono-Regular',
+                            fontSize: wp(4),
+                            fontWeight: 'bold',
+                            color: '#333333',
                           }}>
-                          Order Id :{' '}
-                          <Text
-                            style={{
-                              fontFamily: 'RobotoMono-Regular',
-                              fontWeight: '700',
-                              color: '#118F5E',
-                              fontSize: 20,
-                            }}>
-                            {availableOrders[0].order_details?.vendor_order_id.slice(
-                              -6,
-                            )}
-                          </Text>
+                          Searching for Orders ...
                         </Text>
                       </View>
-                      {/* Circul data */}
-                      <View style={styles.circleModel}>
-                        <View style={styles.circle}>
-                          <Text style={{alignItems: 'center'}}>{'₹'}</Text>
-                          <Text style={{alignItems: 'center'}}>
-                            {'Earning'}
-                          </Text>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              color: '#000000',
-                              fontSize: 15,
-                            }}>
-                            {'₹ '}0
-                          </Text>
+                    </ImageBackground>
+                  </View>
+                  {/* Today Model View */}
+                  <View style={styles.todayModalView}>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <Text
+                        style={{
+                          fontSize: 25,
+                          color: '#333333',
+                          marginLeft: wp(3),
+                        }}>
+                        Today Progress
+                      </Text>
+                    </View>
+                    <View style={styles.circleModel}>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/Rupay.png')} />
+                          <Text> Earning</Text>
                         </View>
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.today?.earning || 0}
+                        </Text>
                       </View>
-                      {/* <View style={styles.text}>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/watch.png')} />
+                          <Text>Login Hours</Text>
+                        </View>
+
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.today?.loginHours || 0}
+                        </Text>
+                      </View>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/order.png')} />
+                          <Text>Orders</Text>
+                        </View>
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.today?.orders || 0}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  {/* Week Model View */}
+                  <View style={styles.todayModalView}>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <Text
+                        style={{
+                          fontSize: 25,
+                          color: '#333333',
+                          marginLeft: wp(3),
+                        }}>
+                        This Week Progress
+                      </Text>
+                    </View>
+                    <View style={styles.circleModel}>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/Rupay.png')} />
+                          <Text> Earning</Text>
+                        </View>
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.week?.earning || 0}
+                        </Text>
+                      </View>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/watch.png')} />
+                          <Text>Login Hours</Text>
+                        </View>
+
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.week?.loginHours || 0}
+                        </Text>
+                      </View>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/order.png')} />
+                          <Text>Orders</Text>
+                        </View>
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.week?.orders || 0}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  {/* Month Model View */}
+                  <View style={styles.todayModalView}>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <Text
+                        style={{
+                          fontSize: 25,
+                          color: '#333333',
+                          marginLeft: wp(3),
+                        }}>
+                        This Month Progress
+                      </Text>
+                    </View>
+                    <View style={styles.circleModel}>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/Rupay.png')} />
+                          <Text> Earning</Text>
+                        </View>
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.month?.earning || 0}
+                        </Text>
+                      </View>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/watch.png')} />
+                          <Text>Login Hours</Text>
+                        </View>
+
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.month?.loginHours || 0}
+                        </Text>
+                      </View>
+                      <View style={styles.circle}>
+                        <View
+                          style={{
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}>
+                          <Image source={require('../images/order.png')} />
+                          <Text>Orders</Text>
+                        </View>
+                        <Text style={{fontWeight: 'bold'}}>
+                          {progressData.month?.orders || 0}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+            {_isEmpty(currentOnGoingOrderDetails) &&
+              availableOrders[0] &&
+              !orderStarted && (
+                <>
+                  {loading ? (
+                    <LoaderComponent />
+                  ) : (
+                    <Animated.View
+                      style={{transform: [{translateY: animation}]}}>
+                      <ImageBackground source={require('../images/Sukam.jpg')}>
+                        <View
+                          key={`order_${0 + 1}`}
+                          style={[styles.modalView, {opacity: 2}]}>
+                          {/* orderId Text */}
+                          <View style={{top: wp(3)}}>
+                            <Text
+                              style={{
+                                fontFamily: 'Roboto Mono',
+                                fontSize: hp(2.5),
+                                fontWeight: '600',
+                                textAlign: 'center',
+                                color: '#212121',
+                              }}>
+                              Order Id :{' '}
+                              <Text
+                                style={{
+                                  fontFamily: 'RobotoMono-Regular',
+                                  fontWeight: '700',
+                                  color: '#118F5E',
+                                  fontSize: 20,
+                                }}>
+                                {availableOrders[0].order_details?.vendor_order_id.slice(
+                                  -6,
+                                )}
+                              </Text>
+                            </Text>
+                          </View>
+                          {/* Circul data */}
+                          <View style={styles.circleModel}>
+                            <View style={styles.circle}>
+                              <Text style={{alignItems: 'center'}}>{'₹'}</Text>
+                              <Text style={{alignItems: 'center'}}>
+                                {'Earning'}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontWeight: '600',
+                                  color: '#000000',
+                                  fontSize: 15,
+                                }}>
+                                {'₹ '}0
+                              </Text>
+                            </View>
+                          </View>
+                          {/* <View style={styles.text}>
               <View
                 style={{
                   width: wp(30),
@@ -1036,40 +1045,443 @@ const PetPujaScreen = ({navigation, route}: any) => {
               </View>
             </View> */}
 
-                      <View style={{alignItems: 'center'}}>
-                        <Text>
-                          <Image source={require('../images/cart.png')} />{' '}
-                          Pickup Location
-                        </Text>
-                        <Text
+                          <View style={{alignItems: 'center'}}>
+                            <Text>
+                              <Image source={require('../images/cart.png')} />{' '}
+                              Pickup Location
+                            </Text>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                color: '#333333',
+                                fontSize: 15,
+                              }}>
+                              {availableOrders[0].pickup_details?.address}
+                            </Text>
+                          </View>
+                          <View
+                            style={{alignItems: 'center', marginTop: hp(2)}}>
+                            <Text>
+                              <Image source={require('../images/cart.png')} />{' '}
+                              Drop Location
+                            </Text>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                color: '#333333',
+                                fontSize: 15,
+                              }}>
+                              {availableOrders[0].drop_details?.address}
+                            </Text>
+                          </View>
+                          {/* SliderButton */}
+                          <View
+                            style={{
+                              flex: 1,
+                              justifyContent: 'flex-end',
+                              marginBottom: hp(0),
+                            }}>
+                            <SlideButton
+                              width={290}
+                              height={50}
+                              animationDuration={180}
+                              autoResetDelay={1080}
+                              animation={true}
+                              autoReset={true}
+                              borderRadius={15}
+                              sliderWidth={50}
+                              icon={
+                                <Image
+                                  source={require('../svg/Arrow.png')}
+                                  style={styles.thumbImage}
+                                />
+                              } // Adjust width and height as needed
+                              onReachedToEnd={() =>
+                                onAcceptOrder(availableOrders[0])
+                              }
+                              containerStyle={{
+                                backgroundColor: '#118F5E',
+                                color: 'red',
+                              }}
+                              underlayStyle={{backgroundColor: 'Red'}}
+                              title={buttonText}
+                              disabled={!connected || !isSocketConnected}
+                              slideDirection="right"></SlideButton>
+
+                            <SlideButton
+                              width={290}
+                              height={50}
+                              borderRadius={15}
+                              animationDuration={180}
+                              autoResetDelay={1080}
+                              animation={true}
+                              autoReset={true}
+                              sliderWidth={50}
+                              icon={
+                                <Image
+                                  source={require('../svg/Arrow.png')}
+                                  style={styles.thumbImage}
+                                />
+                              } // Adjust width and height as needed
+                              onReachedToEnd={() => onRejectOrder()}
+                              containerStyle={{
+                                backgroundColor: '#D11A2A',
+                                color: 'red',
+                              }}
+                              underlayStyle={{backgroundColor: 'Red'}}
+                              title="Reject Order"
+                              titleStyle={{color: 'white'}}
+                              disabled={!connected || !isSocketConnected}
+                              slideDirection="right">
+                              <Text style={{color: 'red', fontSize: 18}}></Text>
+                            </SlideButton>
+                          </View>
+                        </View>
+                      </ImageBackground>
+                    </Animated.View>
+                  )}
+                </>
+              )}
+
+            {/* // If order Accepted */}
+            {orderStarted && !_isEmpty(currentOnGoingOrderDetails) && (
+              <View>
+                {loading ? (
+                  <LoaderComponent />
+                ) : (
+                  <>
+                    {/* order Details card */}
+                    {[
+                      OrderStatusEnum.ORDER_ACCEPTED,
+                      OrderStatusEnum.ARRIVED,
+                      OrderStatusEnum.ORDER_ALLOTTED,
+                    ].includes(currentOnGoingOrderDetails.status) && (
+                      <View style={styles.orderDetailsCard}>
+                        <View
                           style={{
-                            fontWeight: '600',
-                            color: '#333333',
-                            fontSize: 15,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            // left: wp(7),
+                            top: hp(2),
                           }}>
-                          {availableOrders[0].pickup_details?.address}
-                        </Text>
-                      </View>
-                      <View style={{alignItems: 'center', marginTop: hp(2)}}>
-                        <Text>
-                          <Image source={require('../images/cart.png')} /> Drop
-                          Location
-                        </Text>
-                        <Text
+                          <Text style={{left: wp(6)}}>
+                            Order ID:{' '}
+                            <Text
+                              style={{
+                                fontFamily: 'RobotoMono-Regular',
+                                fontWeight: '700',
+                                color: '#118F5E',
+                                fontSize: 15,
+                              }}>
+                              {currentOnGoingOrderDetails?.order_details.vendor_order_id.slice(
+                                -6,
+                              )}
+                            </Text>
+                          </Text>
+                          <Text style={{color: '#828282', right: wp(6)}}>
+                            {/* <Image source={require('../images/Rupay.png')} /> */}
+                            {'₹'} {'Earning'}
+                          </Text>
+                        </View>
+                        <View
                           style={{
-                            fontWeight: '600',
-                            color: '#333333',
-                            fontSize: 15,
+                            top: hp(2),
+                            alignSelf: 'flex-end',
+                            alignItems: 'center',
+                            right: wp(6),
+                            width: wp(15),
                           }}>
-                          {availableOrders[0].drop_details?.address}
-                        </Text>
+                          <Text
+                            style={{
+                              color: '#000000',
+                              fontFamily: 'RobotoMono-Regular',
+                              fontWeight: '700',
+                              fontSize: 16,
+                            }}>
+                            {0}
+                            {'₹'}
+                          </Text>
+                        </View>
+                        <View style={styles.line} />
+                        <View style={{alignItems: 'center', top: hp(6)}}>
+                          <Text>
+                            <Image source={require('../images/cart.png')} />{' '}
+                            Food Pickup Location
+                          </Text>
+                          <Text
+                            style={{
+                              fontWeight: '600',
+                              color: '#333333',
+                              fontSize: 15,
+                            }}>
+                            {
+                              currentOnGoingOrderDetails?.pickup_details
+                                ?.address
+                            }
+                          </Text>
+                        </View>
+                        <View style={styles.line1} />
+                        <View style={styles.contactNumber}>
+                          <TouchableOpacity
+                            onPress={() =>
+                              dialCall(
+                                currentOnGoingOrderDetails.pickup_details
+                                  .contact_number,
+                              )
+                            }>
+                            <Image
+                              source={require('../images/callicon.png')}
+                              style={styles.callIcon}
+                            />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() =>
+                              dialCall(
+                                currentOnGoingOrderDetails.pickup_details
+                                  .contact_number,
+                              )
+                            }>
+                            <Text style={{color: '#333333'}}>
+                              {' '}
+                              +91
+                              {
+                                currentOnGoingOrderDetails.pickup_details
+                                  .contact_number
+                              }
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
-                      {/* SliderButton */}
+                    )}
+                    {[
+                      OrderStatusEnum.DISPATCHED,
+                      OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                    ].includes(currentOnGoingOrderDetails.status) &&
+                      cod && (
+                        <View style={styles.orderDetailsCard}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              // left: wp(7),
+                              top: hp(2),
+                            }}>
+                            <Text style={{left: wp(6)}}>
+                              Order ID:{' '}
+                              <Text
+                                style={{
+                                  fontFamily: 'RobotoMono-Regular',
+                                  fontWeight: '700',
+                                  color: '#118F5E',
+                                  fontSize: 15,
+                                }}>
+                                {currentOnGoingOrderDetails?.order_details.vendor_order_id.slice(
+                                  -6,
+                                )}
+                              </Text>
+                            </Text>
+                            <Text style={{color: '#828282', right: wp(6)}}>
+                              {/* <Image source={require('../images/Rupay.png')} /> */}
+                              {'₹'} {'Earning'}
+                            </Text>
+                          </View>
+                          <View
+                            style={{
+                              top: hp(2),
+                              alignSelf: 'flex-end',
+                              alignItems: 'center',
+                              right: wp(6),
+                              width: wp(15),
+                            }}>
+                            <Text
+                              style={{
+                                color: '#000000',
+                                fontFamily: 'RobotoMono-Regular',
+                                fontWeight: '700',
+                                fontSize: 16,
+                              }}>
+                              {
+                                currentOnGoingOrderDetails.order_details
+                                  .order_total
+                              }
+                              {'₹'}
+                            </Text>
+                          </View>
+                          <View style={styles.line} />
+                          <View style={{alignItems: 'center', top: hp(6)}}>
+                            <Text>
+                              <Image source={require('../images/cart.png')} />{' '}
+                              Food Drop Location
+                            </Text>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                color: '#333333',
+                                fontSize: 15,
+                              }}>
+                              {
+                                currentOnGoingOrderDetails?.drop_details
+                                  ?.address
+                              }
+                            </Text>
+                          </View>
+                          <View style={styles.line1} />
+                          <View style={styles.contactNumber}>
+                            <TouchableOpacity
+                              onPress={() =>
+                                dialCall(
+                                  currentOnGoingOrderDetails.drop_details
+                                    .contact_number,
+                                )
+                              }>
+                              <Image
+                                source={require('../images/callicon.png')}
+                                style={styles.callIcon}
+                              />
+                            </TouchableOpacity>
+                            {/* <callLogo /> */}
+                            <TouchableOpacity
+                              onPress={() =>
+                                dialCall(
+                                  currentOnGoingOrderDetails.drop_details
+                                    .contact_number,
+                                )
+                              }>
+                              <Text style={{color: '#333333'}}>
+                                {' '}
+                                +91
+                                {
+                                  currentOnGoingOrderDetails.drop_details
+                                    .contact_number
+                                }
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      )}
+                    {!cod && (
+                      <View style={styles.paymentWindiw}>
+                        <Text style={styles.paymentText}>Cash</Text>
+                        <Text style={{fontSize: 18}}>
+                          Please collect the order amount from the customer.
+                        </Text>
+                        <Text style={styles.totalorder}>
+                          ₹{' '}
+                          {currentOnGoingOrderDetails.order_details.order_total}
+                        </Text>
+                        <Pressable
+                          style={styles.paymentButton}
+                          onPress={() => {
+                            paymentButton();
+                          }}>
+                          <Text style={{color: 'white', fontSize: 24}}>
+                            Received
+                          </Text>
+                        </Pressable>
+                      </View>
+                    )}
+                    <MapView
+                      provider={PROVIDER_GOOGLE}
+                      style={styles.map}
+                      ref={mapRef}
+                      initialRegion={{
+                        latitude: 19.165061,
+                        longitude: 72.965545,
+                        latitudeDelta: 0.0122,
+                        longitudeDelta: 0.0121,
+                      }}
+                      region={{
+                        latitude: myLocation.current.latitude,
+                        longitude: myLocation.current.longitude,
+                        latitudeDelta: 0.0122,
+                        longitudeDelta: 0.0121,
+                      }}
+                      mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
+                      <Marker
+                        identifier="myLocationMarker"
+                        coordinate={myLocation.current}
+                        icon={require('../images/MapDriverIcon.png')}
+                      />
+
+                      {[
+                        OrderStatusEnum.DISPATCHED,
+                        OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                      ].includes(currentOnGoingOrderDetails.status) && (
+                        <Marker
+                          identifier="pickUpLocationMarker"
+                          coordinate={{
+                            latitude:
+                              currentOnGoingOrderDetails?.pickup_details
+                                ?.latitude,
+                            longitude:
+                              currentOnGoingOrderDetails?.pickup_details
+                                ?.longitude,
+                          }}
+                          icon={require('../images/MapPickupDropLocationIcon.png')}
+                        />
+                      )}
+                      {[
+                        OrderStatusEnum.DISPATCHED,
+                        OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                      ].includes(currentOnGoingOrderDetails.status) && (
+                        <Marker
+                          identifier="pickUpLocationMarker"
+                          coordinate={{
+                            latitude:
+                              currentOnGoingOrderDetails?.drop_details
+                                ?.latitude,
+                            longitude:
+                              currentOnGoingOrderDetails?.drop_details
+                                ?.longitude,
+                          }}
+                          icon={require('../images/MapPickupDropLocationIcon.png')}
+                        />
+                      )}
+
+                      <Polyline
+                        coordinates={path || []}
+                        strokeColor={'#404080'}
+                        strokeWidth={4}
+                      />
+                    </MapView>
+                    {/*   Nevigate to google map */}
+                    <TouchableOpacity
+                      style={styles.directionButton}
+                      onPress={() =>
+                        navigateToGoogleMaps(
+                          [
+                            OrderStatusEnum.DISPATCHED,
+                            OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                          ].includes(currentOnGoingOrderDetails.status)
+                            ? {
+                                latitude:
+                                  currentOnGoingOrderDetails.pickup_details
+                                    .latitude,
+                                longitude:
+                                  currentOnGoingOrderDetails.pickup_details
+                                    .longitude,
+                              }
+                            : {
+                                latitude:
+                                  currentOnGoingOrderDetails.drop_details
+                                    .latitude,
+                                longitude:
+                                  currentOnGoingOrderDetails.drop_details
+                                    .longitude,
+                              },
+                        )
+                      }>
+                      <Navigate />
+                      {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
+                    </TouchableOpacity>
+
+                    {/* slider Button */}
+                    {cod && (
                       <View
                         style={{
                           flex: 1,
                           justifyContent: 'flex-end',
-                          marginBottom: hp(0),
+                          bottom: hp(6),
                         }}>
                         <SlideButton
                           width={290}
@@ -1086,421 +1498,32 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               style={styles.thumbImage}
                             />
                           } // Adjust width and height as needed
-                          onReachedToEnd={() =>
-                            onAcceptOrder(availableOrders[0])
-                          }
+                          onReachedToEnd={async () => {
+                            await updateOrderStatus();
+                          }}
                           containerStyle={{
                             backgroundColor: '#118F5E',
                             color: 'red',
                           }}
                           underlayStyle={{backgroundColor: 'Red'}}
-                          title={buttonText}
-                          disabled={
-                            !connected || !isSocketConnected
-                          }
-                          slideDirection="right"></SlideButton>
-
-                        <SlideButton
-                          width={290}
-                          height={50}
-                          borderRadius={15}
-                          animationDuration={180}
-                          autoResetDelay={1080}
-                          animation={true}
-                          autoReset={true}
-                          sliderWidth={50}
-                          icon={
-                            <Image
-                              source={require('../svg/Arrow.png')}
-                              style={styles.thumbImage}
-                            />
-                          } // Adjust width and height as needed
-                          onReachedToEnd={() => onRejectOrder()}
-                          containerStyle={{
-                            backgroundColor: '#D11A2A',
-                            color: 'red',
-                          }}
-                          underlayStyle={{backgroundColor: 'Red'}}
-                          title="Reject Order"
-                          titleStyle={{color: 'white'}}
-                          disabled={
-                            !connected || !isSocketConnected
-                          }
-                          slideDirection="right">
-                          <Text style={{color: 'red', fontSize: 18}}></Text>
-                        </SlideButton>
-                      </View>
-                    </View>
-                  </ImageBackground>
-                </Animated.View>
-              )}
-            </>
-          )}
-
-        {/* // If order Accepted */}
-        {orderStarted && !_isEmpty(currentOnGoingOrderDetails) && (
-          <View>
-            {loading ? (
-              <LoaderComponent />
-            ) : (
-              <>
-                {/* order Details card */}
-                {[
-                  OrderStatusEnum.ORDER_ACCEPTED,
-                  OrderStatusEnum.ARRIVED,
-                  OrderStatusEnum.ORDER_ALLOTTED,
-                ].includes(currentOnGoingOrderDetails.status) && (
-                  <View style={styles.orderDetailsCard}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        // left: wp(7),
-                        top: hp(2),
-                      }}>
-                      <Text style={{left: wp(6)}}>
-                        Order ID:{' '}
-                        <Text
-                          style={{
-                            fontFamily: 'RobotoMono-Regular',
-                            fontWeight: '700',
-                            color: '#118F5E',
-                            fontSize: 15,
-                          }}>
-                          {currentOnGoingOrderDetails?.order_details.vendor_order_id.slice(
-                            -6,
-                          )}
-                        </Text>
-                      </Text>
-                      <Text style={{color: '#828282', right: wp(6)}}>
-                        {/* <Image source={require('../images/Rupay.png')} /> */}
-                        {'₹'} {'Earning'}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        top: hp(2),
-                        alignSelf: 'flex-end',
-                        alignItems: 'center',
-                        right: wp(6),
-                        width: wp(15),
-                      }}>
-                      <Text
-                        style={{
-                          color: '#000000',
-                          fontFamily: 'RobotoMono-Regular',
-                          fontWeight: '700',
-                          fontSize: 16,
-                        }}>
-                        {0}
-                        {'₹'}
-                      </Text>
-                    </View>
-                    <View style={styles.line} />
-                    <View style={{alignItems: 'center', top: hp(6)}}>
-                      <Text>
-                        <Image source={require('../images/cart.png')} /> Food
-                        Pickup Location
-                      </Text>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          color: '#333333',
-                          fontSize: 15,
-                        }}>
-                        {currentOnGoingOrderDetails?.pickup_details?.address}
-                      </Text>
-                    </View>
-                    <View style={styles.line1} />
-                    <View style={styles.contactNumber}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          dialCall(
-                            currentOnGoingOrderDetails.pickup_details
-                              .contact_number,
-                          )
-                        }>
-                        <Image
-                          source={require('../images/callicon.png')}
-                          style={styles.callIcon}
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() =>
-                          dialCall(
-                            currentOnGoingOrderDetails.pickup_details
-                              .contact_number,
-                          )
-                        }>
-                        <Text style={{color: '#333333'}}>
-                          {' '}
-                          +91
-                          {
-                            currentOnGoingOrderDetails.pickup_details
-                              .contact_number
-                          }
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-                {[
-                  OrderStatusEnum.DISPATCHED,
-                  OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
-                ].includes(currentOnGoingOrderDetails.status) &&
-                  cod && (
-                    <View style={styles.orderDetailsCard}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          // left: wp(7),
-                          top: hp(2),
-                        }}>
-                        <Text style={{left: wp(6)}}>
-                          Order ID:{' '}
-                          <Text
-                            style={{
-                              fontFamily: 'RobotoMono-Regular',
-                              fontWeight: '700',
-                              color: '#118F5E',
-                              fontSize: 15,
-                            }}>
-                            {currentOnGoingOrderDetails?.order_details.vendor_order_id.slice(
-                              -6,
-                            )}
-                          </Text>
-                        </Text>
-                        <Text style={{color: '#828282', right: wp(6)}}>
-                          {/* <Image source={require('../images/Rupay.png')} /> */}
-                          {'₹'} {'Earning'}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          top: hp(2),
-                          alignSelf: 'flex-end',
-                          alignItems: 'center',
-                          right: wp(6),
-                          width: wp(15),
-                        }}>
-                        <Text
-                          style={{
-                            color: '#000000',
-                            fontFamily: 'RobotoMono-Regular',
-                            fontWeight: '700',
-                            fontSize: 16,
-                          }}>
-                          {currentOnGoingOrderDetails.order_details.order_total}
-                          {'₹'}
-                        </Text>
-                      </View>
-                      <View style={styles.line} />
-                      <View style={{alignItems: 'center', top: hp(6)}}>
-                        <Text>
-                          <Image source={require('../images/cart.png')} /> Food
-                          Drop Location
-                        </Text>
-                        <Text
-                          style={{
-                            fontWeight: '600',
-                            color: '#333333',
-                            fontSize: 15,
-                          }}>
-                          {currentOnGoingOrderDetails?.drop_details?.address}
-                        </Text>
-                      </View>
-                      <View style={styles.line1} />
-                      <View style={styles.contactNumber}>
-                        <TouchableOpacity
-                          onPress={() =>
-                            dialCall(
-                              currentOnGoingOrderDetails.drop_details
-                                .contact_number,
+                          title={
+                            sliderButtonLoader ? (
+                              <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                              buttonText
                             )
-                          }>
-                          <Image
-                            source={require('../images/callicon.png')}
-                            style={styles.callIcon}
-                          />
-                        </TouchableOpacity>
-                        {/* <callLogo /> */}
-                        <TouchableOpacity
-                          onPress={() =>
-                            dialCall(
-                              currentOnGoingOrderDetails.drop_details
-                                .contact_number,
-                            )
-                          }>
-                          <Text style={{color: '#333333'}}>
-                            {' '}
-                            +91
-                            {
-                              currentOnGoingOrderDetails.drop_details
-                                .contact_number
-                            }
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-                {!cod && (
-                  <View style={styles.paymentWindiw}>
-                    <Text style={styles.paymentText}>Cash</Text>
-                    <Text style={{fontSize: 18}}>
-                      Please collect the order amount from the customer.
-                    </Text>
-                    <Text style={styles.totalorder}>
-                      ₹ {currentOnGoingOrderDetails.order_details.order_total}
-                    </Text>
-                    <Pressable
-                      style={styles.paymentButton}
-                      onPress={() => {
-                        paymentButton();
-                      }}>
-                      <Text style={{color: 'white', fontSize: 24}}>
-                        Received
-                      </Text>
-                    </Pressable>
-                  </View>
-                )}
-                <MapView
-                  provider={PROVIDER_GOOGLE}
-                  style={styles.map}
-                  ref={mapRef}
-                  initialRegion={{
-                    latitude: 19.165061,
-                    longitude: 72.965545,
-                    latitudeDelta: 0.0122,
-                    longitudeDelta: 0.0121,
-                  }}
-                  region={{
-                    latitude: myLocation.current.latitude,
-                    longitude: myLocation.current.longitude,
-                    latitudeDelta: 0.0122,
-                    longitudeDelta: 0.0121,
-                  }}
-                  mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
-                  <Marker
-                    identifier="myLocationMarker"
-                    coordinate={myLocation.current}
-                    icon={require('../images/MapDriverIcon.png')}
-                  />
-
-                  {[
-                    OrderStatusEnum.DISPATCHED,
-                    OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
-                  ].includes(currentOnGoingOrderDetails.status) && (
-                    <Marker
-                      identifier="pickUpLocationMarker"
-                      coordinate={{
-                        latitude:
-                          currentOnGoingOrderDetails?.pickup_details?.latitude,
-                        longitude:
-                          currentOnGoingOrderDetails?.pickup_details?.longitude,
-                      }}
-                      icon={require('../images/MapPickupDropLocationIcon.png')}
-                    />
-                  )}
-                  {[
-                    OrderStatusEnum.DISPATCHED,
-                    OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
-                  ].includes(currentOnGoingOrderDetails.status) && (
-                    <Marker
-                      identifier="pickUpLocationMarker"
-                      coordinate={{
-                        latitude:
-                          currentOnGoingOrderDetails?.drop_details?.latitude,
-                        longitude:
-                          currentOnGoingOrderDetails?.drop_details?.longitude,
-                      }}
-                      icon={require('../images/MapPickupDropLocationIcon.png')}
-                    />
-                  )}
-
-                  <Polyline
-                    coordinates={path || []}
-                    strokeColor={'#404080'}
-                    strokeWidth={4}
-                  />
-                </MapView>
-                {/*   Nevigate to google map */}
-                <TouchableOpacity
-                  style={styles.directionButton}
-                  onPress={() =>
-                    navigateToGoogleMaps(
-                      [
-                        OrderStatusEnum.DISPATCHED,
-                        OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
-                      ].includes(currentOnGoingOrderDetails.status)
-                        ? {
-                            latitude:
-                              currentOnGoingOrderDetails.pickup_details
-                                .latitude,
-                            longitude:
-                              currentOnGoingOrderDetails.pickup_details
-                                .longitude,
                           }
-                        : {
-                            latitude:
-                              currentOnGoingOrderDetails.drop_details.latitude,
-                            longitude:
-                              currentOnGoingOrderDetails.drop_details.longitude,
-                          },
-                    )
-                  }>
-                  <Navigate />
-                  {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
-                </TouchableOpacity>
-
-                {/* slider Button */}
-                {cod && (
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'flex-end',
-                      bottom: hp(6),
-                    }}>
-                    <SlideButton
-                      width={290}
-                      height={50}
-                      animationDuration={180}
-                      autoResetDelay={1080}
-                      animation={true}
-                      autoReset={true}
-                      borderRadius={15}
-                      sliderWidth={50}
-                      icon={
-                        <Image
-                          source={require('../svg/Arrow.png')}
-                          style={styles.thumbImage}
-                        />
-                      } // Adjust width and height as needed
-                      onReachedToEnd={async () => {
-                        await updateOrderStatus();
-                      }}
-                      containerStyle={{
-                        backgroundColor: '#118F5E',
-                        color: 'red',
-                      }}
-                      underlayStyle={{backgroundColor: 'Red'}}
-                      title={
-                        sliderButtonLoader ? (
-                          <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                          buttonText
-                        )
-                      }
-                      slideDirection="right"
-                      disabled={!connected}></SlideButton>
-                  </View>
+                          slideDirection="right"
+                          disabled={!connected}></SlideButton>
+                      </View>
+                    )}
+                  </>
                 )}
-              </>
+              </View>
             )}
           </View>
-        )}
-      </View>
-          )}
+        </>
+      )}
     </>
   );
 };

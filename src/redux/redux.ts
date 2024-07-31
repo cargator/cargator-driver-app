@@ -28,7 +28,7 @@ const authSlice = createSlice({
     rideStatus: '',
     driverAppFlow: '',
     currentOnGoingOrderDetails: {},
-    orderStatus: '',
+    rejectedOrders: [],
   },
   reducers: {
     setUserData: (state, action) => {
@@ -51,7 +51,6 @@ const authSlice = createSlice({
     },
     resetAllOrders: state => {
       state.currentOnGoingOrderDetails = {};
-      state.orderStatus = '';
     },
     setPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
@@ -101,6 +100,12 @@ const authSlice = createSlice({
     removeCurrentOnGoingOrderDetails: state => {
       state.currentOnGoingOrderDetails = {};
     },
+    setRejectedOrders: (state, action) => {
+      state.rejectedOrders = action.payload;
+    },
+    removeRejectedOrders: state => {
+      state.currentOnGoingOrderDetails = [];
+    },
   },
 });
 
@@ -126,6 +131,8 @@ export const {
   setCurrentOnGoingOrderDetails,
   removeCurrentOnGoingOrderDetails,
   resetAllOrders,
+  setRejectedOrders,
+  removeRejectedOrders,
 } = authSlice.actions;
 
 const store = configureStore({
