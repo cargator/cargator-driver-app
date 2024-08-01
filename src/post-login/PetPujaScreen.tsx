@@ -2,7 +2,7 @@ import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import * as geolib from 'geolib';
 import {isEmpty as _isEmpty} from 'lodash';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,6 +10,7 @@ import {
   Image,
   ImageBackground,
   Linking,
+  PermissionsAndroid,
   Pressable,
   StyleSheet,
   Text,
@@ -121,6 +122,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const animation = useRef(new Animated.Value(-200)).current;
   const socketInstance = useRef<any>(undefined);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
+  const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
 
@@ -161,17 +163,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setProgressData(response.data);
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      const res = await customAxios.patch(`/update-driver-status/${userId}`);
-      if (res) {
-        handleLogout();
-      }
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -226,71 +217,175 @@ const PetPujaScreen = ({navigation, route}: any) => {
     });
   };
 
-  const FetchUserLocation = async () => {
+  // const FetchUserLocation = async () => {
+  //   try {
+  //     // Sometimes getCurrentPosition from App.tsx requires time....meanwhile user logs in and we dont get location
+  //     // Also watchPosition sometimes fails to retrieve location ...So added getCurrentPosition again below
+  //     Geolocation.getCurrentPosition(
+  //       position => {
+  //         const {coords} = position;
+  //         const message = {
+  //           latitude: coords.latitude,
+  //           longitude: coords.longitude,
+  //         };
+  //         driverLivelocationAPI({
+  //           coordinates: [message.latitude, message.longitude],
+  //         });
+  //         myLocation.current = message;
+  //       },
+  //       error => {
+  //         console.log('error in getCurrentPosition', error);
+  //       },
+  //       {enableHighAccuracy: true, timeout: 30000, maximumAge: 10000},
+  //     );
+  //     let prevLocation: any = null;
+  //     Geolocation.watchPosition(
+  //       position => {
+  //         const {coords} = position;
+  //         const message = {
+  //           latitude: coords.latitude,
+  //           longitude: coords.longitude,
+  //         };
+  //         console.log("geolocation watch position");
+
+  //         myLocation.current = message;
+  //         if (prevLocation) {
+  //           const distance = geolib.getDistance(prevLocation, message);
+  //           if (distance >= 15) {
+  //             prevLocation = message;
+  //             driverLivelocationAPI({
+  //               coordinates: [message.latitude, message.longitude],
+  //             });
+  //           }
+  //         }
+  //       },
+  //       error => {
+  //         console.log(`FetchUserLocation error :>> `, error);
+  //         if (error.message == 'Location permission not granted.') {
+  //           Toast.show({
+  //             type: 'error',
+  //             text1: 'Please allow location permission.',
+  //           });
+  //           // setTimeout(() => {
+  //           //   requestLocationPermission();
+  //           // }, 2000);
+  //           dispatch(setLocationPermission(false));
+  //         }
+  //         if (error.code == 2) {
+  //           dispatch(setGpsPermission(false));
+  //         }
+  //       },
+  //       {
+  //         enableHighAccuracy: true,
+  //         timeout: 15000,
+  //         maximumAge: 1000,
+  //         distanceFilter: 10,
+  //       },
+  //     );
+  //   } catch (error) {
+  //     console.log(`FetchUserLocation error :>> `, error);
+  //   }
+  // };
+
+  const getCurrentPosition = useCallback(async () => {
     try {
-      // Sometimes getCurrentPosition from App.tsx requires time....meanwhile user logs in and we dont get location
-      // Also watchPosition sometimes fails to retrieve location ...So added getCurrentPosition again below
-      Geolocation.getCurrentPosition(
-        position => {
-          const {coords} = position;
-          const message = {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          };
-          driverLivelocationAPI({
-            coordinates: [message.latitude, message.longitude],
-          });
-          myLocation.current = message;
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Permission',
+          message: 'This app needs access to your location',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
         },
-        error => {
-          console.log('error in getCurrentPosition', error);
-        },
-        {enableHighAccuracy: false, timeout: 30000, maximumAge: 10000},
       );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        Geolocation.getCurrentPosition(
+          (position: any) => {
+            const newLocation = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            };
+            console.log('getCurrentPosition called', newLocation);
+            myLocation.current = newLocation;
+            driverLivelocationAPI({
+              coordinates: [newLocation.latitude, newLocation.longitude],
+            });
+          },
+          (error: any) => console.log('location err', error),
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+          },
+        );
+      } else {
+        console.log('Location permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }, []);
+
+  const emitLiveLocation = () => {
+    try {
       let prevLocation: any = null;
-      Geolocation.watchPosition(
-        position => {
-          const {coords} = position;
-          const message = {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          };
-          myLocation.current = message;
-          if (prevLocation) {
-            const distance = geolib.getDistance(prevLocation, message);
-            if (distance >= 15) {
-              prevLocation = message;
-              driverLivelocationAPI({
-                coordinates: [message.latitude, message.longitude],
-              });
+      console.log('emitLiveLocation called');
+      const watchId: any = Geolocation.watchPosition(
+        (position: any) => {
+          const {latitude, longitude} = position.coords;
+          const newLocation = {latitude, longitude};
+          console.log('live location emitted', newLocation);
+            if (prevLocation) {
+              // Calculate distance between previous and new location
+              const distance = geolib.getDistance(prevLocation, newLocation);
+              // If distance is greater than 10 meters, update the location
+              if (distance >= 15) {
+                myLocation.current = newLocation;
+                driverLivelocationAPI({
+                  coordinates: [newLocation.latitude, newLocation.longitude],
+                });
+              } else {
+                // If previous location is not set, update the location and set as previous location
+                myLocation.current = newLocation;
+                setPath((prevPath: any) => [...prevPath, newLocation]);
+                // setInterval(()=>{
+                //   setPath(prevPath => [...prevPath, newLocation]);
+                // },7000)
+                // dispatch(setRidePath(path))
+                prevLocation = newLocation; // Set previous location
+              }
             }
-          }
         },
-        error => {
-          console.log(`FetchUserLocation error :>> `, error);
+        (error: any) => {
+          console.log(`emitLiveLocation error :>> `, error);
           if (error.message == 'Location permission not granted.') {
             Toast.show({
               type: 'error',
               text1: 'Please allow location permission.',
             });
             // setTimeout(() => {
-            //   requestLocationPermission();
+            //   requestLocationPermission(dispatch);
             // }, 2000);
-            dispatch(setLocationPermission(false));
           }
-          if (error.code == 2) {
-            dispatch(setGpsPermission(false));
-          }
+          // if (error.code == 2) {
+          //   dispatch(setGpsPermission(false));
+          // }
         },
         {
           enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 1000,
-          distanceFilter: 10,
+          timeout: 20000,
+          maximumAge: 5000,
+          distanceFilter: 15,
         },
       );
-    } catch (error) {
-      console.log(`FetchUserLocation error :>> `, error);
+
+      setLoading(false);
+      setGeolocationWatchId(watchId);
+      return () => {
+        Geolocation.clearWatch(watchId);
+      };
+    } catch (error: any) {
+      console.log(`emitLiveLocation error :>> `, error);
+      setLoading(false);
     }
   };
 
@@ -574,7 +669,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     });
 
-    FetchUserLocation();
+    getCurrentPosition();
 
     return () => {
       if (unsubscribe) {
@@ -582,6 +677,13 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     };
   }, [route.params?.refresh, isDriverOnline]);
+
+  useEffect(() => {
+    if(isDriverOnline){
+      Geolocation.clearWatch(geolocationWatchId);
+      emitLiveLocation();
+    }
+  }, [isDriverOnline, orderStartedRef.current]);
 
   return (
     <>
@@ -1021,29 +1123,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             </View>
                           </View>
                           {/* <View style={styles.text}>
-              <View
-                style={{
-                  width: wp(30),
-                  height: hp(4),
-                  backgroundColor: '#F5FFFB',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 15,
-                }}>
-                <Text>Time : {1}-HRS.</Text>
-              </View>
-              <View
-                style={{
-                  width: wp(38),
-                  height: hp(4),
-                  backgroundColor: '#F5FFFB',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 15,
-                }}>
-                <Text>Distance :{15}-KM.</Text>
-              </View>
-            </View> */}
 
                           <View style={{alignItems: 'center'}}>
                             <Text>
@@ -1384,12 +1463,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       provider={PROVIDER_GOOGLE}
                       style={styles.map}
                       ref={mapRef}
-                      initialRegion={{
-                        latitude: 19.165061,
-                        longitude: 72.965545,
-                        latitudeDelta: 0.0122,
-                        longitudeDelta: 0.0121,
-                      }}
+                      // initialRegion={{
+                      //   latitude: 19.165061,
+                      //   longitude: 72.965545,
+                      //   latitudeDelta: 0.0122,
+                      //   longitudeDelta: 0.0121,
+                      // }}
                       region={{
                         latitude: myLocation.current.latitude,
                         longitude: myLocation.current.longitude,

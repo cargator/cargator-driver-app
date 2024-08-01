@@ -6,7 +6,7 @@ const customAxios = axios.create({
   // baseURL: `http://192.168.1.38:3001`,
   // baseURL: `https://green-beans-rhyme.loca.lt`,
   // baseURL: `https://818f-182-48-211-210.ngrok-free.app`
-  // baseURL: `https://18f3-103-134-130-212.ngrok-free.app`,
+  // baseURL: `https://1525-182-48-208-143.ngrok-free.app`,
   baseURL: `https://sukam-api.cargator.org/`,
   timeout: 30000,
 });
