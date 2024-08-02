@@ -125,7 +125,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
-
+  
   const animateCart = (toValue: number, callback: any = undefined) => {
     Animated.timing(animation, {
       toValue: toValue,
@@ -146,15 +146,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       duration: 500,
       useNativeDriver: true,
     }).start();
-  };
-
-  const handleLogout = async () => {
-    try {
-      await socketDisconnect();
-      dispatch(removeUserData());
-    } catch (err) {
-      console.log('err in handleLogOut', err);
-    }
   };
 
   const getProgressDetail = async () => {
@@ -325,69 +316,78 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   }, []);
 
-  const emitLiveLocation = () => {
-    try {
-      let prevLocation: any = null;
-      console.log('emitLiveLocation called');
-      const watchId: any = Geolocation.watchPosition(
-        (position: any) => {
-          const {latitude, longitude} = position.coords;
-          const newLocation = {latitude, longitude};
-          console.log('live location emitted', newLocation);
-            if (prevLocation) {
-              // Calculate distance between previous and new location
-              const distance = geolib.getDistance(prevLocation, newLocation);
-              // If distance is greater than 10 meters, update the location
-              if (distance >= 15) {
-                myLocation.current = newLocation;
-                driverLivelocationAPI({
-                  coordinates: [newLocation.latitude, newLocation.longitude],
-                });
-              } else {
-                // If previous location is not set, update the location and set as previous location
-                myLocation.current = newLocation;
-                setPath((prevPath: any) => [...prevPath, newLocation]);
-                // setInterval(()=>{
-                //   setPath(prevPath => [...prevPath, newLocation]);
-                // },7000)
-                // dispatch(setRidePath(path))
-                prevLocation = newLocation; // Set previous location
-              }
-            }
-        },
-        (error: any) => {
-          console.log(`emitLiveLocation error :>> `, error);
-          if (error.message == 'Location permission not granted.') {
-            Toast.show({
-              type: 'error',
-              text1: 'Please allow location permission.',
-            });
-            // setTimeout(() => {
-            //   requestLocationPermission(dispatch);
-            // }, 2000);
-          }
-          // if (error.code == 2) {
-          //   dispatch(setGpsPermission(false));
-          // }
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 20000,
-          maximumAge: 5000,
-          distanceFilter: 15,
-        },
-      );
+  // const emitLiveLocation = () => {
+  //   try {
+  //     let prevLocation: any = null;
+  //     console.log('emitLiveLocation called');
+  //     Toast.show({
+  //       type: 'success',
+  //       text1: 'emitLiveLocation called!',
+  //       visibilityTime: 5000,
+  //     });
+  //     const watchId: any = Geolocation.watchPosition(
+  //       (position: any) => {
+  //         const {latitude, longitude} = position.coords;
+  //         const newLocation = {latitude, longitude};
+  //         console.log('live location emitted', newLocation);
+  //         Toast.show({
+  //           type: 'success',
+  //           text1: 'live location emitted!',
+  //           visibilityTime: 5000,
+  //         });
+  //           if (prevLocation) {
+  //             // Calculate distance between previous and new location
+  //             const distance = geolib.getDistance(prevLocation, newLocation);
+  //             // If distance is greater than 10 meters, update the location
+  //             if (distance >= 15) {
+  //               myLocation.current = newLocation;
+  //               driverLivelocationAPI({
+  //                 coordinates: [newLocation.latitude, newLocation.longitude],
+  //               });
+  //             } else {
+  //               // If previous location is not set, update the location and set as previous location
+  //               myLocation.current = newLocation;
+  //               // setInterval(()=>{
+  //               //   setPath(prevPath => [...prevPath, newLocation]);
+  //               // },7000)
+  //               // dispatch(setRidePath(path))
+  //               prevLocation = newLocation; // Set previous location
+  //             }
+  //           }
+  //       },
+  //       (error: any) => {
+  //         console.log(`emitLiveLocation error :>> `, error);
+  //         if (error.message == 'Location permission not granted.') {
+  //           Toast.show({
+  //             type: 'error',
+  //             text1: 'Please allow location permission.',
+  //           });
+  //           // setTimeout(() => {
+  //           //   requestLocationPermission(dispatch);
+  //           // }, 2000);
+  //         }
+  //         // if (error.code == 2) {
+  //         //   dispatch(setGpsPermission(false));
+  //         // }
+  //       },
+  //       {
+  //         enableHighAccuracy: true,
+  //         timeout: 20000,
+  //         maximumAge: 5000,
+  //         distanceFilter: 15,
+  //       },
+  //     );
 
-      setLoading(false);
-      setGeolocationWatchId(watchId);
-      return () => {
-        Geolocation.clearWatch(watchId);
-      };
-    } catch (error: any) {
-      console.log(`emitLiveLocation error :>> `, error);
-      setLoading(false);
-    }
-  };
+  //     setLoading(false);
+  //     setGeolocationWatchId(watchId);
+  //     return () => {
+  //       Geolocation.clearWatch(watchId);
+  //     };
+  //   } catch (error: any) {
+  //     console.log(`emitLiveLocation error :>> `, error);
+  //     setLoading(false);
+  //   }
+  // };
 
   const onAcceptOrder = async (order: any) => {
     setLoading(true);
@@ -496,6 +496,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
         });
       } else {
         setButtonText(nextOrderStatus[response.data.order.status]);
+        if(response.data.order.status == 'DISPATCHED'){
+          setPath(response.data.order?.pickupToDrop)
+        }
         setLoading(false);
         dispatch(setCurrentOnGoingOrderDetails(response.data.order));
         Toast.show({
@@ -556,8 +559,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setOrderStarted(true);
       orderStartedRef.current = true;
       dispatch(setCurrentOnGoingOrderDetails(order));
-      setPath(order?.path?.coords);
-
+      if(order.status == 'ALLOTTED' || order.status == 'ARRIVED'){
+        setPath(order?.riderPathToPickUp);
+      }else{
+        setPath(order?.pickupToDrop);
+      }
       switch (order.status) {
         case OrderStatusEnum.ORDER_ALLOTTED:
           setButtonText(nextOrderStatus[OrderStatusEnum.ORDER_ALLOTTED]);
@@ -641,6 +647,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
     if (!driverStatusRef.current) {
       getDriverStatus();
+      getCurrentPosition();
     }
 
     dispatch(setCurrentOnGoingOrderDetails({}));
@@ -669,8 +676,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     });
 
-    getCurrentPosition();
-
     return () => {
       if (unsubscribe) {
         unsubscribe();
@@ -678,12 +683,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
     };
   }, [route.params?.refresh, isDriverOnline]);
 
-  useEffect(() => {
-    if(isDriverOnline){
-      Geolocation.clearWatch(geolocationWatchId);
-      emitLiveLocation();
-    }
-  }, [isDriverOnline, orderStartedRef.current]);
+  // useEffect(() => {
+  //   if(isDriverOnline){
+  //     Geolocation.clearWatch(geolocationWatchId);
+  //     emitLiveLocation();
+  //   }
+  // }, [isDriverOnline, orderStartedRef.current]);
 
   return (
     <>
@@ -1122,7 +1127,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               </Text>
                             </View>
                           </View>
-                          {/* <View style={styles.text}>
+                          {/* <View style={styles.text}> */}
 
                           <View style={{alignItems: 'center'}}>
                             <Text>
