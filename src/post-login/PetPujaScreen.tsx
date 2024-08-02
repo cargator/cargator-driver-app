@@ -1539,18 +1539,18 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           ].includes(currentOnGoingOrderDetails.status)
                             ? {
                                 latitude:
-                                  currentOnGoingOrderDetails.pickup_details
+                                  currentOnGoingOrderDetails.drop_details
                                     .latitude,
                                 longitude:
-                                  currentOnGoingOrderDetails.pickup_details
+                                  currentOnGoingOrderDetails.drop_details
                                     .longitude,
                               }
                             : {
                                 latitude:
-                                  currentOnGoingOrderDetails.drop_details
+                                  currentOnGoingOrderDetails.pickup_details
                                     .latitude,
                                 longitude:
-                                  currentOnGoingOrderDetails.drop_details
+                                  currentOnGoingOrderDetails.pickup_details
                                     .longitude,
                               },
                         )
