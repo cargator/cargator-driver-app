@@ -19,11 +19,12 @@ const LocationPermissionScreen = ({navigation}: any) => {
       <View style={styles.imageContainer}>
         <LocationPermission />
 
+
         <Text style={styles.headingText}>Location permission required</Text>
 
         <Text style={styles.subHeadingText}>
-          Allow CarGator to automatically detect your current location to show
-          you available rides
+          Allow Sukam to automatically detect your current location to show
+          you available orders
         </Text>
       </View>
 

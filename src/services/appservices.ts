@@ -1,13 +1,13 @@
 import axios from 'axios';
-import store from '../redux/redux';
+import store, { removeUserData } from '../redux/redux';
 
 const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
-  // baseURL: `http://192.168.1.38:3001`,
+  baseURL: `http://192.168.1.101:3001`,
   // baseURL: `https://green-beans-rhyme.loca.lt`,
   // baseURL: `https://818f-182-48-211-210.ngrok-free.app`
   // baseURL: `https://1525-182-48-208-143.ngrok-free.app`,
-  baseURL: `https://sukam-api.cargator.org/`,
+  // baseURL: `https://sukam-api.cargator.org/`,
   timeout: 30000,
 });
 
@@ -38,6 +38,10 @@ customAxios.interceptors.response.use(
   function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
+    // If user mobile number will mismatch logout
+    if(error.response?.status == 405){
+      store.dispatch(removeUserData());
+    }
     // console.log(`Interceptors Response Error :>> `, error);
     return Promise.reject(error);
   },

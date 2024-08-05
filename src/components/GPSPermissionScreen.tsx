@@ -26,7 +26,7 @@ const GPSPermissionScreen = ({navigation}: any) => {
         <Text style={styles.headingText}>GPS Turned Off</Text>
 
         <Text style={styles.subHeadingText}>
-          Allow CarGator to turn on your phone GPS for accurate pickup
+          Allow Sukam to turn on your phone GPS for accurate pickup
         </Text>
       </View>
 
