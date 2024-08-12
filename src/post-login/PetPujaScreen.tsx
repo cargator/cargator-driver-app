@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
   Image,
   ImageBackground,
   Linking,
@@ -36,6 +37,7 @@ import {
   setGpsPermission,
   setLocationPermission,
   setRejectedOrders,
+  setRiderPath,
 } from '../redux/redux';
 import customAxios from '../services/appservices';
 import {
@@ -101,6 +103,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const loginToken = useSelector((store: any) => store.loginToken);
   const userId = useSelector((store: any) => store.userId);
   const userData = useSelector((store: any) => store.userData);
+  const riderPath = useSelector((store: any) => store.riderPath);
   const rejectedOrders = useSelector((store: any) => store.rejectedOrders);
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
@@ -116,6 +119,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const rejectedOrderRef = useRef<any>([]);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
+  const [realPath, setRealPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
@@ -125,7 +129,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
-  
+
+  const screen = Dimensions.get('window');
+  const ASPECTS_RATIO = screen.width / screen.height;
+  const LATITUDE_DELTA = 0.009;
+  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECTS_RATIO;
+
   const animateCart = (toValue: number, callback: any = undefined) => {
     Animated.timing(animation, {
       toValue: toValue,
@@ -208,76 +217,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
     });
   };
 
-  // const FetchUserLocation = async () => {
-  //   try {
-  //     // Sometimes getCurrentPosition from App.tsx requires time....meanwhile user logs in and we dont get location
-  //     // Also watchPosition sometimes fails to retrieve location ...So added getCurrentPosition again below
-  //     Geolocation.getCurrentPosition(
-  //       position => {
-  //         const {coords} = position;
-  //         const message = {
-  //           latitude: coords.latitude,
-  //           longitude: coords.longitude,
-  //         };
-  //         driverLivelocationAPI({
-  //           coordinates: [message.latitude, message.longitude],
-  //         });
-  //         myLocation.current = message;
-  //       },
-  //       error => {
-  //         console.log('error in getCurrentPosition', error);
-  //       },
-  //       {enableHighAccuracy: true, timeout: 30000, maximumAge: 10000},
-  //     );
-  //     let prevLocation: any = null;
-  //     Geolocation.watchPosition(
-  //       position => {
-  //         const {coords} = position;
-  //         const message = {
-  //           latitude: coords.latitude,
-  //           longitude: coords.longitude,
-  //         };
-  //         console.log("geolocation watch position");
-
-  //         myLocation.current = message;
-  //         if (prevLocation) {
-  //           const distance = geolib.getDistance(prevLocation, message);
-  //           if (distance >= 15) {
-  //             prevLocation = message;
-  //             driverLivelocationAPI({
-  //               coordinates: [message.latitude, message.longitude],
-  //             });
-  //           }
-  //         }
-  //       },
-  //       error => {
-  //         console.log(`FetchUserLocation error :>> `, error);
-  //         if (error.message == 'Location permission not granted.') {
-  //           Toast.show({
-  //             type: 'error',
-  //             text1: 'Please allow location permission.',
-  //           });
-  //           // setTimeout(() => {
-  //           //   requestLocationPermission();
-  //           // }, 2000);
-  //           dispatch(setLocationPermission(false));
-  //         }
-  //         if (error.code == 2) {
-  //           dispatch(setGpsPermission(false));
-  //         }
-  //       },
-  //       {
-  //         enableHighAccuracy: true,
-  //         timeout: 15000,
-  //         maximumAge: 1000,
-  //         distanceFilter: 10,
-  //       },
-  //     );
-  //   } catch (error) {
-  //     console.log(`FetchUserLocation error :>> `, error);
-  //   }
-  // };
-
   const getCurrentPosition = useCallback(async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -316,78 +255,67 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   }, []);
 
-  // const emitLiveLocation = () => {
-  //   try {
-  //     let prevLocation: any = null;
-  //     console.log('emitLiveLocation called');
-  //     Toast.show({
-  //       type: 'success',
-  //       text1: 'emitLiveLocation called!',
-  //       visibilityTime: 5000,
-  //     });
-  //     const watchId: any = Geolocation.watchPosition(
-  //       (position: any) => {
-  //         const {latitude, longitude} = position.coords;
-  //         const newLocation = {latitude, longitude};
-  //         console.log('live location emitted', newLocation);
-  //         Toast.show({
-  //           type: 'success',
-  //           text1: 'live location emitted!',
-  //           visibilityTime: 5000,
-  //         });
-  //           if (prevLocation) {
-  //             // Calculate distance between previous and new location
-  //             const distance = geolib.getDistance(prevLocation, newLocation);
-  //             // If distance is greater than 10 meters, update the location
-  //             if (distance >= 15) {
-  //               myLocation.current = newLocation;
-  //               driverLivelocationAPI({
-  //                 coordinates: [newLocation.latitude, newLocation.longitude],
-  //               });
-  //             } else {
-  //               // If previous location is not set, update the location and set as previous location
-  //               myLocation.current = newLocation;
-  //               // setInterval(()=>{
-  //               //   setPath(prevPath => [...prevPath, newLocation]);
-  //               // },7000)
-  //               // dispatch(setRidePath(path))
-  //               prevLocation = newLocation; // Set previous location
-  //             }
-  //           }
-  //       },
-  //       (error: any) => {
-  //         console.log(`emitLiveLocation error :>> `, error);
-  //         if (error.message == 'Location permission not granted.') {
-  //           Toast.show({
-  //             type: 'error',
-  //             text1: 'Please allow location permission.',
-  //           });
-  //           // setTimeout(() => {
-  //           //   requestLocationPermission(dispatch);
-  //           // }, 2000);
-  //         }
-  //         // if (error.code == 2) {
-  //         //   dispatch(setGpsPermission(false));
-  //         // }
-  //       },
-  //       {
-  //         enableHighAccuracy: true,
-  //         timeout: 20000,
-  //         maximumAge: 5000,
-  //         distanceFilter: 15,
-  //       },
-  //     );
+  const emitLiveLocation = () => {
+    try {
+      let prevLocation: any = null;
+      const watchId: any = Geolocation.watchPosition(
+        (position: any) => {
+          const {latitude, longitude} = position.coords;
+          const newLocation = {latitude, longitude};
+          console.log('live location emitted', newLocation);
+          if (prevLocation) {
+            // Calculate distance between previous and new location
+            const distance = geolib.getDistance(prevLocation, newLocation);
+            if (distance >= 15) {
+              console.log('Updating location and sending to API');
+              myLocation.current = newLocation;
+              driverLivelocationAPI({
+                coordinates: [newLocation.latitude, newLocation.longitude],
+              });
+              setRealPath((prevPath: any) => [...prevPath, newLocation]);
+              prevLocation = newLocation;
+              dispatch(setRiderPath(realPath));
+            } else {
+              // console.log("Location change is less than 15 meters");
+              prevLocation = newLocation;
+              setRealPath((prevPath: any) => [...prevPath, newLocation]);
+              dispatch(setRiderPath(realPath));
+            }
+          } else {
+            // console.log("Setting initial location");
+            myLocation.current = newLocation;
+            prevLocation = newLocation;
+            setRealPath((prevPath: any) => [...prevPath, newLocation]);
+            dispatch(setRiderPath(realPath));
+          }
+        },
+        (error: any) => {
+          console.log(`emitLiveLocation error :>> `, error);
+          if (error.message == 'Location permission not granted.') {
+            Toast.show({
+              type: 'error',
+              text1: 'Please allow location permission.',
+            });
+          }
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 20000,
+          maximumAge: 5000,
+          distanceFilter: 15,
+        },
+      );
 
-  //     setLoading(false);
-  //     setGeolocationWatchId(watchId);
-  //     return () => {
-  //       Geolocation.clearWatch(watchId);
-  //     };
-  //   } catch (error: any) {
-  //     console.log(`emitLiveLocation error :>> `, error);
-  //     setLoading(false);
-  //   }
-  // };
+      setLoading(false);
+      setGeolocationWatchId(watchId);
+      return () => {
+        Geolocation.clearWatch(watchId);
+      };
+    } catch (error: any) {
+      console.log(`emitLiveLocation error :>> `, error);
+      setLoading(false);
+    }
+  };
 
   const onAcceptOrder = async (order: any) => {
     setLoading(true);
@@ -471,6 +399,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         setOrderStarted(false);
         orderStartedRef.current = false;
         setButtonText('ACCEPT ORDER');
+        dispatch(setRiderPath([]));
         setLoading(false);
         removeRejectedOrders();
         if (response.data.order.status === 'CANCELLED') {
@@ -489,6 +418,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         setLoading(false);
         setcod(false);
         getProgressDetail();
+        dispatch(setRiderPath([]));
         Toast.show({
           type: 'success',
           text1: `ORDER DELIVERED SUCCESSFULLY!`,
@@ -496,8 +426,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
         });
       } else {
         setButtonText(nextOrderStatus[response.data.order.status]);
-        if(response.data.order.status == 'DISPATCHED'){
-          setPath(response.data.order?.pickupToDrop)
+        if (response.data.order.status == 'DISPATCHED') {
+          setPath(response.data.order?.pickupToDrop);
         }
         setLoading(false);
         dispatch(setCurrentOnGoingOrderDetails(response.data.order));
@@ -559,9 +489,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setOrderStarted(true);
       orderStartedRef.current = true;
       dispatch(setCurrentOnGoingOrderDetails(order));
-      if(order.status == 'ALLOTTED' || order.status == 'ARRIVED'){
+      setRealPath(riderPath);
+      if (order.status == 'ALLOTTED' || order.status == 'ARRIVED') {
         setPath(order?.riderPathToPickUp);
-      }else{
+      } else {
         setPath(order?.pickupToDrop);
       }
       switch (order.status) {
@@ -683,12 +614,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
     };
   }, [route.params?.refresh, isDriverOnline]);
 
-  // useEffect(() => {
-  //   if(isDriverOnline){
-  //     Geolocation.clearWatch(geolocationWatchId);
-  //     emitLiveLocation();
-  //   }
-  // }, [isDriverOnline, orderStartedRef.current]);
+  useEffect(() => {
+    if (isDriverOnline) {
+      Geolocation.clearWatch(geolocationWatchId);
+      emitLiveLocation();
+    }
+  }, [isDriverOnline, orderStartedRef.current]);
 
   return (
     <>
@@ -1468,19 +1399,21 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       provider={PROVIDER_GOOGLE}
                       style={styles.map}
                       ref={mapRef}
-                      // initialRegion={{
-                      //   latitude: 19.165061,
-                      //   longitude: 72.965545,
-                      //   latitudeDelta: 0.0122,
-                      //   longitudeDelta: 0.0121,
-                      // }}
                       region={{
-                        latitude: myLocation.current.latitude,
-                        longitude: myLocation.current.longitude,
-                        latitudeDelta: 0.0122,
-                        longitudeDelta: 0.0121,
+                        ...myLocation.current,
+                        latitudeDelta: LATITUDE_DELTA,
+                        longitudeDelta: LONGITUDE_DELTA,
                       }}
                       mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
+                      <Marker
+                        identifier="dropLocationMarker"
+                        coordinate={path[0]}
+                        icon={require('../svg/images/driverLiveLocation.png')}
+                        imageStyle={{width: wp(100), height: hp(100)}}
+                        anchor={{x: 0.5, y: 0.5}}
+                        zIndex={1}
+                      />
+
                       <Marker
                         identifier="myLocationMarker"
                         coordinate={myLocation.current}
@@ -1525,6 +1458,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Polyline
                         coordinates={path || []}
                         strokeColor={'#404080'}
+                        strokeWidth={4}
+                      />
+
+                      <Polyline
+                        coordinates={realPath || []}
+                        strokeColor={'#3cb371'}
                         strokeWidth={4}
                       />
                     </MapView>

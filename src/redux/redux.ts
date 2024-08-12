@@ -23,6 +23,7 @@ const authSlice = createSlice({
     },
     currentOnGoingOrderDetails: {},
     rejectedOrders: [],
+    riderPath:[],
   },
   reducers: {
     setUserData: (state, action) => {
@@ -75,6 +76,9 @@ const authSlice = createSlice({
     removeRejectedOrders: state => {
       state.currentOnGoingOrderDetails = [];
     },
+    setRiderPath: (state, action) => {
+      state.riderPath = action.payload;
+    },
   },
 });
 
@@ -95,6 +99,7 @@ export const {
   resetAllOrders,
   setRejectedOrders,
   removeRejectedOrders,
+  setRiderPath,
 } = authSlice.actions;
 
 const store = configureStore({

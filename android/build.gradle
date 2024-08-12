@@ -8,6 +8,8 @@ buildscript {
          targetSdkVersion = 34
          ndkVersion = "23.1.7779620"
      }
+
+
     repositories {
         google()
         mavenCentral()
