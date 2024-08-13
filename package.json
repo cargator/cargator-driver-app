@@ -22,6 +22,7 @@
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "@reduxjs/toolkit": "^1.9.5",
+    "@supersami/rn-foreground-service": "^2.1.1",
     "@twotalltotems/react-native-otp-input": "^1.3.11",
     "axios": "^1.4.0",
     "formik": "^2.4.2",
