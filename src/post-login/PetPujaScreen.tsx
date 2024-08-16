@@ -608,48 +608,60 @@ const PetPujaScreen = ({navigation, route}: any) => {
       console.warn(err);
     }
   };
-  const updateforeground = () => {
-    ReactNativeForegroundService.add_task(() => startTracking(), {
-      delay: 100,
+
+  const startForeground = () => {
+    ReactNativeForegroundService.add_task(async () => await startTracking(), {
+      delay: 60*1000,
       onLoop: true,
       taskId: 'taskid',
       onError: e => console.log(`Error logging:`, e),
     });
-  };
-  const Notification = () => {
+
     ReactNativeForegroundService.start({
-      id: 1244,
+      id: 1,
       title: 'Location Tracking',
-      message: 'Location Tracking',
-      icon: 'ic_launcher',
-      button: false,
-      button2: false,
-      // buttonText: "Button",
-      // button2Text: "Anther Button",
-      // buttonOnPress: "cray",
-      setOnlyAlertOnce: "true",
-      color: '#000000',
+      message: 'Tracking your current location',
+      vibration:true
+      // icon: 'ic_launcher',
+      // button: true,
+      // button2: false,
+      // // buttonText: "Button",
+      // // button2Text: "Anther Button",
+      // // buttonOnPress: "cray",
+      // setOnlyAlertOnce: "false",
+      // color: '#000000',
     });
-    startTracking();
+  };
+
+  const stopForeground = async() => {
+    // Make always sure to remove the task before stoping the service. and instead of re-adding the task you can always update the task.
+    if (ReactNativeForegroundService.is_task_running('taskid')) {
+      ReactNativeForegroundService.remove_task('taskid');
+    }
+    // Stoping Foreground service.
+    return await ReactNativeForegroundService.stop();
   };
 
   const startTracking = async () => {
     //  let s= Geolocation.requestAuthorization('always');
+    // console.log(ReactNativeForegroundService.get_all_tasks())
+    console.log("fetching location")
+    // await Geolocation.getCurrentPosition(
+    //   (position: any) => {
+    //     console.log("current position")
+    //     let coordinates: any = [];
+    //     coordinates[0] = position.coords.longitude;
+    //     coordinates[1] = position.coords.latitude;
+    //     console.warn(Platform.OS, 'App Position tracking', coordinates);
+    //     // console.log('App Position tracking', coordinates);
+    //   },
+    //   (error: any) => {
+    //     console.log('maperror in getting location', error.code, error.message);
+    //   },
 
-    Geolocation.watchPosition(
-      (position: any) => {
-        let coordinates: any = [];
-        coordinates[0] = position.coords.longitude;
-        coordinates[1] = position.coords.latitude;
-        console.warn(Platform.OS, 'App Position tracking', coordinates);
-        console.log('App Position tracking', coordinates);
-      },
-      (error: any) => {
-        console.log('maperror in getting location', error.code, error.message);
-      },
-
-      {enableHighAccuracy: false, distanceFilter: 0},
-    );
+    //   {enableHighAccuracy: true, maximumAge: 0,  distanceFilter: 0},
+    // );
+    await getCurrentPosition()
   };
 
   useEffect(() => {
@@ -700,13 +712,15 @@ const PetPujaScreen = ({navigation, route}: any) => {
       Geolocation.clearWatch(geolocationWatchId);
       emitLiveLocation();
     }
+    else {
+      // stopForeground()
+    }
   }, [isDriverOnline, orderStartedRef.current]);
 
   useEffect(() => {
     requestLocationPermission();
-    updateforeground();
-    Notification();
-    startTracking();
+    startForeground();
+    // startTracking();
   }, []);
 
   return (
@@ -1195,7 +1209,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               sliderWidth={50}
                               icon={
                                 <Image
-                                  source={require('../svg/Arrow.png')}
+                                  source={require('../svg/arrow.png')}
                                   style={styles.thumbImage}
                                 />
                               } // Adjust width and height as needed
@@ -1222,7 +1236,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               sliderWidth={50}
                               icon={
                                 <Image
-                                  source={require('../svg/Arrow.png')}
+                                  source={require('../svg/arrow.png')}
                                   style={styles.thumbImage}
                                 />
                               } // Adjust width and height as needed
@@ -1497,7 +1511,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         identifier="dropLocationMarker"
                         coordinate={path[0]}
                         icon={require('../svg/images/driverLiveLocation.png')}
-                        imageStyle={{width: wp(100), height: hp(100)}}
+                        // imageStyle={{width: wp(100), height: hp(100)}}
                         anchor={{x: 0.5, y: 0.5}}
                         zIndex={1}
                       />
@@ -1605,7 +1619,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           sliderWidth={50}
                           icon={
                             <Image
-                              source={require('../svg/Arrow.png')}
+                              source={require('../svg/arrow.png')}
                               style={styles.thumbImage}
                             />
                           } // Adjust width and height as needed
