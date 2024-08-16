@@ -51,6 +51,10 @@ export const driverLivelocationAPI = (liveLocation: any) => {
   return customAxios.post(`/update-live-location`, liveLocation);
 };
 
+export const driverUpdateTimelineAPI = (timeline: any) => {
+  return customAxios.post(`/update-timeline`, timeline);
+};
+
 export const getAllOrdersAPI = () => {
   return customAxios.get('/get-pending-orders');
 };

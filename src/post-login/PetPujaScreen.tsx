@@ -47,6 +47,7 @@ import {
 } from '../services/rideservices';
 import {
   driverLivelocationAPI,
+  driverUpdateTimelineAPI,
   getAllOrdersAPI,
   getDriverStatusAPI,
   getMyPendingOrdersFromAPI,
@@ -611,7 +612,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const startForeground = () => {
     ReactNativeForegroundService.add_task(async () => await startTracking(), {
-      delay: 60*1000,
+      delay: 60 * 1000,
       onLoop: true,
       taskId: 'taskid',
       onError: e => console.log(`Error logging:`, e),
@@ -621,7 +622,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       id: 1,
       title: 'Location Tracking',
       message: 'Tracking your current location',
-      vibration:true
+      vibration: true,
       // icon: 'ic_launcher',
       // button: true,
       // button2: false,
@@ -633,35 +634,73 @@ const PetPujaScreen = ({navigation, route}: any) => {
     });
   };
 
-  const stopForeground = async() => {
+  const stopForeground = async () => {
     // Make always sure to remove the task before stoping the service. and instead of re-adding the task you can always update the task.
-    if (ReactNativeForegroundService.is_task_running('taskid')) {
-      ReactNativeForegroundService.remove_task('taskid');
+    if (ReactNativeForegroundService.is_running()) {
+      return await ReactNativeForegroundService.stop();
     }
     // Stoping Foreground service.
-    return await ReactNativeForegroundService.stop();
+    return await ReactNativeForegroundService.stopAll();
+  };
+
+  const getPosition = async () => {
+    let newLocation = myLocation.current;
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Permission',
+          message: 'This app needs access to your location',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        Geolocation.getCurrentPosition(
+          (position: any) => {
+            newLocation = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            };
+            console.log('getCurrentPosition called', newLocation);
+          },
+          (error: any) => console.log('location err', error),
+          {
+            enableHighAccuracy: false,
+            timeout: 10000,
+          },
+        );
+      } else {
+        console.log('Location permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+    return newLocation;
   };
 
   const startTracking = async () => {
-    //  let s= Geolocation.requestAuthorization('always');
-    // console.log(ReactNativeForegroundService.get_all_tasks())
-    console.log("fetching location")
-    // await Geolocation.getCurrentPosition(
-    //   (position: any) => {
-    //     console.log("current position")
-    //     let coordinates: any = [];
-    //     coordinates[0] = position.coords.longitude;
-    //     coordinates[1] = position.coords.latitude;
-    //     console.warn(Platform.OS, 'App Position tracking', coordinates);
-    //     // console.log('App Position tracking', coordinates);
-    //   },
-    //   (error: any) => {
-    //     console.log('maperror in getting location', error.code, error.message);
-    //   },
-
-    //   {enableHighAccuracy: true, maximumAge: 0,  distanceFilter: 0},
-    // );
-    await getCurrentPosition()
+    try {
+      console.log(
+        'fetching location with orderId===> ',
+        currentOnGoingOrderDetails._id,
+      );
+      const newLocation = await getPosition();
+      const distance = geolib.getDistance(myLocation.current, newLocation);
+      if (distance < 15) {
+        console.log('Not much change in location');
+        return;
+      }
+      myLocation.current = newLocation;
+      const payload = {
+        orderId: currentOnGoingOrderDetails._id,
+        pathCoords: {coords: newLocation, time: Date.now()},
+      };
+      console.log('updating timeline');
+      const res = await driverUpdateTimelineAPI(payload);
+    } catch (error) {
+      console.warn('error on tracking', error);
+    }
   };
 
   useEffect(() => {
@@ -674,7 +713,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       getCurrentPosition();
     }
 
-    dispatch(setCurrentOnGoingOrderDetails({}));
+    //dispatch(setCurrentOnGoingOrderDetails({}));
     getProgressDetail();
     if (isDriverOnline) {
       rejectedOrderRef.current = rejectedOrders;
@@ -711,15 +750,21 @@ const PetPujaScreen = ({navigation, route}: any) => {
     if (isDriverOnline) {
       Geolocation.clearWatch(geolocationWatchId);
       emitLiveLocation();
-    }
-    else {
+    } else {
       // stopForeground()
     }
   }, [isDriverOnline, orderStartedRef.current]);
 
   useEffect(() => {
+    if (orderStarted) {
+      startForeground();
+    } else {
+      stopForeground();
+    }
+  }, [orderStarted]);
+
+  useEffect(() => {
     requestLocationPermission();
-    startForeground();
     // startTracking();
   }, []);
 
