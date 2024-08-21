@@ -260,6 +260,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const emitLiveLocation = () => {
     try {
+      Geolocation.clearWatch(geolocationWatchId);
       let prevLocation: any = null;
       const watchId: any = Geolocation.watchPosition(
         (position: any) => {
@@ -662,7 +663,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
             };
-            console.log('getCurrentPosition called', newLocation);
+            console.log('getBackgroundCurrentPosition called', newLocation);
           },
           (error: any) => console.log('location err', error),
           {
@@ -747,8 +748,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   }, [route.params?.refresh, isDriverOnline]);
 
   useEffect(() => {
-    if (isDriverOnline) {
-      Geolocation.clearWatch(geolocationWatchId);
+    if (isDriverOnline && !currentOnGoingOrderDetails._id) {
       emitLiveLocation();
     } else {
       // stopForeground()
