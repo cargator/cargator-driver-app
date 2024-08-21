@@ -66,6 +66,7 @@ public class MainApplication extends Application implements ReactApplication {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
           NotificationChannel channel = new NotificationChannel(
                   "taskid",
+                   "Sukum Location Tracking",
                    NotificationManager.IMPORTANCE_HIGH
           );
           NotificationManager manager = getSystemService(NotificationManager.class);
