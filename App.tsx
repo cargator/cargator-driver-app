@@ -138,8 +138,11 @@ export const Routing = () => {
     messaging()
       .getInitialNotification()
       .then((remoteMessage: any) => {
+        console.log(
+          'navigationRef.current?.getCurrentRoute()  ',
+          navigationRef.current?.getCurrentRoute(),
+        );
         if (navigationRef.current?.getCurrentRoute().name === 'Home') {
-          
           // Force update or refresh home screen state
           navigationRef.current?.navigate('Home', {
             refresh: !navigationRefFlag.current,

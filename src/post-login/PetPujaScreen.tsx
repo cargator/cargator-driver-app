@@ -612,7 +612,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const startForeground = () => {
     ReactNativeForegroundService.add_task(async () => await startTracking(), {
-      delay: 60 * 1000,
+      delay: 30 * 1000,
       onLoop: true,
       taskId: 'taskid',
       onError: e => console.log(`Error logging:`, e),
@@ -756,14 +756,17 @@ const PetPujaScreen = ({navigation, route}: any) => {
   }, [isDriverOnline, orderStartedRef.current]);
 
   useEffect(() => {
-    if (orderStarted) {
+    if (orderStarted && currentOnGoingOrderDetails._id) {
       startForeground();
+      Geolocation.clearWatch(geolocationWatchId);
     } else {
       stopForeground();
+      emitLiveLocation();
     }
-  }, [orderStarted]);
+  }, [orderStarted, currentOnGoingOrderDetails]);
 
   useEffect(() => {
+    console.log('currentOnGoingOrderDetails ===>', currentOnGoingOrderDetails);
     requestLocationPermission();
     // startTracking();
   }, []);
