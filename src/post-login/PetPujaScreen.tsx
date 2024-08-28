@@ -122,7 +122,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const rejectedOrderRef = useRef<any>([]);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
   const [path, setPath] = useState<any>([]);
-  const [realPath, setRealPath] = useState<any>([]);
+  const realPath = useRef<any>([]);
   const [cod, setcod] = useState(true);
   const [sliderButtonLoader, setSliderButtonLoader] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(true);
@@ -276,21 +276,21 @@ const PetPujaScreen = ({navigation, route}: any) => {
               driverLivelocationAPI({
                 coordinates: [newLocation.latitude, newLocation.longitude],
               });
-              setRealPath((prevPath: any) => [...prevPath, newLocation]);
+              // setRealPath((prevPath: any) => [...prevPath, newLocation]);
               prevLocation = newLocation;
-              dispatch(setRiderPath(realPath));
+              // dispatch(setRiderPath(realPath));
             } else {
               // console.log("Location change is less than 15 meters");
               prevLocation = newLocation;
-              setRealPath((prevPath: any) => [...prevPath, newLocation]);
-              dispatch(setRiderPath(realPath));
+              // setRealPath((prevPath: any) => [...prevPath, newLocation]);
+              // dispatch(setRiderPath(realPath));
             }
           } else {
             // console.log("Setting initial location");
             myLocation.current = newLocation;
             prevLocation = newLocation;
-            setRealPath((prevPath: any) => [...prevPath, newLocation]);
-            dispatch(setRiderPath(realPath));
+            // setRealPath((prevPath: any) => [...prevPath, newLocation]);
+            // dispatch(setRiderPath(realPath));
           }
         },
         (error: any) => {
@@ -404,6 +404,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         orderStartedRef.current = false;
         setButtonText('ACCEPT ORDER');
         dispatch(setRiderPath([]));
+        realPath.current = [];
         setLoading(false);
         removeRejectedOrders();
         if (response.data.order.status === 'CANCELLED') {
@@ -423,6 +424,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         setcod(false);
         getProgressDetail();
         dispatch(setRiderPath([]));
+        realPath.current = []
         Toast.show({
           type: 'success',
           text1: `ORDER DELIVERED SUCCESSFULLY!`,
@@ -493,7 +495,13 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setOrderStarted(true);
       orderStartedRef.current = true;
       dispatch(setCurrentOnGoingOrderDetails(order));
-      setRealPath(riderPath);
+      realPath.current = order.realPath;
+      console.log("real path >>>", realPath);
+      Toast.show({
+        type: 'success',
+        text1: `${order.realPath[0]}`,
+        visibilityTime: 5000,
+      });
       if (order.status == 'ALLOTTED' || order.status == 'ARRIVED') {
         setPath(order?.riderPathToPickUp);
       } else {
@@ -611,6 +619,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   };
 
+  
   const startForeground = () => {
     ReactNativeForegroundService.add_task(async () => await startTracking(), {
       delay: 30 * 1000,
@@ -645,7 +654,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
   };
 
   const getPosition = async () => {
-    let newLocation = myLocation.current;
     try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -654,30 +662,43 @@ const PetPujaScreen = ({navigation, route}: any) => {
           message: 'This app needs access to your location',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
-        },
+        }
       );
+  
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        Geolocation.getCurrentPosition(
-          (position: any) => {
-            newLocation = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            };
-            console.log('getBackgroundCurrentPosition called', newLocation);
-          },
-          (error: any) => console.log('location err', error),
-          {
-            enableHighAccuracy: false,
-            timeout: 10000,
-          },
-        );
+        return new Promise((resolve, reject) => {
+          Geolocation.getCurrentPosition(
+            (position: any) => {
+              if (position && position.coords) {
+                const newLocation = {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                };
+                console.log('getBackgroundCurrentPosition called', newLocation);
+                resolve(newLocation);
+              } else {
+                console.error('Position or position.coords is undefined');
+                reject(new Error('Position or position.coords is undefined'));
+              }
+            },
+            (error: any) => {
+              console.error('Geolocation error callback', error);
+              reject(error);
+            },
+            {
+              enableHighAccuracy: false,
+              timeout: 10000,
+            }
+          );
+        });
       } else {
         console.log('Location permission denied');
+        return null;
       }
     } catch (err) {
-      console.warn(err);
+      console.warn('Error in getPosition:', err);
+      return null;
     }
-    return newLocation;
   };
 
   const startTracking = async () => {
@@ -686,18 +707,21 @@ const PetPujaScreen = ({navigation, route}: any) => {
         'fetching location with orderId===> ',
         currentOnGoingOrderDetails._id,
       );
-      const newLocation = await getPosition();
-      const distance = geolib.getDistance(myLocation.current, newLocation);
-      if (distance < 15) {
-        console.log('Not much change in location');
-        return;
-      }
+      const newLocation = await getPosition();  
+      console.log('updating timeline', newLocation);
+      // const distance = geolib.getDistance(myLocation.current, newLocation);
+      // if (distance < 15) {
+      //   console.log('Not much change in location');
+      //   return;
+      // }
+      realPath.current = [...realPath.current, newLocation];
+      // console.log("object>>>>>>>>",realPath);
       myLocation.current = newLocation;
       const payload = {
         orderId: currentOnGoingOrderDetails._id,
         pathCoords: {coords: newLocation, time: Date.now()},
       };
-      console.log('updating timeline');
+      // dispatch(setRiderPath(realPath));
       const res = await driverUpdateTimelineAPI(payload);
     } catch (error) {
       console.warn('error on tracking', error);
@@ -766,7 +790,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   }, [orderStarted, currentOnGoingOrderDetails]);
 
   useEffect(() => {
-    console.log('currentOnGoingOrderDetails ===>', currentOnGoingOrderDetails);
+    // console.log('currentOnGoingOrderDetails ===>', currentOnGoingOrderDetails);
     requestLocationPermission();
     // startTracking();
   }, []);
@@ -1612,7 +1636,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       />
 
                       <Polyline
-                        coordinates={realPath || []}
+                        coordinates={realPath.current || []}
                         strokeColor={'#3cb371'}
                         strokeWidth={4}
                       />

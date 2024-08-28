@@ -3,11 +3,11 @@ import store, {removeUserData} from '../redux/redux';
 
 const customAxios = axios.create({
   // baseURL: `https://cab-e-socket-service-dev-fa3ocuxbpq-el.a.run.app`,
-  // baseURL: `http://192.168.0.132:5000`,
+  // baseURL: `http://192.168.1.1:5000`,
   // baseURL: `https://green-beans-rhyme.loca.lt`,
   // baseURL: `https://a8aa-2401-4900-51cc-7a9d-ef16-58ea-c989-2d`,
-  // baseURL: `https://1525-182-48-208-143.ngrok-free.app`,
-  baseURL: `https://sukam-api.cargator.org/`,
+  baseURL: `https://f871-182-48-210-192.ngrok-free.app`,
+  // baseURL: `https://sukam-api.cargator.org/`,
   timeout: 30000,
 });
 

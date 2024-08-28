@@ -32,7 +32,7 @@ const LocationPermissionScreen = ({navigation}: any) => {
         // activeOpacity={0.9}
         onPress={() => {
           requestLocationPermission(dispatch);
-          // navigation.navigate('SplashScreen');
+          // navigation.navigate('LoginScreen');
         }}
         style={styles.button}>
         <Text style={styles.buttonText}>Allow</Text>
