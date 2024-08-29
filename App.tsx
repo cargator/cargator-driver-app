@@ -46,9 +46,10 @@ import PetPujaScreen from './src/post-login/PetPujaScreen';
 import Profile from './src/post-login/Profile';
 import LoginOtpScreen from './src/pre-login/LoginOtpScreen';
 import LoginScreen from './src/pre-login/LoginScreen';
-import store, {persistor, removeUserData} from './src/redux/redux';
+import store, {persistor, removeUserData, setGpsPermission} from './src/redux/redux';
 import {requestUserPermission} from './src/utils/firebase-config';
 import {socketDisconnect} from './src/utils/socket';
+import { isLocationEnabled } from 'react-native-android-location-enabler';
 
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
@@ -115,8 +116,14 @@ export const Routing = () => {
   const navigationRef = useRef<any>(null);
   const navigationRefFlag = useRef<any>(true);
 
+  const checkISLocationEnalbled = async() => {
+    const result = await isLocationEnabled()
+    dispatch(setGpsPermission(result))
+  }
+
   useEffect(() => {
     SplashScreen.hide();
+    Platform.OS == 'android' && checkISLocationEnalbled()
     requestLocationPermission(dispatch);
     checkLocationPermission(dispatch);
     messaging().setBackgroundMessageHandler(

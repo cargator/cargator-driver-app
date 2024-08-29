@@ -1,5 +1,5 @@
-import {Linking, PermissionsAndroid, Platform} from 'react-native';
-import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
+import RNAndroidLocationEnabler, { isLocationEnabled, promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
 import Geolocation from 'react-native-geolocation-service';
 import {
   check,
@@ -19,43 +19,82 @@ import {getPreSignedUrl} from '../services/userservices';
 
 export const requestGpsPermission = async (dispatch: any) => {
   try {
+
+    if (Platform.OS === 'android') {
+      try {
+        const enableResult = await promptForEnableLocationIfNeeded();
+        console.log('enableResult', enableResult);
+        if(enableResult == 'enabled'){
+          dispatch(setGpsPermission(true))
+        }
+        else{
+          Alert.alert(
+            "Title", 
+            "Please turn on your GPS location",
+            [
+              {
+                text: "OK",
+                onPress: () => console.log("OK Pressed")
+              }
+            ],
+            { cancelable: false }
+          );
+        }
+        // The user has accepted to enable the location services
+        // data can be :
+        //  - "already-enabled" if the location services has been already enabled
+        //  - "enabled" if user has clicked on OK button in the popup
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error(error.message);
+          // The user has not accepted to enable the location services or something went wrong during the process
+          // "err" : { "code" : "ERR00|ERR01|ERR02|ERR03", "message" : "message"}
+          // codes :
+          //  - ERR00 : The user has clicked on Cancel button in the popup
+          //  - ERR01 : If the Settings change are unavailable
+          //  - ERR02 : If the popup has failed to open
+          //  - ERR03 : Internal error
+        }
+      }
+    }
     // console.log(`requestGpsPermission called !`);
 
-    Platform.OS == 'android' &&
-      RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-        interval: 10000,
-        fastInterval: 5000,
-      })
-        .then(data => {
-          // The user has accepted to enable the location services
-          // data can be :
-          //  - "already-enabled" if the location services has been already enabled
-          //  - "enabled" if user has clicked on OK button in the popup
-          // console.log(`promptForEnableLocationIfNeeded data :>> `, data);
+    // Platform.OS == 'android' &&
+    //   RNAndroidLocationEnabler?.promptForEnableLocationIfNeeded({
+    //     interval: 10000,
+    //     // fastInterval: 5000,
+    //   })
+    //     .then(data => {
+    //       // The user has accepted to enable the location services
+    //       // data can be :
+    //       //  - "already-enabled" if the location services has been already enabled
+    //       //  - "enabled" if user has clicked on OK button in the popup
+    //       // console.log(`promptForEnableLocationIfNeeded data :>> `, data);
 
-          // Geolocation.getCurrentPosition(
-          //   position => {
-          //     const {coords} = position;
-          //     // console.log(`requestGpsPermission position :>> `, position);
-          //     dispatch(setlivelocation(coords));
-          //   },
-          //   (error: any) => {
-          //     console.log(`requestGpsPermission error :>> `, error);
-          //     if (error.message == 'Location permission not granted.') {
-          //       dispatch(setLocationPermission(false));
-          //     }
-          //     if (error.code == 2) {
-          //       // console.log(`requestGpsPermission error.code == 2`);
-          //       dispatch(setGpsPermission(false));
-          //     }
-          //   },
-          //   // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-          //   {enableHighAccuracy: false, timeout: 15000},
-          // );
+    //       // Geolocation.getCurrentPosition(
+    //       //   position => {
+    //       //     const {coords} = position;
+    //       //     // console.log(`requestGpsPermission position :>> `, position);
+    //       //     dispatch(setlivelocation(coords));
+    //       //   },
+    //       //   (error: any) => {
+    //       //     console.log(`requestGpsPermission error :>> `, error);
+    //       //     if (error.message == 'Location permission not granted.') {
+    //       //       dispatch(setLocationPermission(false));
+    //       //     }
+    //       //     if (error.code == 2) {
+    //       //       // console.log(`requestGpsPermission error.code == 2`);
+    //       //       dispatch(setGpsPermission(false));
+    //       //     }
+    //       //   },
+    //       //   // {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+    //       //   {enableHighAccuracy: false, timeout: 15000},
+    //       // );
 
-          dispatch(setGpsPermission(true));
-        })
-        .catch(error => {
+
+          // dispatch(setGpsPermission(true));
+        // })
+        // .catch(error => {
           // The user has not accepted to enable the location services or something went wrong during the process
           // "error" : { "code" : "ERR00|ERR01|ERR02|ERR03", "message" : "message"}
           // codes :
@@ -64,13 +103,14 @@ export const requestGpsPermission = async (dispatch: any) => {
           //  - ERR02 : If the popup has failed to open
           //  - ERR03 : Internal error
 
-          console.log(`promptForEnableLocationIfNeeded error :>> `, error);
-          dispatch(setGpsPermission(false));
-        });
+        //   console.log(`promptForEnableLocationIfNeeded error :>> `, error);
+        //   dispatch(setGpsPermission(false));
+        // });
   } catch (error) {
     console.log(`requestGpsPermission error :>> `, error);
   }
 };
+
 
 export const checkLocationPermission = async (dispatch: any) => {
   try {
