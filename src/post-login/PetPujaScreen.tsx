@@ -42,6 +42,7 @@ import {
 } from '../redux/redux';
 import customAxios from '../services/appservices';
 import {
+  getForGroundIntervalDurationAPI,
   getProgressDetails,
   updateOrderStatusAPI,
 } from '../services/rideservices';
@@ -59,7 +60,8 @@ import SidebarIcon from '../svg/SidebarIcon';
 import Spinner from '../svg/spinner';
 import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
-import ReactNativeForegroundService from "@supersami/rn-foreground-service";
+import ReactNativeForegroundService from '@supersami/rn-foreground-service';
+import { useFocusEffect } from '@react-navigation/native';
 
 const OrderStatusEnum = {
   ORDER_ACCEPTED: 'ACCEPTED', //(Order Created Successfully.)
@@ -110,6 +112,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const rejectedOrders = useSelector((store: any) => store.rejectedOrders);
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
   const mapRef = useRef<any>(null);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(false);
   const netConnected = useRef(false);
@@ -121,6 +124,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const availableOrdersRef = useRef<any>([]);
   const rejectedOrderRef = useRef<any>([]);
   const [buttonText, setButtonText] = useState<any>('ACCEPT ORDER');
+  const [heading, setHeading] = useState(0);
   const [path, setPath] = useState<any>([]);
   const [realPath, setRealPath] = useState<any>([]);
   const [cod, setcod] = useState(true);
@@ -130,6 +134,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const socketInstance = useRef<any>(undefined);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
+  const forGroundIntervalDuration = useRef<any>(15)
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
   let prevLocation: any = useRef(null);
@@ -138,6 +143,39 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const ASPECTS_RATIO = screen.width / screen.height;
   const LATITUDE_DELTA = 0.009;
   const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECTS_RATIO;
+
+  const [region, setRegion] = useState({
+    ...myLocation.current,
+    latitudeDelta: 0.001,
+    longitudeDelta: 0.001,
+  });
+
+   // Update region when the user's interaction is complete
+   const onRegionChangeComplete = (newRegion: any) => {
+    if (isUserInteracting) {
+      setRegion(newRegion); // Update region to where the user has zoomed/panned
+    }
+    setIsUserInteracting(false); // Allow further automatic updates
+  };
+
+  const onUserInteractionStart = () => {
+    setIsUserInteracting(true); // Indicate that the user is interacting with the map
+  };
+
+  const autoUpdateRegion = () => {
+    if (!isUserInteracting) {
+      setRegion({
+        ...myLocation.current,
+        latitudeDelta: 0.001,
+        longitudeDelta: 0.001,
+      });
+    }
+  };
+
+
+  useEffect(() => {
+    autoUpdateRegion();
+  }, [myLocation.current]);
 
   const animateCart = (toValue: number, callback: any = undefined) => {
     Animated.timing(animation, {
@@ -264,25 +302,29 @@ const PetPujaScreen = ({navigation, route}: any) => {
       Geolocation.clearWatch(geolocationWatchId);
       const watchId: any = Geolocation.watchPosition(
         (position: any) => {
-          const {latitude, longitude} = position.coords;
+          const {latitude, longitude, heading} = position.coords;
           const newLocation = {latitude, longitude};
+          setHeading(heading);
           console.log('live location emitted', newLocation);
           if (prevLocation.current) {
             // Calculate distance between previous and new location
-            const distance = geolib.getDistance(prevLocation.current, newLocation);
+            const distance = geolib.getDistance(
+              prevLocation.current,
+              newLocation,
+            );
             // if (distance >= 15) {
-              console.log('Updating location and sending to API');
-              myLocation.current = newLocation;
-              driverLivelocationAPI({
-                coordinates: [newLocation.latitude, newLocation.longitude],
-              });
-              prevLocation.current = newLocation;
+            console.log('Updating location and sending to API');
+            myLocation.current = newLocation;
+            driverLivelocationAPI({
+              coordinates: [newLocation.latitude, newLocation.longitude],
+            });
+            prevLocation.current = newLocation;
             // } else {
-              // console.log("Location change is less than 15 meters");
-              prevLocation.current = newLocation;
+            // console.log("Location change is less than 15 meters");
+            prevLocation.current = newLocation;
             // }
           } else {
-            console.log("Setting initial location");
+            // console.log('Setting initial location');
             myLocation.current = newLocation;
             prevLocation.current = newLocation;
           }
@@ -586,7 +628,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       );
 
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Location permission granted');
+        // console.log('Location permission granted');
       } else {
         console.log('Location permission denied');
       }
@@ -609,7 +651,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const startForeground = () => {
     ReactNativeForegroundService.add_task(startTracking, {
-      delay: 30 * 1000,
+      delay: forGroundIntervalDuration.current * 1000,
       onLoop: true,
       taskId: 'taskid',
       onError: (e: any) => console.log(`Error logging:`, e),
@@ -640,53 +682,53 @@ const PetPujaScreen = ({navigation, route}: any) => {
     return await ReactNativeForegroundService.stopAll();
   };
 
-  const getPosition = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Location Permission',
-          message: 'This app needs access to your location',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
+  // const getPosition = async () => {
+  //   try {
+  //     const granted = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //       {
+  //         title: 'Location Permission',
+  //         message: 'This app needs access to your location',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       },
+  //     );
 
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        return new Promise((resolve, reject) => {
-          Geolocation.getCurrentPosition(
-            (position: any) => {
-              if (position && position.coords) {
-                const newLocation = {
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                };
-                console.log('getBackgroundCurrentPosition called', newLocation);
-                resolve(newLocation);
-              } else {
-                console.error('Position or position.coords is undefined');
-                reject(new Error('Position or position.coords is undefined'));
-              }
-            },
-            (error: any) => {
-              console.error('Geolocation error callback', error);
-              reject(error);
-            },
-            {
-              enableHighAccuracy: false,
-              timeout: 10000,
-            },
-          );
-        });
-      } else {
-        console.log('Location permission denied');
-        return null;
-      }
-    } catch (err) {
-      console.warn('Error in getPosition:', err);
-      return null;
-    }
-  };
+  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //       return new Promise((resolve, reject) => {
+  //         Geolocation.getCurrentPosition(
+  //           (position: any) => {
+  //             if (position && position.coords) {
+  //               const newLocation = {
+  //                 latitude: position.coords.latitude,
+  //                 longitude: position.coords.longitude,
+  //               };
+  //               console.log('getBackgroundCurrentPosition called', newLocation);
+  //               resolve(newLocation);
+  //             } else {
+  //               console.error('Position or position.coords is undefined');
+  //               reject(new Error('Position or position.coords is undefined'));
+  //             }
+  //           },
+  //           (error: any) => {
+  //             console.error('Geolocation error callback', error);
+  //             reject(error);
+  //           },
+  //           {
+  //             enableHighAccuracy: false,
+  //             timeout: 10000,
+  //           },
+  //         );
+  //       });
+  //     } else {
+  //       console.log('Location permission denied');
+  //       return null;
+  //     }
+  //   } catch (err) {
+  //     console.warn('Error in getPosition:', err);
+  //     return null;
+  //   }
+  // };
 
   const startTracking = async () => {
     try {
@@ -700,24 +742,30 @@ const PetPujaScreen = ({navigation, route}: any) => {
       //   console.log('Not much change in location');
       //   return;
       // }
-      if(prevLocation.current){
-      setRealPath ((prev: any) => ([...prev, prevLocation.current]));
-      myLocation.current = prevLocation.current;
-      const payload = {
-        orderId: currentOnGoingOrderDetails._id,
-        pathCoords: {coords: prevLocation.current, time: Date.now()},
-      };
-      // dispatch(setRiderPath(realPath));
-      const res = await driverUpdateTimelineAPI(payload);
-    }
+      if (prevLocation.current) {
+        setRealPath((prev: any) => [...prev, prevLocation.current]);
+        myLocation.current = prevLocation.current;
+        const payload = {
+          orderId: currentOnGoingOrderDetails._id,
+          pathCoords: {coords: prevLocation.current, time: Date.now()},
+        };
+        // dispatch(setRiderPath(realPath));
+        const res = await driverUpdateTimelineAPI(payload);
+      }
     } catch (error) {
       console.warn('error on tracking', error);
     }
   };
 
+  const getForGroundIntervalDuration = async() => {
+    try {
+      const res = await getForGroundIntervalDurationAPI()
+      forGroundIntervalDuration.current = res.data.forGroundIntervalDuration
+    } catch (error) {
+      
+    }
+  }
 
-
-  
   useEffect(() => {
     if (orderStartedRef.current) {
       return;
@@ -761,20 +809,22 @@ const PetPujaScreen = ({navigation, route}: any) => {
     };
   }, [route.params?.refresh, isDriverOnline]);
 
-
   useEffect(() => {
     if (orderStarted && currentOnGoingOrderDetails._id) {
       startForeground();
       Geolocation.clearWatch(geolocationWatchId);
     } else {
+      getForGroundIntervalDuration()
       stopForeground();
       emitLiveLocation();
     }
   }, [orderStarted, currentOnGoingOrderDetails]);
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      requestLocationPermission();
+    }, [])
+  );
 
   return (
     <>
@@ -1554,30 +1604,34 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       provider={PROVIDER_GOOGLE}
                       style={styles.map}
                       ref={mapRef}
-                      region={{
-                        ...myLocation.current,
-                        latitudeDelta: LATITUDE_DELTA,
-                        longitudeDelta: LONGITUDE_DELTA,
-                      }}
+                      region={region}
+                      onRegionChangeComplete={onRegionChangeComplete}
+                      onPanDrag={onUserInteractionStart}
+                      onPress={onUserInteractionStart}
                       mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
-                      <Marker
+                      <Marker.Animated
                         identifier="dropLocationMarker"
-                        coordinate={path[0]}
+                        coordinate={
+                          realPath.length > 0
+                            ? realPath[realPath.length - 1]
+                            : myLocation.current
+                        }
                         icon={require('../svg/images/driverLiveLocation.png')}
-                        // imageStyle={{width: wp(100), height: hp(100)}}
+                        // imageStyle={{width: wp(200), height: hp(200)}}
+                        rotation={heading - 50 || 0}
                         anchor={{x: 0.5, y: 0.5}}
-                        zIndex={1}
+                        zIndex={5}
                       />
 
-                      <Marker
+                      {/* <Marker
                         identifier="myLocationMarker"
                         coordinate={myLocation.current}
                         icon={require('../images/MapDriverIcon.png')}
-                      />
+                      /> */}
 
                       {[
-                        OrderStatusEnum.DISPATCHED,
-                        OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                        OrderStatusEnum.ORDER_ACCEPTED,
+                        OrderStatusEnum.ORDER_ALLOTTED,
                       ].includes(currentOnGoingOrderDetails.status) && (
                         <Marker
                           identifier="pickUpLocationMarker"
@@ -1597,7 +1651,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
                       ].includes(currentOnGoingOrderDetails.status) && (
                         <Marker
-                          identifier="pickUpLocationMarker"
+                          identifier="dropLocationMarker"
                           coordinate={{
                             latitude:
                               currentOnGoingOrderDetails?.drop_details
@@ -1620,7 +1674,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         strokeColor={'#3cb371'}
                         strokeWidth={4}
                       />
-
                     </MapView>
                     {/*   Nevigate to google map */}
                     <TouchableOpacity

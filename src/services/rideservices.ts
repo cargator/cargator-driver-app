@@ -27,3 +27,7 @@ export const updateFcmToken = (data: {token: any}) => {
 export const updateOrderStatusAPI = (data: any) => {
   return customAxios.post(`update-order-status`, data);
 };
+
+export const getForGroundIntervalDurationAPI = () => {
+  return customAxios.get(`/get-forground-interval-duration`);
+};
