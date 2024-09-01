@@ -265,7 +265,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         {
           title: 'Location Permission',
-          message: 'This app needs access to your location',
+          message: 'This app needs access to your location " + "so you can track your movements in real-time, even when the app is closed.",',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
         },
