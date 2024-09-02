@@ -391,7 +391,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
           setOrderStarted(true);
           orderStartedRef.current = true;
           setPath(body?.path?.coords);
-          setButtonText(nextOrderStatus[body.order.status]);
+          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
           dispatch(setCurrentOnGoingOrderDetails(body.order));
           availableOrdersRef.current.shift();
           setAvailableOrders([...availableOrdersRef.current]);
@@ -467,7 +467,19 @@ const PetPujaScreen = ({navigation, route}: any) => {
           visibilityTime: 5000,
         });
       } else {
-        setButtonText(nextOrderStatus[response.data.order.status]);
+        switch (response.data.order.status) {
+          case OrderStatusEnum.ARRIVED:
+            setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+            break;
+          case OrderStatusEnum.DISPATCHED:
+            setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+            break;
+          case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
+            setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+            break;
+          default:
+            break;
+        }
         if (response.data.order.status == 'DISPATCHED') {
           setPath(response.data.order?.pickupToDrop);
         }
@@ -539,18 +551,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
       switch (order.status) {
         case OrderStatusEnum.ORDER_ALLOTTED:
-          setButtonText(nextOrderStatus[OrderStatusEnum.ORDER_ALLOTTED]);
+          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
           break;
         case OrderStatusEnum.ARRIVED:
-          setButtonText(nextOrderStatus[OrderStatusEnum.ARRIVED]);
+          setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
           break;
         case OrderStatusEnum.DISPATCHED:
-          setButtonText(nextOrderStatus[OrderStatusEnum.DISPATCHED]);
+          setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
           break;
         case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-          setButtonText(
-            nextOrderStatus[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP],
-          );
+          setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
           break;
         case OrderStatusEnum.DELIVERED:
           setcod(false);
