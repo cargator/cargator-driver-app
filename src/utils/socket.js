@@ -8,7 +8,7 @@ function socketConnection(token) {
     socket = io.connect(
       `https://sukam-api.cargator.org/?token=${token}`,
       // `http://192.168.1.1:5000?token=${token}`,
-      // `https://cf20-182-48-210-192.ngrok-free.app?token=${token}`,
+      // `https://6217-114-79-174-148.ngrok-free.app?token=${token}`,
       {transports: ['websocket'], forceNew: true, jsonp: true},
     );
 

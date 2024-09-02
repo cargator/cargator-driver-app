@@ -116,14 +116,9 @@ export const Routing = () => {
   const navigationRef = useRef<any>(null);
   const navigationRefFlag = useRef<any>(true);
 
-  const checkISLocationEnalbled = async() => {
-    const result = await isLocationEnabled()
-    dispatch(setGpsPermission(result))
-  }
 
   useEffect(() => {
     SplashScreen.hide();
-    Platform.OS == 'android' && checkISLocationEnalbled()
     requestLocationPermission(dispatch);
     checkLocationPermission(dispatch);
     messaging().setBackgroundMessageHandler(

@@ -682,54 +682,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
     return await ReactNativeForegroundService.stopAll();
   };
 
-  // const getPosition = async () => {
-  //   try {
-  //     const granted = await PermissionsAndroid.request(
-  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-  //       {
-  //         title: 'Location Permission',
-  //         message: 'This app needs access to your location',
-  //         buttonNegative: 'Cancel',
-  //         buttonPositive: 'OK',
-  //       },
-  //     );
-
-  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-  //       return new Promise((resolve, reject) => {
-  //         Geolocation.getCurrentPosition(
-  //           (position: any) => {
-  //             if (position && position.coords) {
-  //               const newLocation = {
-  //                 latitude: position.coords.latitude,
-  //                 longitude: position.coords.longitude,
-  //               };
-  //               console.log('getBackgroundCurrentPosition called', newLocation);
-  //               resolve(newLocation);
-  //             } else {
-  //               console.error('Position or position.coords is undefined');
-  //               reject(new Error('Position or position.coords is undefined'));
-  //             }
-  //           },
-  //           (error: any) => {
-  //             console.error('Geolocation error callback', error);
-  //             reject(error);
-  //           },
-  //           {
-  //             enableHighAccuracy: false,
-  //             timeout: 10000,
-  //           },
-  //         );
-  //       });
-  //     } else {
-  //       console.log('Location permission denied');
-  //       return null;
-  //     }
-  //   } catch (err) {
-  //     console.warn('Error in getPosition:', err);
-  //     return null;
-  //   }
-  // };
-
   const startTracking = async () => {
     try {
       console.log(
