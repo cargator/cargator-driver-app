@@ -23,7 +23,7 @@ export const requestGpsPermission = async (dispatch: any) => {
     if (Platform.OS === 'android') {
       try {
         const enableResult = await promptForEnableLocationIfNeeded();
-        console.log('enableResult', enableResult);
+        // console.log('enableResult', enableResult);
         if(enableResult == 'enabled' || enableResult == 'already-enabled'){
           dispatch(setGpsPermission(true))
         }

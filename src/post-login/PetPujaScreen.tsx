@@ -545,6 +545,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setOrderStarted(true);
       orderStartedRef.current = true;
       dispatch(setCurrentOnGoingOrderDetails(order));
+      currentOnGoingOrderId.current = order._id
       setRealPath(order.realPath);
       if (order.status == 'ALLOTTED' || order.status == 'ARRIVED') {
         setPath(order?.riderPathToPickUp);
@@ -625,41 +626,41 @@ const PetPujaScreen = ({navigation, route}: any) => {
     setLoading(false);
   };
 
-  const requestLocationPermission = async () => {
-    // Geolocation.requestAuthorization('always');
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Location Permission',
-          message: 'App needs access to your location.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
+  // const requestLocationPermission = async () => {
+  //   // Geolocation.requestAuthorization('always');
+  //   try {
+  //     const granted = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //       {
+  //         title: 'Location Permission',
+  //         message: 'App needs access to your location.',
+  //         buttonNeutral: 'Ask Me Later',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       },
+  //     );
 
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        // console.log('Location permission granted');
-      } else {
-        console.log('Location permission denied');
-      }
-      PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-        {
-          title: 'Background Location Permission',
-          message:
-            'We need access to your location ' +
-            'so you can get live quality updates.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-    } catch (err) {
-      console.warn(err);
-    }
-  };
+  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //       // console.log('Location permission granted');
+  //     } else {
+  //       console.log('Location permission denied');
+  //     }
+  //     PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+  //       {
+  //         title: 'Background Location Permission',
+  //         message:
+  //           'We need access to your location ' +
+  //           'so you can get live quality updates.',
+  //         buttonNeutral: 'Ask Me Later',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       },
+  //     );
+  //   } catch (err) {
+  //     console.warn(err);
+  //   }
+  // };
 
   const startForeground = () => {
     ReactNativeForegroundService.add_task(startTracking, {
@@ -784,11 +785,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   }, [orderStarted, currentOnGoingOrderDetails]);
 
-  useFocusEffect(
-    useCallback(() => {
-      requestLocationPermission();
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     requestLocationPermission();
+  //   }, [])
+  // );
 
   return (
     <>
@@ -1582,7 +1583,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         }
                         icon={require('../svg/images/driverLiveLocation.png')}
                         // imageStyle={{width: wp(200), height: hp(200)}}
-                        rotation={heading - 50 || 0}
+                        rotation={heading - 100 || 0}
                         anchor={{x: 0.5, y: 0.5}}
                         zIndex={5}
                       />
