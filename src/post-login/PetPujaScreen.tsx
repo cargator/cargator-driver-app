@@ -135,6 +135,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
   const forGroundIntervalDuration = useRef<any>(15)
+  const currentOnGoingOrderId = useRef<any>()
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
   let prevLocation: any = useRef(null);
@@ -393,6 +394,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
           setPath(body?.path?.coords);
           setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
           dispatch(setCurrentOnGoingOrderDetails(body.order));
+          currentOnGoingOrderId.current = body.order._id
           availableOrdersRef.current.shift();
           setAvailableOrders([...availableOrdersRef.current]);
           setLoading(false);
@@ -696,7 +698,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     try {
       console.log(
         'fetching location with orderId===> ',
-        currentOnGoingOrderDetails._id,
+        currentOnGoingOrderId.current,
       );
       await emitLiveLocation();
       // const distance = geolib.getDistance(myLocation.current, newLocation);
@@ -708,7 +710,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         setRealPath((prev: any) => [...prev, prevLocation.current]);
         myLocation.current = prevLocation.current;
         const payload = {
-          orderId: currentOnGoingOrderDetails._id,
+          orderId: currentOnGoingOrderId.current,
           pathCoords: {coords: prevLocation.current, time: Date.now()},
         };
         // dispatch(setRiderPath(realPath));
@@ -724,7 +726,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       const res = await getForGroundIntervalDurationAPI()
       forGroundIntervalDuration.current = res.data.forGroundIntervalDuration
     } catch (error) {
-      
+      console.log("error", error);
     }
   }
 
