@@ -31,3 +31,8 @@ export const updateOrderStatusAPI = (data: any) => {
 export const getForGroundIntervalDurationAPI = () => {
   return customAxios.get(`/get-forground-interval-duration`);
 };
+
+export const getFlowsAPI = () => {
+  return customAxios.get(`/get-flows`);
+};
+

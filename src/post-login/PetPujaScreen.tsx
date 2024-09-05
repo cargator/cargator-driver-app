@@ -42,6 +42,7 @@ import {
 } from '../redux/redux';
 import customAxios from '../services/appservices';
 import {
+  getFlowsAPI,
   getForGroundIntervalDurationAPI,
   getProgressDetails,
   updateOrderStatusAPI,
@@ -61,7 +62,7 @@ import Spinner from '../svg/spinner';
 import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
 import ReactNativeForegroundService from '@supersami/rn-foreground-service';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 
 const OrderStatusEnum = {
   ORDER_ACCEPTED: 'ACCEPTED', //(Order Created Successfully.)
@@ -134,8 +135,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const socketInstance = useRef<any>(undefined);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
-  const forGroundIntervalDuration = useRef<any>(15)
-  const currentOnGoingOrderId = useRef<any>()
+  const buttonTextFlow = useRef<any>();
+  const forGroundIntervalDuration = useRef<any>(15);
+  const currentOnGoingOrderId = useRef<any>();
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
   let prevLocation: any = useRef(null);
@@ -151,8 +153,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
     longitudeDelta: 0.001,
   });
 
-   // Update region when the user's interaction is complete
-   const onRegionChangeComplete = (newRegion: any) => {
+  // Update region when the user's interaction is complete
+  const onRegionChangeComplete = (newRegion: any) => {
     if (isUserInteracting) {
       setRegion(newRegion); // Update region to where the user has zoomed/panned
     }
@@ -172,7 +174,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       });
     }
   };
-
 
   useEffect(() => {
     autoUpdateRegion();
@@ -266,7 +267,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         {
           title: 'Location Permission',
-          message: 'This app needs access to your location " + "so you can track your movements in real-time, even when the app is closed.",',
+          message:
+            'This app needs access to your location " + "so you can track your movements in real-time, even when the app is closed.",',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
         },
@@ -392,9 +394,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
           setOrderStarted(true);
           orderStartedRef.current = true;
           setPath(body?.path?.coords);
-          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
+          // setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
+          setButtonText(buttonTextFlow.current[1].breakingPointName);
           dispatch(setCurrentOnGoingOrderDetails(body.order));
-          currentOnGoingOrderId.current = body.order._id
+          currentOnGoingOrderId.current = body.order._id;
           availableOrdersRef.current.shift();
           setAvailableOrders([...availableOrdersRef.current]);
           setLoading(false);
@@ -452,6 +455,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
             visibilityTime: 5000,
           });
           return;
+        } else {
+          Toast.show({
+            type: 'success',
+            text1: `ORDER DELIVERED SUCCESSFULLY!`,
+            visibilityTime: 5000,
+          });
         }
         getProgressDetail();
       } else if (
@@ -471,13 +480,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
       } else {
         switch (response.data.order.status) {
           case OrderStatusEnum.ARRIVED:
-            setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+            // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+            setButtonText(buttonTextFlow.current[2].breakingPointName);
             break;
           case OrderStatusEnum.DISPATCHED:
-            setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+            // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+            setButtonText(buttonTextFlow.current[3].breakingPointName);
             break;
           case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-            setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+            // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+            setButtonText(buttonTextFlow.current[4].breakingPointName);
             break;
           default:
             break;
@@ -487,13 +499,23 @@ const PetPujaScreen = ({navigation, route}: any) => {
         }
         setLoading(false);
         dispatch(setCurrentOnGoingOrderDetails(response.data.order));
-        Toast.show({
-          type: 'success',
-          text1: `ORDER SUCCESSFULLY ${
-            nextOrderStatus[currentOnGoingOrderDetails.status]
-          } !`,
-          visibilityTime: 5000,
-        });
+        if (response.data.order.status == 'ARRIVED') {
+          Toast.show({
+            type: 'success',
+            text1: `RIDER SUCCESSFULLY ${
+              nextOrderStatus[currentOnGoingOrderDetails.status]
+            } !`,
+            visibilityTime: 5000,
+          });
+        } else {
+          Toast.show({
+            type: 'success',
+            text1: `ORDER SUCCESSFULLY ${
+              nextOrderStatus[currentOnGoingOrderDetails.status]
+            } !`,
+            visibilityTime: 5000,
+          });
+        }
       }
     } catch (error) {
       setLoading(false);
@@ -545,7 +567,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setOrderStarted(true);
       orderStartedRef.current = true;
       dispatch(setCurrentOnGoingOrderDetails(order));
-      currentOnGoingOrderId.current = order._id
+      currentOnGoingOrderId.current = order._id;
       setRealPath(order.realPath);
       if (order.status == 'ALLOTTED' || order.status == 'ARRIVED') {
         setPath(order?.riderPathToPickUp);
@@ -554,16 +576,20 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
       switch (order.status) {
         case OrderStatusEnum.ORDER_ALLOTTED:
-          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
+          // setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
+          setButtonText(buttonTextFlow.current[1].breakingPointName);
           break;
         case OrderStatusEnum.ARRIVED:
-          setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+          // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+          setButtonText(buttonTextFlow.current[2].breakingPointName);
           break;
         case OrderStatusEnum.DISPATCHED:
-          setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+          // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+          setButtonText(buttonTextFlow.current[3].breakingPointName);
           break;
         case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-          setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+          // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+          setButtonText(buttonTextFlow.current[4].breakingPointName);
           break;
         case OrderStatusEnum.DELIVERED:
           setcod(false);
@@ -722,14 +748,30 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   };
 
-  const getForGroundIntervalDuration = async() => {
+  const getForGroundIntervalDuration = async () => {
     try {
-      const res = await getForGroundIntervalDurationAPI()
-      forGroundIntervalDuration.current = res.data.forGroundIntervalDuration
+      const res = await getForGroundIntervalDurationAPI();
+      forGroundIntervalDuration.current = res.data.forGroundIntervalDuration;
     } catch (error) {
-      console.log("error", error);
+      console.log('error', error);
     }
-  }
+  };
+
+  const getButtonTextFlows = async () => {
+    try {
+      const result = await getFlowsAPI();
+      buttonTextFlow.current = result.data;
+      console.log('getButtonTextFlows>>>>>', result.data);
+    } catch (error: any) {
+      console.log('getButtonTextFlows error', {error});
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      getButtonTextFlows();
+    }, [])
+  );
 
   useEffect(() => {
     if (orderStartedRef.current) {
@@ -779,17 +821,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
       startForeground();
       Geolocation.clearWatch(geolocationWatchId);
     } else {
-      getForGroundIntervalDuration()
+      getForGroundIntervalDuration();
       stopForeground();
       emitLiveLocation();
     }
   }, [orderStarted, currentOnGoingOrderDetails]);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     requestLocationPermission();
-  //   }, [])
-  // );
 
   return (
     <>
