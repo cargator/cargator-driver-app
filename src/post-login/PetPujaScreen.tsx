@@ -102,6 +102,11 @@ export const dialCall = (number: string) => {
   });
 };
 
+const screen = Dimensions.get('window');
+const ASPECTS_RATIO = screen.width / screen.height;
+const LATITUDE_DELTA = 0.009;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECTS_RATIO;
+
 const PetPujaScreen = ({navigation, route}: any) => {
   const currentOnGoingOrderDetails = useSelector(
     (store: any) => store.currentOnGoingOrderDetails,
@@ -113,7 +118,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const rejectedOrders = useSelector((store: any) => store.rejectedOrders);
   const [progressData, setProgressData] = useState<any>({});
   const dispatch = useDispatch();
-  const [isUserInteracting, setIsUserInteracting] = useState(false);
   const mapRef = useRef<any>(null);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(false);
   const netConnected = useRef(false);
@@ -142,37 +146,18 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
   let prevLocation: any = useRef(null);
 
-  const screen = Dimensions.get('window');
-  const ASPECTS_RATIO = screen.width / screen.height;
-  const LATITUDE_DELTA = 0.009;
-  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECTS_RATIO;
-
   const [region, setRegion] = useState({
     ...myLocation.current,
-    latitudeDelta: 0.001,
-    longitudeDelta: 0.001,
+    latitudeDelta: LATITUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA,
   });
 
-  // Update region when the user's interaction is complete
-  const onRegionChangeComplete = (newRegion: any) => {
-    if (isUserInteracting) {
-      setRegion(newRegion); // Update region to where the user has zoomed/panned
-    }
-    setIsUserInteracting(false); // Allow further automatic updates
-  };
-
-  const onUserInteractionStart = () => {
-    setIsUserInteracting(true); // Indicate that the user is interacting with the map
-  };
-
   const autoUpdateRegion = () => {
-    if (!isUserInteracting) {
-      setRegion({
-        ...myLocation.current,
-        latitudeDelta: 0.001,
-        longitudeDelta: 0.001,
-      });
-    }
+    setRegion({
+      ...myLocation.current,
+      latitudeDelta: LATITUDE_DELTA,
+      longitudeDelta: LONGITUDE_DELTA,
+    });
   };
 
   useEffect(() => {
@@ -308,7 +293,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
           const {latitude, longitude, heading} = position.coords;
           const newLocation = {latitude, longitude};
           setHeading(heading);
-          console.log('live location emitted', newLocation);
+          // console.log('live location emitted', newLocation);
           if (prevLocation.current) {
             // Calculate distance between previous and new location
             const distance = geolib.getDistance(
@@ -316,7 +301,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               newLocation,
             );
             // if (distance >= 15) {
-            console.log('Updating location and sending to API');
+            // console.log('Updating location and sending to API');
             myLocation.current = newLocation;
             driverLivelocationAPI({
               coordinates: [newLocation.latitude, newLocation.longitude],
@@ -723,10 +708,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const startTracking = async () => {
     try {
-      console.log(
-        'fetching location with orderId===> ',
-        currentOnGoingOrderId.current,
-      );
+      // console.log(
+      //   'fetching location with orderId===> ',
+      //   currentOnGoingOrderId.current,
+      // );
       await emitLiveLocation();
       // const distance = geolib.getDistance(myLocation.current, newLocation);
       // if (distance < 15) {Start Service Triggered
@@ -735,6 +720,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       // }
       if (prevLocation.current) {
         setRealPath((prev: any) => [...prev, prevLocation.current]);
+        // console.log('real path>>>>>>>>', realPath);
         myLocation.current = prevLocation.current;
         const payload = {
           orderId: currentOnGoingOrderId.current,
@@ -761,7 +747,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     try {
       const result = await getFlowsAPI();
       buttonTextFlow.current = result.data;
-      console.log('getButtonTextFlows>>>>>', result.data);
+      // console.log('getButtonTextFlows>>>>>', result.data);
     } catch (error: any) {
       console.log('getButtonTextFlows error', {error});
     }
@@ -770,7 +756,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   useFocusEffect(
     useCallback(() => {
       getButtonTextFlows();
-    }, [])
+    }, []),
   );
 
   useEffect(() => {
@@ -826,7 +812,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       emitLiveLocation();
     }
   }, [orderStarted, currentOnGoingOrderDetails]);
-
 
   return (
     <>
@@ -1607,9 +1592,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       style={styles.map}
                       ref={mapRef}
                       region={region}
-                      onRegionChangeComplete={onRegionChangeComplete}
-                      onPanDrag={onUserInteractionStart}
-                      onPress={onUserInteractionStart}
                       mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
                       <Marker.Animated
                         identifier="dropLocationMarker"
