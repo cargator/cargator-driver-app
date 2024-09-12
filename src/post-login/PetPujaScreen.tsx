@@ -416,6 +416,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       const req = {
         id: currentOnGoingOrderDetails._id,
         status: nextOrderStatus[currentOnGoingOrderDetails.status],
+        location: myLocation.current
       };
 
       const response = await updateOrderStatusAPI(req);
@@ -1602,7 +1603,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         }
                         icon={require('../svg/images/driverLiveLocation.png')}
                         // imageStyle={{width: wp(200), height: hp(200)}}
-                        rotation={heading - 100 || 0}
+                        rotation={heading -50 || 0}
                         anchor={{x: 0.5, y: 0.5}}
                         zIndex={5}
                       />
