@@ -95,6 +95,8 @@ export const SliderText = {
   [OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]: 'ORDER DELIVERED',
 };
 
+const supportContact = ['8178514753', '8800097708'];
+
 export const dialCall = (number: string) => {
   let phoneNumber = `tel:${number}`;
   Linking.openURL(phoneNumber).catch((err: any) => {
@@ -117,6 +119,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const riderPath = useSelector((store: any) => store.riderPath);
   const rejectedOrders = useSelector((store: any) => store.rejectedOrders);
   const [progressData, setProgressData] = useState<any>({});
+  const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
   const dispatch = useDispatch();
   const mapRef = useRef<any>(null);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(false);
@@ -416,7 +419,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       const req = {
         id: currentOnGoingOrderDetails._id,
         status: nextOrderStatus[currentOnGoingOrderDetails.status],
-        location: myLocation.current
+        location: myLocation.current,
       };
 
       const response = await updateOrderStatusAPI(req);
@@ -833,6 +836,34 @@ const PetPujaScreen = ({navigation, route}: any) => {
         </View>
       )}
 
+      {isProfileModal && (
+        <View style={styles.profileModalView}>
+          <TouchableOpacity
+            onPress={() => {
+              setIsProfileModal(false);
+            }}></TouchableOpacity>
+
+          <TouchableOpacity onPress={() => dialCall(supportContact[0])}>
+            <View style={styles.supportRow}>
+              <Image
+                source={require('../images/callicon.png')}
+                style={styles.supportCallIcon}
+              />
+              <Text style={styles.supportText}>{supportContact[0]}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => dialCall(supportContact[1])}>
+            <View style={styles.supportRow}>
+              <Image
+                source={require('../images/callicon.png')}
+                style={styles.supportCallIcon}
+              />
+              <Text style={styles.supportText}>{supportContact[1]}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {
         <View style={styles.headerBar}>
           <View>
@@ -851,7 +882,23 @@ const PetPujaScreen = ({navigation, route}: any) => {
             />
           )}
 
-          <View style={styles.profileIcon}></View>
+          <View style={styles.profileIcon}>
+            <TouchableOpacity
+              hitSlop={{
+                left: widthPercentageToDP(10),
+                right: widthPercentageToDP(5),
+                top: heightPercentageToDP(2),
+              }}
+              onPress={() => setIsProfileModal(!isProfileModal)}>
+              {/* <Text style={styles.profileSupportIcon}>
+                {userData.firstName[0].toUpperCase()}
+              </Text> */}
+              <Image
+                style={styles.profileSupportIcon} // Define this style to size the image properly
+                source={require('../images/Support.jpg')}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       }
 
@@ -1603,7 +1650,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         }
                         icon={require('../svg/images/driverLiveLocation.png')}
                         // imageStyle={{width: wp(200), height: hp(200)}}
-                        rotation={heading -50 || 0}
+                        rotation={heading - 50 || 0}
                         anchor={{x: 0.5, y: 0.5}}
                         zIndex={5}
                       />
@@ -1794,15 +1841,15 @@ const styles = StyleSheet.create({
   profileIcon: {
     width: wp(8),
     height: wp(8),
-    // borderRadius: wp(50),
+    borderRadius: wp(50),
     // backgroundColor: 'navy',
     alignItems: 'center',
     justifyContent: 'center',
+    right: wp(2),
   },
-  profileIconText: {
-    fontFamily: 'RobotoMono-Regular',
-    color: 'white',
-    fontSize: wp(5),
+  profileSupportIcon: {
+    height: hp(5),
+    width: wp(10),
   },
   profileModalView: {
     backgroundColor: 'white',
@@ -1818,12 +1865,22 @@ const styles = StyleSheet.create({
     elevation: hp(5),
     gap: hp(2),
     justifyContent: 'center',
-    alignItems: 'center',
-    width: wp(30),
+    alignItems: 'flex-start',
+    width: wp(40),
+    height: hp(10),
     position: 'absolute',
     top: hp(6),
     right: wp(2),
     zIndex: 4,
+  },
+  supportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wp(2),
+  },
+  supportText: {
+    fontSize: wp(4),
+    color: '#000',
   },
   modalContainer: {
     flex: 1,
@@ -1890,6 +1947,10 @@ const styles = StyleSheet.create({
     width: 24, // Adjust the size as needed
     height: 24, // Adjust the size as needed
     marginRight: 8, // Adjust the spacing as needed
+  },
+  supportCallIcon: {
+    width: 20,
+    height: 20,
   },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
