@@ -458,7 +458,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       ) {
         setLoading(false);
         setcod(false);
-        getProgressDetail();
         dispatch(setRiderPath([]));
         setRealPath([]);
         Toast.show({
