@@ -1507,7 +1507,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           </TouchableOpacity>
                           {[OrderStatusEnum.ARRIVED].includes(
                             currentOnGoingOrderDetails.status,
-                          ) && <OpenCamera />}
+                          ) && (
+                            <OpenCamera
+                              location={myLocation.current}
+                              status={OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP}
+                              orderID={
+                                currentOnGoingOrderDetails.order_details
+                                  .vendor_order_id
+                              }
+                            />
+                          )}
                         </View>
                       </View>
                     )}
@@ -1614,9 +1623,20 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 }
                               </Text>
                             </TouchableOpacity>
-                            {[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP].includes(
-                            currentOnGoingOrderDetails.status,
-                          ) && <OpenCamera />}
+                            {[
+                              OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                            ].includes(currentOnGoingOrderDetails.status) && (
+                              <OpenCamera
+                                location={myLocation.current}
+                                status={
+                                  OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP
+                                }
+                                orderID={
+                                  currentOnGoingOrderDetails.order_details
+                                    .vendor_order_id
+                                }
+                              />
+                            )}
                           </View>
                         </View>
                       )}

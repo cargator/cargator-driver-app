@@ -86,3 +86,7 @@ export const updatePaymentStatusInDB = (body: any) => {
 export const getS3SignUrlApi = (data: any, headers: any) => {
   return customAxios.post(`/presignedurl`, data, headers);
 };
+
+export const updateImageKey = (data: any) => {
+  return customAxios.patch(`/update-app-image}`, data);
+};

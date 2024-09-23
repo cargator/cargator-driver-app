@@ -6,8 +6,9 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {getS3SignUrlApi} from '../../services/userservices';
-import axios from 'axios';
+import {getS3SignUrlApi, updateImageKey} from '../../services/userservices';
+import RNFetchBlob from 'rn-fetch-blob';
+
 
 interface ImagePickerResponse {
   assets?: Asset[];
@@ -16,7 +17,8 @@ interface ImagePickerResponse {
   errorMessage?: string;
 }
 
-const OpenCamera = () => {
+const OpenCamera = ({location,status,orderID}:any) => {
+
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -84,7 +86,7 @@ const OpenCamera = () => {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets.length > 0) {
         const photoUri = response.assets[0].uri || null;
-        console.log("<><><<><><>>",photoUri);
+        console.log(">>>>>>>>>>>>>>>>",response.assets[0].uri);
         setImageUri(photoUri || null);
         uploadImage(photoUri);
       }
@@ -94,32 +96,47 @@ const OpenCamera = () => {
   // Function to upload image to S3 using a signed URL
   const uploadImage = async (photoUri: string | null) => {
     if (!photoUri) return;
-
+   
     setIsUploading(true);
-
+   
     try {
-      const key = `foodPackage/pickUp/image-${photoUri}.png`;
-      console.log('image key to upload :>> ', key);
-      // const contentType = "image/*";
-      // const type = "put";
-      const presignedUrl = await getS3SignUrl(key, 'image/*', 'put');
+      const key = status === 'ARRIVED' 
+        ? `foodPackage/PickUp/image-${orderID}.jpg`
+        : `foodPackage/Drop/image-${orderID}.jpg`;
+   
+      const contentType = 'image/*';
+      const presignedUrl = await getS3SignUrl(key, contentType, 'put');
 
-      console.log("presignedUrl", presignedUrl);
-      await axios.put(presignedUrl, imageUri);
+      const imageData = await RNFetchBlob.fs.readFile(photoUri, 'base64'); // Or 'ascii' for binary buffer
 
-    //   const response: any = await updateImageKey( {
-    //     imageKey: key,
-    //     contentType:"image/*"
-    //   });
+      // Step 2: Convert base64 string into binary data buffer
+    //   const buffer = RNFetchBlob.base64.decode(imageData);
 
+    //   console.log("??????????",buffer);
+   
+    //   const response = await RNFetchBlob.fetch(
+    //     'PUT',
+    //     presignedUrl,
+    //     {
+    //       'Content-Type': 'image/jpg',
+    //     },
+    //     buffer,
+    //   );
+
+    //   console.log("<<<<<<<object>>>>>>>",response);
+   
+    //   if (response.status === 200) {
+    //     await updateImageKey({ imageKey: key, contentType, status,location });
+    //     console.log('Image uploaded successfully!');
+    //   }
     } catch (error) {
       console.error('Error uploading image:', error);
       Alert.alert('Error', 'An error occurred while uploading the image.');
     } finally {
       setIsUploading(false);
     }
-  };
-
+}
+   
   return (
     <View style={styles.container}>
       <Button title="Take a Photo" onPress={openCamera} />
