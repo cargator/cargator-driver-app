@@ -63,6 +63,7 @@ import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
 import ReactNativeForegroundService from '@supersami/rn-foreground-service';
 import {useFocusEffect} from '@react-navigation/native';
+import OpenCamera from './petPoojaComponent/ImagePicker';
 
 const OrderStatusEnum = {
   ORDER_ACCEPTED: 'ACCEPTED', //(Order Created Successfully.)
@@ -1553,6 +1554,18 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               }
                             </Text>
                           </TouchableOpacity>
+                          {[OrderStatusEnum.ARRIVED].includes(
+                            currentOnGoingOrderDetails.status,
+                          ) && (
+                            <OpenCamera
+                              location={myLocation.current}
+                              status={OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP}
+                              orderID={
+                                currentOnGoingOrderDetails.order_details
+                                  .vendor_order_id
+                              }
+                            />
+                          )}
                         </View>
                       </View>
                     )}
@@ -1659,6 +1672,20 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 }
                               </Text>
                             </TouchableOpacity>
+                            {[
+                              OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                            ].includes(currentOnGoingOrderDetails.status) && (
+                              <OpenCamera
+                                location={myLocation.current}
+                                status={
+                                  OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP
+                                }
+                                orderID={
+                                  currentOnGoingOrderDetails.order_details
+                                    .vendor_order_id
+                                }
+                              />
+                            )}
                           </View>
                         </View>
                       )}
@@ -1785,7 +1812,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Navigate />
                       {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
                     </TouchableOpacity>
-
                     {/* slider Button */}
                     {cod && (
                       <View

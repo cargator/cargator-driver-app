@@ -82,3 +82,11 @@ export const getMyPendingOrdersFromAPI = () => {
 export const updatePaymentStatusInDB = (body: any) => {
   return customAxios.post('/update-payment-status-of-order', body);
 };
+
+export const getS3SignUrlApi = (data: any, headers: any) => {
+  return customAxios.post(`/presignedurl`, data, headers);
+};
+
+export const updateImageKey = (data: any) => {
+  return customAxios.patch(`/update-app-image}`, data);
+};
