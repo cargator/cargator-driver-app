@@ -64,7 +64,7 @@ export const getFcmTokenAndSendToBackend = async (): Promise<void> => {
     const data = {token}
     // Send token to your backend
     const res = await updateFcmToken(data);
-    console.log("token updated successfully");
+    // console.log("token updated successfully");
     
   } catch (error) {
     console.error('Error getting or sending FCM token:', error);
