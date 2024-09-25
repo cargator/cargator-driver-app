@@ -924,7 +924,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text> Earning</Text>
+                      <Text style={styles.progressLable}> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
                       {progressData.today?.earning || 0}
@@ -934,9 +934,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text> Total KM's</Text>
+                      <Text style={styles.progressLable}> Total KM's</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.today?.earning || 0}
                     </Text>
                   </View>
@@ -944,10 +944,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/watch.png')} />
-                      <Text>On-Ride Duration</Text>
+                      <Text style={styles.progressLable}>On-Ride Duration</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.today?.loginHours || 0}
                     </Text>
                   </View>
@@ -955,9 +955,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/order.png')} />
-                      <Text>Orders</Text>
+                      <Text style={styles.progressLable}>Orders</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.today?.orders || 0}
                     </Text>
                   </View>
@@ -976,9 +976,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text> Earning</Text>
+                      <Text style={styles.progressLable}> Earning</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.week?.earning || 0}
                     </Text>
                   </View>
@@ -986,9 +986,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text> Total KM's</Text>
+                      <Text style={styles.progressLable}> Total KM's</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.week?.earning || 0}
                     </Text>
                   </View>
@@ -996,10 +996,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/watch.png')} />
-                      <Text>On-Ride Duration</Text>
+                      <Text style={styles.progressLable}>On-Ride Duration</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.week?.loginHours || 0}
                     </Text>
                   </View>
@@ -1007,9 +1007,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/order.png')} />
-                      <Text>Orders</Text>
+                      <Text style={styles.progressLable}>Orders</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.week?.orders || 0}
                     </Text>
                   </View>
@@ -1028,9 +1028,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text> Earning</Text>
+                      <Text style={styles.progressLable}> Earning</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.month?.earning || 0}
                     </Text>
                   </View>
@@ -1038,9 +1038,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text> Total KM's</Text>
+                      <Text style={styles.progressLable}> Total KM's</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.week?.earning || 0}
                     </Text>
                   </View>
@@ -1048,10 +1048,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/watch.png')} />
-                      <Text>On-Ride Duration</Text>
+                      <Text style={styles.progressLable}>On-Ride Duration</Text>
                     </View>
 
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.month?.loginHours || 0}
                     </Text>
                   </View>
@@ -1059,9 +1059,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/order.png')} />
-                      <Text>Orders</Text>
+                      <Text style={styles.progressLable}>Orders</Text>
                     </View>
-                    <Text style={{fontWeight: 'bold'}}>
+                    <Text style={styles.progressValue}>
                       {progressData.month?.orders || 0}
                     </Text>
                   </View>
