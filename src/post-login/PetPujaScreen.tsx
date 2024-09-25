@@ -934,7 +934,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text> Earning</Text>
+                      <Text> Total KM's</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
                       {progressData.today?.earning || 0}
@@ -985,6 +985,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
                   <View style={styles.circle}>
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Total KM's</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.week?.earning || 0}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/watch.png')} />
                       <Text>On-Ride Duration</Text>
                     </View>
@@ -1022,6 +1032,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
                       {progressData.month?.earning || 0}
+                    </Text>
+                  </View>
+                  <View style={styles.circle}>
+                    <View
+                      style={{flexDirection: 'column', alignItems: 'center'}}>
+                      <Image source={require('../images/Rupay.png')} />
+                      <Text> Total KM's</Text>
+                    </View>
+                    <Text style={{fontWeight: 'bold'}}>
+                      {progressData.week?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -1099,7 +1119,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       </Text>
                     </View>
                     <View style={styles.circleModel}>
-                      {/* <View style={styles.circle}>
+                      <View style={styles.circle}>
                         <View
                           style={{
                             flexDirection: 'column',
@@ -1111,7 +1131,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         <Text style={{fontWeight: 'bold'}}>
                           {progressData.today?.earning || 0}
                         </Text>
-                      </View> */}
+                      </View>
                       <View style={styles.circle}>
                         <View
                           style={{
@@ -1167,7 +1187,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       </Text>
                     </View>
                     <View style={styles.circleModel}>
-                      {/* <View style={styles.circle}>
+                      <View style={styles.circle}>
                         <View
                           style={{
                             flexDirection: 'column',
@@ -1179,7 +1199,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         <Text style={{fontWeight: 'bold'}}>
                           {progressData.today?.earning || 0}
                         </Text>
-                      </View> */}
+                      </View>
                       <View style={styles.circle}>
                         <View
                           style={{
@@ -1235,7 +1255,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       </Text>
                     </View>
                     <View style={styles.circleModel}>
-                      {/* <View style={styles.circle}>
+                      <View style={styles.circle}>
                         <View
                           style={{
                             flexDirection: 'column',
@@ -1247,7 +1267,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         <Text style={{fontWeight: 'bold'}}>
                           {progressData.today?.earning || 0}
                         </Text>
-                      </View> */}
+                      </View>
                       <View style={styles.circle}>
                         <View
                           style={{
@@ -2076,8 +2096,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   circle: {
-    width: 95,
-    height: 95,
+    width: 90,
+    height: 90,
     borderRadius: 50,
     backgroundColor: 'white',
     borderColor: '#28DA95',
