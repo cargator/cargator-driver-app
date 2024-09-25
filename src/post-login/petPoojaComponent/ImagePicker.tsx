@@ -1,14 +1,15 @@
 import React, {useState} from 'react';
 import {View, Button, Alert, StyleSheet, ActivityIndicator} from 'react-native';
 import {launchCamera, Asset, CameraOptions} from 'react-native-image-picker';
-import {PermissionsAndroid, Platform} from 'react-native';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import {getS3SignUrlApi, updateImageKey} from '../../services/userservices';
 import RNFetchBlob from 'rn-fetch-blob';
-
+import axios from 'axios';
+import {Buffer} from 'buffer';
+import { requestCameraPermission } from '../../components/functions';
 
 interface ImagePickerResponse {
   assets?: Asset[];
@@ -17,33 +18,31 @@ interface ImagePickerResponse {
   errorMessage?: string;
 }
 
-const OpenCamera = ({location,status,orderID}:any) => {
-
+const OpenCamera = ({location, status, orderID}: any) => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Function to request camera permissions for Android
-  const requestCameraPermission = async (): Promise<boolean> => {
-    try {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          {
-            title: 'Camera Permission',
-            message: 'App needs camera access to take photos.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      }
-      return true;
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
+  // const requestCameraPermission = async (): Promise<boolean> => {
+  //   try {
+  //     if (Platform.OS === 'android') {
+  //       const granted = await PermissionsAndroid.request(
+  //         PermissionsAndroid.PERMISSIONS.CAMERA,
+  //         {
+  //           title: 'Camera Permission',
+  //           message: 'App needs camera access to take photos.',
+  //           buttonNeutral: 'Ask Me Later',
+  //           buttonNegative: 'Cancel',
+  //           buttonPositive: 'OK',
+  //         },
+  //       );
+  //       return granted === PermissionsAndroid.RESULTS.GRANTED;
+  //     }
+  //     return true;
+  //   } catch (err) {
+  //     console.warn(err);
+  //     return false;
+  //   }
+  // };
 
   async function getS3SignUrl(key: string, contentType: string, type: string) {
     try {
@@ -56,14 +55,13 @@ const OpenCamera = ({location,status,orderID}:any) => {
         },
         {headers},
       );
-    //   console.log('response', response);
+
       return response.url;
     } catch (error: any) {
       console.log('error', error);
     }
   }
 
-  // Function to open the camera
   const openCamera = async () => {
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
@@ -76,7 +74,7 @@ const OpenCamera = ({location,status,orderID}:any) => {
 
     const options: CameraOptions = {
       mediaType: 'photo',
-      saveToPhotos: false,
+      saveToPhotos: true,
     };
 
     launchCamera(options, (response: ImagePickerResponse) => {
@@ -86,57 +84,55 @@ const OpenCamera = ({location,status,orderID}:any) => {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets.length > 0) {
         const photoUri = response.assets[0].uri || null;
-        console.log(">>>>>>>>>>>>>>>>",response.assets[0].uri);
         setImageUri(photoUri || null);
         uploadImage(photoUri);
       }
     });
   };
 
-  // Function to upload image to S3 using a signed URL
   const uploadImage = async (photoUri: string | null) => {
     if (!photoUri) return;
-   
+
     setIsUploading(true);
-   
+
     try {
-      const key = status === 'ARRIVED' 
-        ? `foodPackage/PickUp/image-${orderID}.jpg`
-        : `foodPackage/Drop/image-${orderID}.jpg`;
-   
+      const key =
+        status === 'ARRIVED'
+          ? `foodPackage/PickUp/image-${orderID}.jpg`
+          : `foodPackage/Drop/image-${orderID}.jpg`;
+
       const contentType = 'image/*';
       const presignedUrl = await getS3SignUrl(key, contentType, 'put');
+      const strippedUri = photoUri.replace('file://', ''); // 
 
-      const imageData = await RNFetchBlob.fs.readFile(photoUri, 'base64'); // Or 'ascii' for binary buffer
+      const fileContent = await RNFetchBlob.fs.readFile(strippedUri, 'base64'); // The file will read and returned as a Base64 string
 
-      // Step 2: Convert base64 string into binary data buffer
-    //   const buffer = RNFetchBlob.base64.decode(imageData);
-
-    //   console.log("??????????",buffer);
-   
-    //   const response = await RNFetchBlob.fetch(
-    //     'PUT',
-    //     presignedUrl,
-    //     {
-    //       'Content-Type': 'image/jpg',
-    //     },
-    //     buffer,
-    //   );
-
-    //   console.log("<<<<<<<object>>>>>>>",response);
-   
-    //   if (response.status === 200) {
-    //     await updateImageKey({ imageKey: key, contentType, status,location });
-    //     console.log('Image uploaded successfully!');
-    //   }
+      const buffer = Buffer.from(fileContent, 'base64'); //This line creates a Buffer object from the Base64-encoded string 
+      try {
+        const result = await axios.put(presignedUrl, buffer);
+        if(result.status === 200){
+          setIsUploading(false);
+          console.log('result  ==>', result.status);
+          const response: any = await updateImageKey({
+            vendor_order_id: orderID,
+            status: status,
+            imageKey: key,
+            latLong: location
+          });
+        }
+      } catch (error) {
+        console.log('error', error);
+        setIsUploading(false);
+      }
     } catch (error) {
       console.error('Error uploading image:', error);
       Alert.alert('Error', 'An error occurred while uploading the image.');
+      setIsUploading(false);
     } finally {
       setIsUploading(false);
     }
-}
-   
+  };
+
   return (
     <View style={styles.container}>
       <Button title="Take a Photo" onPress={openCamera} />

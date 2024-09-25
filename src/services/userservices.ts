@@ -88,5 +88,9 @@ export const getS3SignUrlApi = (data: any, headers: any) => {
 };
 
 export const updateImageKey = (data: any) => {
-  return customAxios.patch(`/update-app-image}`, data);
+  return customAxios.post(`/update-food-imageKey`, data);
+};
+
+export const updateVehicleImageKey = (data: any) => {
+  return customAxios.post(`/update-vehicle-imageKey`, data);
 };

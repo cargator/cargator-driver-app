@@ -193,7 +193,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const getProgressDetail = async () => {
     try {
       const response = await getProgressDetails();
-      setProgressData(response.data);
+      // setProgressData(response.data);
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
     }
@@ -508,7 +508,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     } catch (error) {
       setLoading(false);
-      console.log(error);
+      console.log("error while updating order", error);
     }
   };
 
@@ -520,7 +520,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setAvailableOrders([...availableOrdersRef.current]);
       dispatch(setRejectedOrders([...rejectedOrderRef.current]));
     } catch (error) {
-      console.log(error);
+      console.log("error when rejecting order",error);
     }
   };
 
@@ -547,7 +547,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       });
       startProcessing();
     } catch (error) {
-      console.log(error);
+      console.log("error on payment button",error);
     }
   };
 
@@ -568,26 +568,26 @@ const PetPujaScreen = ({navigation, route}: any) => {
           // setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
           setButtonText(buttonTextFlow.current[1].breakingPointName);
           break;
-        case OrderStatusEnum.ARRIVED:
-          // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
-          setButtonText(buttonTextFlow.current[2].breakingPointName);
-          break;
-        case OrderStatusEnum.DISPATCHED:
-          // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
-          setButtonText(buttonTextFlow.current[3].breakingPointName);
-          break;
-        case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-          // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
-          setButtonText(buttonTextFlow.current[4].breakingPointName);
-          break;
-        case OrderStatusEnum.DELIVERED:
-          setcod(false);
-          break;
-        default:
-          break;
-      }
-    } catch (error) {
-      console.log('error', error);
+          case OrderStatusEnum.ARRIVED:
+            // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+            setButtonText(buttonTextFlow.current[2].breakingPointName);
+            break;
+            case OrderStatusEnum.DISPATCHED:
+              // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+              setButtonText(buttonTextFlow.current[3].breakingPointName);
+              break;
+              case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
+                // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+                setButtonText(buttonTextFlow.current[4].breakingPointName);
+                break;
+                case OrderStatusEnum.DELIVERED:
+                  setcod(false);
+                  break;
+                  default:
+                    break;
+                    }
+    } catch (error: any) {
+      console.log('error on hendling pending order', error);
     }
   };
 
@@ -616,7 +616,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       availableOrdersRef.current = [...newOrders];
       setLoading(false);
     } catch (error) {
-      console.log('error', error);
+      console.log('error when getting pending order', error);
     }
   };
 
@@ -743,7 +743,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       const res = await getForGroundIntervalDurationAPI();
       forGroundIntervalDuration.current = res.data.forGroundIntervalDuration;
     } catch (error) {
-      console.log('error', error);
+      console.log('error on getting interval of loacation tracking', error);
     }
   };
 
@@ -1558,10 +1558,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             currentOnGoingOrderDetails.status,
                           ) && (
                             <OpenCamera
-                              location={myLocation.current}
-                              status={OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP}
+                              location={myLocation?.current}
+                              status={OrderStatusEnum?.ARRIVED}
                               orderID={
-                                currentOnGoingOrderDetails.order_details
+                                currentOnGoingOrderDetails?.order_details
                                   .vendor_order_id
                               }
                             />
@@ -1676,12 +1676,12 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
                             ].includes(currentOnGoingOrderDetails.status) && (
                               <OpenCamera
-                                location={myLocation.current}
+                                location={myLocation?.current}
                                 status={
-                                  OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP
+                                  OrderStatusEnum?.ARRIVED_CUSTOMER_DOORSTEP
                                 }
                                 orderID={
-                                  currentOnGoingOrderDetails.order_details
+                                  currentOnGoingOrderDetails?.order_details
                                     .vendor_order_id
                                 }
                               />
@@ -1719,7 +1719,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Marker.Animated
                         identifier="dropLocationMarker"
                         coordinate={
-                          realPath.length > 0
+                          realPath?.length > 0
                             ? realPath[realPath.length - 1]
                             : myLocation.current
                         }

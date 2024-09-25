@@ -270,6 +270,28 @@ export const requestLocationPermission = async (dispatch: any) => {
   }
 };
 
+export const requestCameraPermission = async (): Promise<boolean> => {
+  try {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message: 'App needs camera access to take photos.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
+    return true;
+  } catch (err) {
+    console.warn(err);
+    return false;
+  }
+};
+
 export const FetchUserImage = async (
   dispatch: any,
   profileImageKey: string,

@@ -1,9 +1,27 @@
 import React, {useEffect, useState} from 'react';
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+import {
+  launchCamera,
+  Asset,
+  CameraOptions,
+  ImagePickerResponse,
+} from 'react-native-image-picker';
+import {getS3SignUrlApi, updateVehicleImageKey} from '../services/userservices';
+import axios from 'axios';
+import {Buffer} from 'buffer';
+import {requestCameraPermission} from '../components/functions';
 import {useDispatch, useSelector} from 'react-redux';
 import SidebarIcon from '../svg/SidebarIcon';
 import moment from 'moment';
@@ -16,6 +34,8 @@ import {removeUserData} from '../redux/redux';
 import {isEmpty} from 'lodash';
 import RNFetchBlob from 'rn-fetch-blob';
 import {FetchUserImage} from '../components/functions';
+import {Button} from 'react-native-elements';
+
 const Profile = (props: any) => {
   const userId = useSelector((store: any) => store.userData._id);
   const userImg = useSelector((store: any) => store.userImage.path);
@@ -28,9 +48,11 @@ const Profile = (props: any) => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
   const [formattedDate, setFormattedDate] = useState('');
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const handleLogout = async () => {
     try {
-      await RNFetchBlob.fs.unlink(`file://${userImg}`);
+      // await RNFetchBlob.fs.unlink(`file://${userImg}`);
       socketDisconnect();
       dispatch(removeUserData());
     } catch (error) {
@@ -51,6 +73,89 @@ const Profile = (props: any) => {
     }
   };
 
+  async function getS3SignUrl(key: string, contentType: string, type: string) {
+    try {
+      const headers = {'Content-Type': 'application/json'};
+      const response: any = await getS3SignUrlApi(
+        {
+          key,
+          contentType,
+          type,
+        },
+        {headers},
+      );
+
+      return response.url;
+    } catch (error: any) {
+      console.log('error while getting S3SignedUrl', error);
+    }
+  }
+
+  const openCamera = async () => {
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) {
+      Alert.alert(
+        'Permission Denied',
+        'Camera permission is required to use this feature.',
+      );
+      return;
+    }
+
+    const options: CameraOptions = {
+      mediaType: 'photo',
+      saveToPhotos: false,
+    };
+
+    launchCamera(options, (response: ImagePickerResponse) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else if (response.assets && response.assets.length > 0) {
+        const photoUri = response.assets[0].uri || null;
+        setImageUri(photoUri || null);
+        uploadImage(photoUri);
+      }
+    });
+  };
+
+  const uploadImage = async (photoUri: string | null) => {
+    if (!photoUri) return;
+
+    setIsUploading(true);
+
+    try {
+      const key = `vehicles/vehicleimage/${userId}.jpg`;
+
+      const contentType = 'image/*';
+      const presignedUrl = await getS3SignUrl(key, contentType, 'put');
+      const strippedUri = photoUri.replace('file://', ''); //
+
+      const fileContent = await RNFetchBlob.fs.readFile(strippedUri, 'base64'); // The file will read and returned as a Base64 string
+
+      const buffer = Buffer.from(fileContent, 'base64'); //This line creates a Buffer object from the Base64-encoded string
+      try {
+        const result = await axios.put(presignedUrl, buffer);
+        if(result.status === 200){
+          const response: any = await updateVehicleImageKey({
+            userId: userId,
+            imageKey: key,
+          });
+          console.log("response >>",response);
+        }
+      } catch (error) {
+        console.log('error while uploading vehicle image', error);
+      }
+      setIsUploading(false);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', 'An error occurred while uploading the image.');
+      setIsUploading(false);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   useEffect(() => {
     if (isFocused) {
       getDriverDetail();
@@ -59,19 +164,19 @@ const Profile = (props: any) => {
     }
   }, [isFocused]);
 
-  const checkImageExists = async () => {
-    try {
-      const exists = await RNFetchBlob.fs.exists(userImg);
-      if (!exists) {
-        console.log('fetching user Image.....as he may have cleared cache');
-        await FetchUserImage(dispatch, profileImageKey, userId);
-      }
-    } catch (error) {
-      console.log('error in checkImageExists', error);
-    }
-  };
+  // const checkImageExists = async () => {
+  //   try {
+  //     const exists = await RNFetchBlob.fs.exists(userImg);
+  //     if (!exists) {
+  //       console.log('fetching user Image.....as he may have cleared cache');
+  //       await FetchUserImage(dispatch, profileImageKey, userId);
+  //     }
+  //   } catch (error) {
+  //     console.log('error in checkImageExists', error);
+  //   }
+  // };
   useEffect(() => {
-    checkImageExists();
+    // checkImageExists();
   }, []);
   return (
     <>
@@ -105,11 +210,19 @@ const Profile = (props: any) => {
                 />
               ) : (
                 <View style={styles.profileIcon}>
-                    <Text style={styles.profileIconText}>
-                      {userData.firstName[0].toUpperCase()}
-                    </Text>
+                  <Text style={styles.profileIconText}>
+                    {userData.firstName[0].toUpperCase()}
+                  </Text>
                 </View>
               )}
+
+              {/* uploading vehicle image  */}
+              <View style={styles.vehicleImage}>
+                <Button title="Upload vehicle image" onPress={openCamera} />
+                {isUploading && (
+                  <ActivityIndicator size="large" color="#00ff00" />
+                )}
+              </View>
 
               <View style={styles.profileDataContainer}>
                 <View style={styles.contentView}>
@@ -188,6 +301,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-around',
     alignItems: 'center',
+    marginTop:hp(4)
+  },
+  vehicleImage: {
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: hp(3),
   },
   profileDataContainer: {
     alignSelf: 'center',
@@ -246,7 +366,7 @@ const styles = StyleSheet.create({
   text: {fontSize: wp(5), color: '#000000'},
   loaderStyles: {marginTop: hp(40), alignSelf: 'center'},
   bottomView: {
-    top: hp(15),
+    top: hp(5),
     alignSelf: 'center',
     alignItems: 'center',
   },
