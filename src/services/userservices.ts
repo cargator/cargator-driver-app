@@ -94,3 +94,7 @@ export const updateImageKey = (data: any) => {
 export const updateVehicleImageKey = (data: any) => {
   return customAxios.post(`/update-vehicle-imageKey`, data);
 };
+
+export const updateDeviceInfo = (data: any) => {
+  return customAxios.post(`/update-device-info`, data);
+};

@@ -46,23 +46,50 @@ import PetPujaScreen from './src/post-login/PetPujaScreen';
 import Profile from './src/post-login/Profile';
 import LoginOtpScreen from './src/pre-login/LoginOtpScreen';
 import LoginScreen from './src/pre-login/LoginScreen';
-import store, {persistor, removeUserData, setGpsPermission} from './src/redux/redux';
+import store, {
+  persistor,
+  removeUserData,
+  setGpsPermission,
+} from './src/redux/redux';
 import {requestUserPermission} from './src/utils/firebase-config';
 import {socketDisconnect} from './src/utils/socket';
-import { isLocationEnabled } from 'react-native-android-location-enabler';
+import {isLocationEnabled} from 'react-native-android-location-enabler';
+import { updateDeviceInfo } from './src/services/userservices';
 
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
   const [versionNumber, setVersionNumber] = useState('');
+  const batteryLevel = useRef('')
+
+  const updateDeviceInformation = async(data: any) => {
+    try {
+      const res:any = await updateDeviceInfo(data)
+      console.log("device info response>>>", res);
+    } catch (error: any) {
+      console.log("error device info api>>",error);
+    }
+  }
 
   useEffect(() => {
-    const getVersion = async () => {
-      const version = DeviceInfo.getVersion();
-      setVersionNumber(version);
+    const getDeviceInfo = async () => {
+      const versionNumber = DeviceInfo.getVersion();
+      const deviceModel = DeviceInfo.getModel();
+      const deviceBrand = DeviceInfo.getBrand();
+      console.log('Device Brand:', deviceBrand);
+      const systemName = DeviceInfo.getSystemName();
+      console.log('System Name:', systemName);
+      const systemVersion = DeviceInfo.getSystemVersion();
+      console.log('System Version:', systemVersion);
+      DeviceInfo.getBatteryLevel().then((level) => {
+        batteryLevel.current =  ( level * 100).toFixed(0)
+      })
+        setVersionNumber(versionNumber);
+        // const data = {versionNumber,deviceModel,deviceBrand,systemName,systemVersion,batteryLevel.current}
+        // updateDeviceInformation(data)
     };
 
     requestUserPermission();
-    getVersion();
+    getDeviceInfo();
   }, []);
 
   const userImg = useSelector((store: any) => store.userImage.path);
@@ -115,7 +142,6 @@ export const Routing = () => {
   );
   const navigationRef = useRef<any>(null);
   const navigationRefFlag = useRef<any>(true);
-
 
   useEffect(() => {
     SplashScreen.hide();

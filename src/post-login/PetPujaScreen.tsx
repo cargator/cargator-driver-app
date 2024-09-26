@@ -641,42 +641,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
     setLoading(false);
   };
 
-  // const requestLocationPermission = async () => {
-  //   // Geolocation.requestAuthorization('always');
-  //   try {
-  //     const granted = await PermissionsAndroid.request(
-  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-  //       {
-  //         title: 'Location Permission',
-  //         message: 'App needs access to your location.',
-  //         buttonNeutral: 'Ask Me Later',
-  //         buttonNegative: 'Cancel',
-  //         buttonPositive: 'OK',
-  //       },
-  //     );
-
-  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-  //       // console.log('Location permission granted');
-  //     } else {
-  //       console.log('Location permission denied');
-  //     }
-  //     PermissionsAndroid.request(
-  //       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-  //       {
-  //         title: 'Background Location Permission',
-  //         message:
-  //           'We need access to your location ' +
-  //           'so you can get live quality updates.',
-  //         buttonNeutral: 'Ask Me Later',
-  //         buttonNegative: 'Cancel',
-  //         buttonPositive: 'OK',
-  //       },
-  //     );
-  //   } catch (err) {
-  //     console.warn(err);
-  //   }
-  // };
-
   const startForeground = () => {
     ReactNativeForegroundService.add_task(startTracking, {
       delay: forGroundIntervalDuration.current * 1000,
@@ -843,24 +807,31 @@ const PetPujaScreen = ({navigation, route}: any) => {
               setIsProfileModal(false);
             }}></TouchableOpacity>
 
-          <TouchableOpacity onPress={() => dialCall(supportContact[0])}>
-            <View style={styles.supportRow}>
-              <Image
-                source={require('../images/callicon.png')}
-                style={styles.supportCallIcon}
-              />
-              <Text style={styles.supportText}>{supportContact[0]}</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => dialCall(supportContact[1])}>
-            <View style={styles.supportRow}>
-              <Image
-                source={require('../images/callicon.png')}
-                style={styles.supportCallIcon}
-              />
-              <Text style={styles.supportText}>{supportContact[1]}</Text>
-            </View>
-          </TouchableOpacity>
+          <View style={styles.supportContainer}>
+            <Text style={styles.supportPersonName}>Area Manager</Text>
+            <TouchableOpacity onPress={() => dialCall(supportContact[0])}>
+              <View style={styles.supportRow}>
+                <Image
+                  source={require('../images/callicon.png')}
+                  style={styles.profileSupportCallIcon}
+                />
+                <Text style={styles.supportText}>{supportContact[0]}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.separatorLine} />
+          <View style={styles.supportContainer}>
+            <Text style={styles.supportPersonName}>Store Manager</Text>
+            <TouchableOpacity onPress={() => dialCall(supportContact[1])}>
+              <View style={styles.supportRow}>
+                <Image
+                  source={require('../images/callicon.png')}
+                  style={styles.profileSupportCallIcon}
+                />
+                <Text style={styles.supportText}>{supportContact[1]}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -1947,40 +1918,56 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     right: wp(2),
   },
-  profileSupportIcon: {
-    height: hp(5),
-    width: wp(10),
+  supportContainer: {
+    // borderRadius: 8,
+    // marginBottom: 10,
+    // backgroundColor: '#F7FDF7',
+    alignItems:'center'
+  },
+  supportPersonName: {
+    fontFamily: "Roboto Mono",
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#212121',
+    marginBottom: 5,
+  },
+  supportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  profileSupportCallIcon: {
+    height: 20,
+    width: 20,
+    tintColor: '#28a745', // Matching the green color for call icon
   },
   profileModalView: {
     backgroundColor: 'white',
     borderRadius: wp(2),
-    padding: wp(2),
     shadowColor: '#000000',
-    shadowOffset: {
-      width: wp(0),
-      height: hp(2),
-    },
-    shadowOpacity: wp(0.25),
     shadowRadius: wp(4),
     elevation: hp(5),
     gap: hp(2),
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     width: wp(40),
-    height: hp(10),
+    height: hp(20),
     position: 'absolute',
     top: hp(6),
     right: wp(2),
     zIndex: 4,
   },
-  supportRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: wp(2),
+  separatorLine: {
+    height: 1,
+    backgroundColor: '#ddd', 
+    // marginVertical: 10,
+    alignSelf: 'stretch',
   },
   supportText: {
-    fontSize: wp(4),
-    color: '#000',
+    fontFamily: "Roboto Mono",
+    fontSize: 14,
+    color: '#28a745',
+    fontWeight: "500",
+    alignItems:'center'
   },
   modalContainer: {
     flex: 1,
@@ -2051,6 +2038,10 @@ const styles = StyleSheet.create({
   supportCallIcon: {
     width: 20,
     height: 20,
+  },
+  profileSupportIcon: {
+    height: hp(5),
+    width: wp(10),
   },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
