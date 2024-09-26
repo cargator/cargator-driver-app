@@ -508,7 +508,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     } catch (error) {
       setLoading(false);
-      console.log("error while updating order", error);
+      console.log('error while updating order', error);
     }
   };
 
@@ -520,7 +520,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setAvailableOrders([...availableOrdersRef.current]);
       dispatch(setRejectedOrders([...rejectedOrderRef.current]));
     } catch (error) {
-      console.log("error when rejecting order",error);
+      console.log('error when rejecting order', error);
     }
   };
 
@@ -547,7 +547,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       });
       startProcessing();
     } catch (error) {
-      console.log("error on payment button",error);
+      console.log('error on payment button', error);
     }
   };
 
@@ -568,24 +568,24 @@ const PetPujaScreen = ({navigation, route}: any) => {
           // setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
           setButtonText(buttonTextFlow.current[1].breakingPointName);
           break;
-          case OrderStatusEnum.ARRIVED:
-            // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
-            setButtonText(buttonTextFlow.current[2].breakingPointName);
-            break;
-            case OrderStatusEnum.DISPATCHED:
-              // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
-              setButtonText(buttonTextFlow.current[3].breakingPointName);
-              break;
-              case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-                // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
-                setButtonText(buttonTextFlow.current[4].breakingPointName);
-                break;
-                case OrderStatusEnum.DELIVERED:
-                  setcod(false);
-                  break;
-                  default:
-                    break;
-                    }
+        case OrderStatusEnum.ARRIVED:
+          // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
+          setButtonText(buttonTextFlow.current[2].breakingPointName);
+          break;
+        case OrderStatusEnum.DISPATCHED:
+          // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
+          setButtonText(buttonTextFlow.current[3].breakingPointName);
+          break;
+        case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
+          // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
+          setButtonText(buttonTextFlow.current[4].breakingPointName);
+          break;
+        case OrderStatusEnum.DELIVERED:
+          setcod(false);
+          break;
+        default:
+          break;
+      }
     } catch (error: any) {
       console.log('error on hendling pending order', error);
     }
@@ -937,7 +937,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Text style={styles.progressLable}> Total KM's</Text>
                     </View>
                     <Text style={styles.progressValue}>
-                      {progressData.today?.earning || 0}
+                      {progressData.today?.totalDistance || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -989,7 +989,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Text style={styles.progressLable}> Total KM's</Text>
                     </View>
                     <Text style={styles.progressValue}>
-                      {progressData.week?.earning || 0}
+                      {progressData.week?.totalDistance || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -1041,7 +1041,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Text style={styles.progressLable}> Total KM's</Text>
                     </View>
                     <Text style={styles.progressValue}>
-                      {progressData.week?.earning || 0}
+                      {progressData.week?.totalDistance || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -1152,7 +1152,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/watch.png')} />
-                          <Text style={styles.progressLable}>On-Ride Duration</Text>
+                          <Text style={styles.progressLable}>
+                            On-Ride Duration
+                          </Text>
                         </View>
 
                         <Text style={styles.progressValue}>
@@ -1220,7 +1222,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/watch.png')} />
-                          <Text style={styles.progressLable}>On-Ride Duration</Text>
+                          <Text style={styles.progressLable}>
+                            On-Ride Duration
+                          </Text>
                         </View>
 
                         <Text style={styles.progressValue}>
@@ -1288,7 +1292,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/watch.png')} />
-                          <Text style={styles.progressLable}>On-Ride Duration</Text>
+                          <Text style={styles.progressLable}>
+                            On-Ride Duration
+                          </Text>
                         </View>
 
                         <Text style={styles.progressValue}>
@@ -2109,11 +2115,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressLable: {
-    fontSize:wp(3)
+    fontSize: wp(3),
   },
   progressValue: {
-    fontSize:wp(3.2),
-    fontWeight:"bold"
+    fontSize: wp(3.2),
+    fontWeight: 'bold',
   },
   modalView: {
     flex: 1,
