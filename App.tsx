@@ -59,16 +59,15 @@ import { updateDeviceInfo } from './src/services/userservices';
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
   const [versionNumber, setVersionNumber] = useState('');
-  const batteryLevel = useRef('')
 
-  const updateDeviceInformation = async(data: any) => {
-    try {
-      const res:any = await updateDeviceInfo(data)
-      console.log("device info response>>>", res);
-    } catch (error: any) {
-      console.log("error device info api>>",error);
-    }
-  }
+  // const updateDeviceInformation = async(data: any) => {
+  //   try {
+  //     const res:any = await updateDeviceInfo(data)
+  //     console.log("device info response>>>", res);
+  //   } catch (error: any) {
+  //     console.log("error device info api>>",error);
+  //   }
+  // }
 
   useEffect(() => {
     const getDeviceInfo = async () => {
@@ -80,11 +79,12 @@ const Appdrawercontent = (props: any) => {
       console.log('System Name:', systemName);
       const systemVersion = DeviceInfo.getSystemVersion();
       console.log('System Version:', systemVersion);
-      DeviceInfo.getBatteryLevel().then((level) => {
-        batteryLevel.current =  ( level * 100).toFixed(0)
+      const batteryLevel = DeviceInfo.getBatteryLevel().then((level) => {
+        return ( level * 100).toFixed(0)
       })
-        setVersionNumber(versionNumber);
-        // const data = {versionNumber,deviceModel,deviceBrand,systemName,systemVersion,batteryLevel.current}
+      // console.log(">>>>>>>>>>>>>>>>>",batteryLevel);
+      //   setVersionNumber(versionNumber);
+      //   const data = {versionNumber,deviceModel,deviceBrand,systemName,systemVersion,batteryLevel}
         // updateDeviceInformation(data)
     };
 

@@ -600,6 +600,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         availableOrdersRef.current = [];
         return;
       }
+
       resp = await getAllOrdersAPI();
       if (availableOrdersRef.current.length == 0) {
         orderAcceptAnimation();
@@ -715,6 +716,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     try {
       const result = await getFlowsAPI();
       buttonTextFlow.current = result.data;
+      
       // console.log('getButtonTextFlows>>>>>', result.data);
     } catch (error: any) {
       console.log('getButtonTextFlows error', {error});
@@ -727,7 +729,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }, []),
   );
 
-  useEffect(() => {
+  // useFocusEffect(
+    useEffect(() => {
     if (orderStartedRef.current) {
       return;
     }
@@ -757,6 +760,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         if (isConnected && !orderStartedRef.current) {
           driverStatusRef.current = true;
           rejectedOrderRef.current = rejectedOrders;
+          getButtonTextFlows()
           getDriverStatus();
           startProcessing();
         }
@@ -769,6 +773,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     };
   }, [route.params?.refresh, isDriverOnline]);
+// );
 
   useEffect(() => {
     if (orderStarted && currentOnGoingOrderDetails._id) {
@@ -1113,7 +1118,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           <Text style={styles.progressLable}> Total KM's</Text>
                         </View>
                         <Text style={styles.progressValue}>
-                          {progressData.today?.earning || 0}
+                          {progressData.today?.totalDistance || 0}
                         </Text>
                       </View>
                       <View style={styles.circle}>
@@ -1183,7 +1188,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           <Text style={styles.progressLable}> Total KM's</Text>
                         </View>
                         <Text style={styles.progressValue}>
-                          {progressData.week?.earning || 0}
+                          {progressData.week?.totalDistance || 0}
                         </Text>
                       </View>
                       <View style={styles.circle}>
@@ -1253,7 +1258,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           <Text style={styles.progressLable}> Total KM's</Text>
                         </View>
                         <Text style={styles.progressValue}>
-                          {progressData.month?.earning || 0}
+                          {progressData.month?.totalDistance || 0}
                         </Text>
                       </View>
                       <View style={styles.circle}>

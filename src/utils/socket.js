@@ -9,7 +9,7 @@ function socketConnection(token) {
       // `https://sukam-api.cargator.org/?token=${token}`,
       `https://sukam-api-dev.cargator.org/?token=${token}`,
       // `http://192.168.1.1:5000?token=${token}`,
-      // `https://3fe6-114-79-176-62.ngrok-free.app?token=${token}`,
+      // `https://e97a-114-79-176-62.ngrok-free.app?token=${token}`,
       {transports: ['websocket'], forceNew: true, jsonp: true},
     );
 
