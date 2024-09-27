@@ -716,7 +716,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
     try {
       const result = await getFlowsAPI();
       buttonTextFlow.current = result.data;
-      
+
       // console.log('getButtonTextFlows>>>>>', result.data);
     } catch (error: any) {
       console.log('getButtonTextFlows error', {error});
@@ -730,7 +730,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
   );
 
   // useFocusEffect(
-    useEffect(() => {
+  useEffect(() => {
     if (orderStartedRef.current) {
       return;
     }
@@ -760,7 +760,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         if (isConnected && !orderStartedRef.current) {
           driverStatusRef.current = true;
           rejectedOrderRef.current = rejectedOrders;
-          getButtonTextFlows()
+          getButtonTextFlows();
           getDriverStatus();
           startProcessing();
         }
@@ -773,7 +773,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     };
   }, [route.params?.refresh, isDriverOnline]);
-// );
+  // );
 
   useEffect(() => {
     if (orderStarted && currentOnGoingOrderDetails._id) {
@@ -1017,7 +1017,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Text style={styles.progressLable}> Total KM's</Text>
                     </View>
                     <Text style={styles.progressValue}>
-                      {progressData.week?.totalDistance || 0}
+                      {progressData.month?.totalDistance || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
@@ -1175,7 +1175,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           <Text style={styles.progressLable}> Earning</Text>
                         </View>
                         <Text style={styles.progressValue}>
-                          {progressData.today?.earning || 0}
+                          {progressData.week?.earning || 0}
                         </Text>
                       </View>
                       <View style={styles.circle}>
@@ -1245,7 +1245,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           <Text style={styles.progressLable}> Earning</Text>
                         </View>
                         <Text style={styles.progressValue}>
-                          {progressData.today?.earning || 0}
+                          {progressData.month?.earning || 0}
                         </Text>
                       </View>
                       <View style={styles.circle}>
@@ -1927,10 +1927,10 @@ const styles = StyleSheet.create({
     // borderRadius: 8,
     // marginBottom: 10,
     // backgroundColor: '#F7FDF7',
-    alignItems:'center'
+    alignItems: 'center',
   },
   supportPersonName: {
-    fontFamily: "Roboto Mono",
+    fontFamily: 'Roboto Mono',
     fontSize: 17,
     fontWeight: '700',
     color: '#212121',
@@ -1963,16 +1963,16 @@ const styles = StyleSheet.create({
   },
   separatorLine: {
     height: 1,
-    backgroundColor: '#ddd', 
+    backgroundColor: '#ddd',
     // marginVertical: 10,
     alignSelf: 'stretch',
   },
   supportText: {
-    fontFamily: "Roboto Mono",
+    fontFamily: 'Roboto Mono',
     fontSize: 14,
     color: '#28a745',
-    fontWeight: "500",
-    alignItems:'center'
+    fontWeight: '500',
+    alignItems: 'center',
   },
   modalContainer: {
     flex: 1,
