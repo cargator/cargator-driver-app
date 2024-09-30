@@ -1341,11 +1341,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontWeight: '600',
+                                  fontWeight: '700',
                                   color: '#000000',
-                                  fontSize: 15,
+                                  fontSize: 12,
                                 }}>
-                                {'₹ '}0
+                                {'₹ '}{availableOrders[0]?.estimatedEarningFromPickupToDrop}
                               </Text>
                             </View>
                           </View>
@@ -1502,10 +1502,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               color: '#000000',
                               fontFamily: 'RobotoMono-Regular',
                               fontWeight: '700',
-                              fontSize: 16,
+                              fontSize: 14,
+                              alignItems:'center'
                             }}>
-                            {0}
                             {'₹'}
+                            {currentOnGoingOrderDetails?.estimatedEarningFromPickupToDrop}
                           </Text>
                         </View>
                         <View style={styles.line} />
@@ -1616,13 +1617,14 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 color: '#000000',
                                 fontFamily: 'RobotoMono-Regular',
                                 fontWeight: '700',
-                                fontSize: 16,
+                                fontSize: 14,
+                                alignItems:'center'
                               }}>
-                              {
+                              {/* {
                                 currentOnGoingOrderDetails.order_details
                                   .order_total
-                              }
-                              {'₹'}
+                              } */}
+                              {'₹'}{currentOnGoingOrderDetails?.estimatedEarningFromPickupToDrop}
                             </Text>
                           </View>
                           <View style={styles.line} />
