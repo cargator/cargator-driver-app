@@ -54,38 +54,42 @@ import store, {
 import {requestUserPermission} from './src/utils/firebase-config';
 import {socketDisconnect} from './src/utils/socket';
 import {isLocationEnabled} from 'react-native-android-location-enabler';
-import { updateDeviceInfo } from './src/services/userservices';
+import {updateDeviceInfo} from './src/services/userservices';
 
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
   const [versionNumber, setVersionNumber] = useState('');
+  const [batteryLevel, setbatteryLevel] = useState('');
 
-  // const updateDeviceInformation = async(data: any) => {
-  //   try {
-  //     const res:any = await updateDeviceInfo(data)
-  //     console.log("device info response>>>", res);
-  //   } catch (error: any) {
-  //     console.log("error device info api>>",error);
-  //   }
-  // }
+  const updateDeviceInformation = async (data: any) => {
+    try {
+      const res: any = await updateDeviceInfo(data);
+      // console.log('device info response>>>', res);
+    } catch (error: any) {
+      console.log('error device info api>>', error);
+    }
+  };
 
   useEffect(() => {
     const getDeviceInfo = async () => {
-      const versionNumber = DeviceInfo.getVersion();
-      const deviceModel = DeviceInfo.getModel();
-      const deviceBrand = DeviceInfo.getBrand();
-      console.log('Device Brand:', deviceBrand);
-      const systemName = DeviceInfo.getSystemName();
-      console.log('System Name:', systemName);
-      const systemVersion = DeviceInfo.getSystemVersion();
-      console.log('System Version:', systemVersion);
-      const batteryLevel = DeviceInfo.getBatteryLevel().then((level) => {
-        return ( level * 100).toFixed(0)
-      })
-      // console.log(">>>>>>>>>>>>>>>>>",batteryLevel);
-      //   setVersionNumber(versionNumber);
-      //   const data = {versionNumber,deviceModel,deviceBrand,systemName,systemVersion,batteryLevel}
-        // updateDeviceInformation(data)
+      DeviceInfo.getBatteryLevel().then(level => {
+        const batteryLevel = (level * 100).toFixed(0);
+        const versionNumber = DeviceInfo.getVersion();
+        setVersionNumber(versionNumber);
+        const deviceModel = DeviceInfo.getModel();
+        const deviceBrand = DeviceInfo.getBrand();
+        const systemName = DeviceInfo.getSystemName();
+        const systemVersion = DeviceInfo.getSystemVersion();
+        const data = {
+          versionNumber,
+          deviceModel,
+          deviceBrand,
+          systemName,
+          systemVersion,
+          batteryLevel,
+        };
+        updateDeviceInformation(data);
+      });
     };
 
     requestUserPermission();

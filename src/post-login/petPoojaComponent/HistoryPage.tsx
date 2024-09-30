@@ -70,7 +70,7 @@ const HistoryPage = (props: any) => {
     const stardtDated = year + '-' + (month + 1) + '-' + newDate;
     // setPage(1);
     console.log(stardtDated);
-    
+
     fetchHistory(stardtDated);
   };
 
@@ -84,7 +84,7 @@ const HistoryPage = (props: any) => {
       });
       setHistoryData(response.data);
       console.log(response.data);
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -185,10 +185,9 @@ const HistoryPage = (props: any) => {
   };
 
   useEffect(() => {
-   
     if (!finaldate) {
-      console.log(date.getDate(),date.getMonth(), date.getFullYear());
-      
+      console.log(date.getDate(), date.getMonth(), date.getFullYear());
+
       setScreenDate(date.getDate(), date.getMonth(), date.getFullYear());
     }
     // fetchHistory(page);
@@ -276,15 +275,21 @@ const HistoryPage = (props: any) => {
                 <Incentive />
               </ImageBackground>
             </View> */}
-            <FlatList
-              data={historyData}
-              renderItem={({item}) => <OrderHistoryCart order={item} />}
-              keyExtractor={item => item._id}
-              // onEndReached={handleLoadMore}
-              onEndReachedThreshold={0.8}
-              ListFooterComponent={renderFooter}
-              showsVerticalScrollIndicator={false}
-            />
+            {historyData.length === 0 ? (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>No Results!</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={historyData}
+                renderItem={({item}) => <OrderHistoryCart order={item} />}
+                keyExtractor={item => item._id}
+                // onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.8}
+                ListFooterComponent={renderFooter}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </View>
         </>
       )}
@@ -365,6 +370,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noResultsText: {
+    fontWeight:'500',
+    fontFamily:'RobotoMono',
+    fontSize: 22,
+    color: '#000000',
   },
   image: {
     justifyContent: 'center',

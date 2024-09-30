@@ -35,6 +35,7 @@ import {isEmpty} from 'lodash';
 import RNFetchBlob from 'rn-fetch-blob';
 import {FetchUserImage} from '../components/functions';
 import {Button} from 'react-native-elements';
+import Toast from 'react-native-toast-message';
 
 const Profile = (props: any) => {
   const userId = useSelector((store: any) => store.userData._id);
@@ -103,7 +104,7 @@ const Profile = (props: any) => {
 
     const options: CameraOptions = {
       mediaType: 'photo',
-      saveToPhotos: false,
+      saveToPhotos: true,
     };
 
     launchCamera(options, (response: ImagePickerResponse) => {
@@ -141,7 +142,13 @@ const Profile = (props: any) => {
             userId: userId,
             imageKey: key,
           });
-          console.log("response >>",response);
+          setIsUploading(false);
+          Toast.show({
+            type: 'success',
+            text1: `VEHICLE IMAGE UOLOADED SUCCESSFULLY !`,
+            visibilityTime: 5000,
+          });
+          // console.log("response >>",response);
         }
       } catch (error) {
         console.log('error while uploading vehicle image', error);

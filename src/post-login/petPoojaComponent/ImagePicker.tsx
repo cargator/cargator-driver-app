@@ -10,6 +10,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import axios from 'axios';
 import {Buffer} from 'buffer';
 import { requestCameraPermission } from '../../components/functions';
+import Toast from 'react-native-toast-message';
 
 interface ImagePickerResponse {
   assets?: Asset[];
@@ -118,6 +119,11 @@ const OpenCamera = ({location, status, orderID}: any) => {
             status: status,
             imageKey: key,
             latLong: location
+          });
+          Toast.show({
+            type: 'success',
+            text1: `FOOD IMAGE UOLOADED SUCCESSFULLY !`,
+            visibilityTime: 5000,
           });
         }
       } catch (error) {
