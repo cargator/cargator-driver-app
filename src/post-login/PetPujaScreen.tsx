@@ -630,7 +630,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
       const status = res.data.rideStatus === 'offline' ? false : true;
       setIsDriverOnline(status);
 
-      if (!socketInstance.current || !socketInstance.current?.connected) {
+      if ((!socketInstance.current || !socketInstance.current?.connected) && status) {
+        console.log("inside getDriverStatus", status);
         socketInstance.current = await getSocketInstance(loginToken);
         setIsSocketConnected(socketInstance.current.connected);
         startOrderStatusListener();
