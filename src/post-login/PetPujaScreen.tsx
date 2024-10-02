@@ -42,7 +42,6 @@ import {
 } from '../redux/redux';
 import customAxios from '../services/appservices';
 import {
-  getFlowsAPI,
   getForGroundIntervalDurationAPI,
   getProgressDetails,
   updateOrderStatusAPI,
@@ -62,8 +61,7 @@ import Spinner from '../svg/spinner';
 import {getSocketInstance, socketDisconnect} from '../utils/socket';
 import OnlineOfflineSwitch from './OnlineOfflineSwitch';
 import ReactNativeForegroundService from '@supersami/rn-foreground-service';
-import {useFocusEffect} from '@react-navigation/native';
-import OpenCamera from './petPoojaComponent/ImagePicker';
+import { useFocusEffect } from '@react-navigation/native';
 
 const OrderStatusEnum = {
   ORDER_ACCEPTED: 'ACCEPTED', //(Order Created Successfully.)
@@ -96,19 +94,12 @@ export const SliderText = {
   [OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]: 'ORDER DELIVERED',
 };
 
-const supportContact = ['8178514753', '8800097708'];
-
 export const dialCall = (number: string) => {
   let phoneNumber = `tel:${number}`;
   Linking.openURL(phoneNumber).catch((err: any) => {
     console.log('err', err), Alert.alert('Error', 'Unable to make a call');
   });
 };
-
-const screen = Dimensions.get('window');
-const ASPECTS_RATIO = screen.width / screen.height;
-const LATITUDE_DELTA = 0.009;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECTS_RATIO;
 
 const PetPujaScreen = ({navigation, route}: any) => {
   const currentOnGoingOrderDetails = useSelector(
@@ -120,8 +111,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const riderPath = useSelector((store: any) => store.riderPath);
   const rejectedOrders = useSelector((store: any) => store.rejectedOrders);
   const [progressData, setProgressData] = useState<any>({});
-  const [isProfileModal, setIsProfileModal] = useState<boolean>(false);
   const dispatch = useDispatch();
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
   const mapRef = useRef<any>(null);
   const [isDriverOnline, setIsDriverOnline] = useState<boolean>(false);
   const netConnected = useRef(false);
@@ -143,26 +134,45 @@ const PetPujaScreen = ({navigation, route}: any) => {
   const socketInstance = useRef<any>(undefined);
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
   const [geolocationWatchId, setGeolocationWatchId] = useState<any>();
-  const buttonTextFlow = useRef<any>();
-  const forGroundIntervalDuration = useRef<any>(15);
-  const currentOnGoingOrderId = useRef<any>();
+  const forGroundIntervalDuration = useRef<any>(15)
+  const currentOnGoingOrderId = useRef<any>()
 
   const myLocation = useRef<any>({longitude: 72.870729, latitude: 19.051322});
   let prevLocation: any = useRef(null);
 
+  const screen = Dimensions.get('window');
+  const ASPECTS_RATIO = screen.width / screen.height;
+  const LATITUDE_DELTA = 0.009;
+  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECTS_RATIO;
+
   const [region, setRegion] = useState({
     ...myLocation.current,
-    latitudeDelta: LATITUDE_DELTA,
-    longitudeDelta: LONGITUDE_DELTA,
+    latitudeDelta: 0.001,
+    longitudeDelta: 0.001,
   });
 
-  const autoUpdateRegion = () => {
-    setRegion({
-      ...myLocation.current,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA,
-    });
+   // Update region when the user's interaction is complete
+   const onRegionChangeComplete = (newRegion: any) => {
+    if (isUserInteracting) {
+      setRegion(newRegion); // Update region to where the user has zoomed/panned
+    }
+    setIsUserInteracting(false); // Allow further automatic updates
   };
+
+  const onUserInteractionStart = () => {
+    setIsUserInteracting(true); // Indicate that the user is interacting with the map
+  };
+
+  const autoUpdateRegion = () => {
+    if (!isUserInteracting) {
+      setRegion({
+        ...myLocation.current,
+        latitudeDelta: 0.001,
+        longitudeDelta: 0.001,
+      });
+    }
+  };
+
 
   useEffect(() => {
     autoUpdateRegion();
@@ -256,8 +266,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         {
           title: 'Location Permission',
-          message:
-            'This app needs access to your location " + "so you can track your movements in real-time, even when the app is closed.",',
+          message: 'This app needs access to your location " + "so you can track your movements in real-time, even when the app is closed.",',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
         },
@@ -297,7 +306,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
           const {latitude, longitude, heading} = position.coords;
           const newLocation = {latitude, longitude};
           setHeading(heading);
-          // console.log('live location emitted', newLocation);
+          console.log('live location emitted', newLocation);
           if (prevLocation.current) {
             // Calculate distance between previous and new location
             const distance = geolib.getDistance(
@@ -305,7 +314,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               newLocation,
             );
             // if (distance >= 15) {
-            // console.log('Updating location and sending to API');
+            console.log('Updating location and sending to API');
             myLocation.current = newLocation;
             driverLivelocationAPI({
               coordinates: [newLocation.latitude, newLocation.longitude],
@@ -383,10 +392,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
           setOrderStarted(true);
           orderStartedRef.current = true;
           setPath(body?.path?.coords);
-          // setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
-          setButtonText(buttonTextFlow.current[1].breakingPointName);
+          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
           dispatch(setCurrentOnGoingOrderDetails(body.order));
-          currentOnGoingOrderId.current = body.order._id;
+          currentOnGoingOrderId.current = body.order._id
           availableOrdersRef.current.shift();
           setAvailableOrders([...availableOrdersRef.current]);
           setLoading(false);
@@ -420,7 +428,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       const req = {
         id: currentOnGoingOrderDetails._id,
         status: nextOrderStatus[currentOnGoingOrderDetails.status],
-        location: myLocation.current,
       };
 
       const response = await updateOrderStatusAPI(req);
@@ -445,12 +452,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
             visibilityTime: 5000,
           });
           return;
-        } else {
-          Toast.show({
-            type: 'success',
-            text1: `ORDER DELIVERED SUCCESSFULLY!`,
-            visibilityTime: 5000,
-          });
         }
         getProgressDetail();
       } else if (
@@ -459,6 +460,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       ) {
         setLoading(false);
         setcod(false);
+        getProgressDetail();
         dispatch(setRiderPath([]));
         setRealPath([]);
         Toast.show({
@@ -469,16 +471,13 @@ const PetPujaScreen = ({navigation, route}: any) => {
       } else {
         switch (response.data.order.status) {
           case OrderStatusEnum.ARRIVED:
-            // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
-            setButtonText(buttonTextFlow.current[2].breakingPointName);
+            setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
             break;
           case OrderStatusEnum.DISPATCHED:
-            // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
-            setButtonText(buttonTextFlow.current[3].breakingPointName);
+            setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
             break;
           case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-            // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
-            setButtonText(buttonTextFlow.current[4].breakingPointName);
+            setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
             break;
           default:
             break;
@@ -488,27 +487,17 @@ const PetPujaScreen = ({navigation, route}: any) => {
         }
         setLoading(false);
         dispatch(setCurrentOnGoingOrderDetails(response.data.order));
-        if (response.data.order.status == 'ARRIVED') {
-          Toast.show({
-            type: 'success',
-            text1: `RIDER SUCCESSFULLY ${
-              nextOrderStatus[currentOnGoingOrderDetails.status]
-            } !`,
-            visibilityTime: 5000,
-          });
-        } else {
-          Toast.show({
-            type: 'success',
-            text1: `ORDER SUCCESSFULLY ${
-              nextOrderStatus[currentOnGoingOrderDetails.status]
-            } !`,
-            visibilityTime: 5000,
-          });
-        }
+        Toast.show({
+          type: 'success',
+          text1: `ORDER SUCCESSFULLY ${
+            nextOrderStatus[currentOnGoingOrderDetails.status]
+          } !`,
+          visibilityTime: 5000,
+        });
       }
     } catch (error) {
       setLoading(false);
-      console.log('error while updating order', error);
+      console.log(error);
     }
   };
 
@@ -520,7 +509,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setAvailableOrders([...availableOrdersRef.current]);
       dispatch(setRejectedOrders([...rejectedOrderRef.current]));
     } catch (error) {
-      console.log('error when rejecting order', error);
+      console.log(error);
     }
   };
 
@@ -547,7 +536,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       });
       startProcessing();
     } catch (error) {
-      console.log('error on payment button', error);
+      console.log(error);
     }
   };
 
@@ -556,7 +545,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       setOrderStarted(true);
       orderStartedRef.current = true;
       dispatch(setCurrentOnGoingOrderDetails(order));
-      currentOnGoingOrderId.current = order._id;
+      currentOnGoingOrderId.current = order._id
       setRealPath(order.realPath);
       if (order.status == 'ALLOTTED' || order.status == 'ARRIVED') {
         setPath(order?.riderPathToPickUp);
@@ -565,20 +554,16 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
       switch (order.status) {
         case OrderStatusEnum.ORDER_ALLOTTED:
-          // setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
-          setButtonText(buttonTextFlow.current[1].breakingPointName);
+          setButtonText(SliderText[OrderStatusEnum.ORDER_ALLOTTED]);
           break;
         case OrderStatusEnum.ARRIVED:
-          // setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
-          setButtonText(buttonTextFlow.current[2].breakingPointName);
+          setButtonText(SliderText[OrderStatusEnum.ARRIVED]);
           break;
         case OrderStatusEnum.DISPATCHED:
-          // setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
-          setButtonText(buttonTextFlow.current[3].breakingPointName);
+          setButtonText(SliderText[OrderStatusEnum.DISPATCHED]);
           break;
         case OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP:
-          // setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
-          setButtonText(buttonTextFlow.current[4].breakingPointName);
+          setButtonText(SliderText[OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP]);
           break;
         case OrderStatusEnum.DELIVERED:
           setcod(false);
@@ -586,8 +571,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
         default:
           break;
       }
-    } catch (error: any) {
-      console.log('error on hendling pending order', error);
+    } catch (error) {
+      console.log('error', error);
     }
   };
 
@@ -600,7 +585,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
         availableOrdersRef.current = [];
         return;
       }
-
       resp = await getAllOrdersAPI();
       if (availableOrdersRef.current.length == 0) {
         orderAcceptAnimation();
@@ -617,7 +601,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
       availableOrdersRef.current = [...newOrders];
       setLoading(false);
     } catch (error) {
-      console.log('error when getting pending order', error);
+      console.log('error', error);
     }
   };
 
@@ -641,6 +625,42 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
     setLoading(false);
   };
+
+  // const requestLocationPermission = async () => {
+  //   // Geolocation.requestAuthorization('always');
+  //   try {
+  //     const granted = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //       {
+  //         title: 'Location Permission',
+  //         message: 'App needs access to your location.',
+  //         buttonNeutral: 'Ask Me Later',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       },
+  //     );
+
+  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //       // console.log('Location permission granted');
+  //     } else {
+  //       console.log('Location permission denied');
+  //     }
+  //     PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+  //       {
+  //         title: 'Background Location Permission',
+  //         message:
+  //           'We need access to your location ' +
+  //           'so you can get live quality updates.',
+  //         buttonNeutral: 'Ask Me Later',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       },
+  //     );
+  //   } catch (err) {
+  //     console.warn(err);
+  //   }
+  // };
 
   const startForeground = () => {
     ReactNativeForegroundService.add_task(startTracking, {
@@ -677,10 +697,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
 
   const startTracking = async () => {
     try {
-      // console.log(
-      //   'fetching location with orderId===> ',
-      //   currentOnGoingOrderId.current,
-      // );
+      console.log(
+        'fetching location with orderId===> ',
+        currentOnGoingOrderId.current,
+      );
       await emitLiveLocation();
       // const distance = geolib.getDistance(myLocation.current, newLocation);
       // if (distance < 15) {Start Service Triggered
@@ -689,7 +709,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
       // }
       if (prevLocation.current) {
         setRealPath((prev: any) => [...prev, prevLocation.current]);
-        // console.log('real path>>>>>>>>', realPath);
         myLocation.current = prevLocation.current;
         const payload = {
           orderId: currentOnGoingOrderId.current,
@@ -703,33 +722,15 @@ const PetPujaScreen = ({navigation, route}: any) => {
     }
   };
 
-  const getForGroundIntervalDuration = async () => {
+  const getForGroundIntervalDuration = async() => {
     try {
-      const res = await getForGroundIntervalDurationAPI();
-      forGroundIntervalDuration.current = res.data.forGroundIntervalDuration;
+      const res = await getForGroundIntervalDurationAPI()
+      forGroundIntervalDuration.current = res.data.forGroundIntervalDuration
     } catch (error) {
-      console.log('error on getting interval of loacation tracking', error);
+      console.log("error", error);
     }
-  };
+  }
 
-  const getButtonTextFlows = async () => {
-    try {
-      const result = await getFlowsAPI();
-      buttonTextFlow.current = result.data;
-
-      // console.log('getButtonTextFlows>>>>>', result.data);
-    } catch (error: any) {
-      console.log('getButtonTextFlows error', {error});
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      getButtonTextFlows();
-    }, []),
-  );
-
-  // useFocusEffect(
   useEffect(() => {
     if (orderStartedRef.current) {
       return;
@@ -760,7 +761,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
         if (isConnected && !orderStartedRef.current) {
           driverStatusRef.current = true;
           rejectedOrderRef.current = rejectedOrders;
-          getButtonTextFlows();
           getDriverStatus();
           startProcessing();
         }
@@ -773,18 +773,23 @@ const PetPujaScreen = ({navigation, route}: any) => {
       }
     };
   }, [route.params?.refresh, isDriverOnline]);
-  // );
 
   useEffect(() => {
     if (orderStarted && currentOnGoingOrderDetails._id) {
       startForeground();
       Geolocation.clearWatch(geolocationWatchId);
     } else {
-      getForGroundIntervalDuration();
+      getForGroundIntervalDuration()
       stopForeground();
       emitLiveLocation();
     }
   }, [orderStarted, currentOnGoingOrderDetails]);
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     requestLocationPermission();
+  //   }, [])
+  // );
 
   return (
     <>
@@ -802,41 +807,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
             style={{height: hp(30), width: wp(100)}}
             source={require('../svg/images/Offline.png')}
           />
-        </View>
-      )}
-
-      {isProfileModal && (
-        <View style={styles.profileModalView}>
-          <TouchableOpacity
-            onPress={() => {
-              setIsProfileModal(false);
-            }}></TouchableOpacity>
-
-          <View style={styles.supportContainer}>
-            <Text style={styles.supportPersonName}>Area Manager</Text>
-            <TouchableOpacity onPress={() => dialCall(supportContact[0])}>
-              <View style={styles.supportRow}>
-                <Image
-                  source={require('../images/callicon.png')}
-                  style={styles.profileSupportCallIcon}
-                />
-                <Text style={styles.supportText}>{supportContact[0]}</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.separatorLine} />
-          <View style={styles.supportContainer}>
-            <Text style={styles.supportPersonName}>Store Manager</Text>
-            <TouchableOpacity onPress={() => dialCall(supportContact[1])}>
-              <View style={styles.supportRow}>
-                <Image
-                  source={require('../images/callicon.png')}
-                  style={styles.profileSupportCallIcon}
-                />
-                <Text style={styles.supportText}>{supportContact[1]}</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
         </View>
       )}
 
@@ -858,23 +828,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
             />
           )}
 
-          <View style={styles.profileIcon}>
-            <TouchableOpacity
-              hitSlop={{
-                left: widthPercentageToDP(10),
-                right: widthPercentageToDP(5),
-                top: heightPercentageToDP(2),
-              }}
-              onPress={() => setIsProfileModal(!isProfileModal)}>
-              {/* <Text style={styles.profileSupportIcon}>
-                {userData.firstName[0].toUpperCase()}
-              </Text> */}
-              <Image
-                style={styles.profileSupportIcon} // Define this style to size the image properly
-                source={require('../images/Support.jpg')}
-              />
-            </TouchableOpacity>
-          </View>
+          <View style={styles.profileIcon}></View>
         </View>
       }
 
@@ -900,7 +854,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text style={styles.progressLable}> Earning</Text>
+                      <Text> Earning</Text>
                     </View>
                     <Text style={{fontWeight: 'bold'}}>
                       {progressData.today?.earning || 0}
@@ -909,21 +863,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                   <View style={styles.circle}>
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/Rupay.png')} />
-                      <Text style={styles.progressLable}> Total KM's</Text>
-                    </View>
-                    <Text style={styles.progressValue}>
-                      {progressData.today?.totalDistance || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/watch.png')} />
-                      <Text style={styles.progressLable}>On-Ride Duration</Text>
+                      <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.today?.loginHours || 0}
                     </Text>
                   </View>
@@ -931,9 +875,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/order.png')} />
-                      <Text style={styles.progressLable}>Orders</Text>
+                      <Text>Orders</Text>
                     </View>
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.today?.orders || 0}
                     </Text>
                   </View>
@@ -952,30 +896,20 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text style={styles.progressLable}> Earning</Text>
+                      <Text> Earning</Text>
                     </View>
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.week?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/Rupay.png')} />
-                      <Text style={styles.progressLable}> Total KM's</Text>
-                    </View>
-                    <Text style={styles.progressValue}>
-                      {progressData.week?.totalDistance || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/watch.png')} />
-                      <Text style={styles.progressLable}>On-Ride Duration</Text>
+                      <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.week?.loginHours || 0}
                     </Text>
                   </View>
@@ -983,9 +917,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/order.png')} />
-                      <Text style={styles.progressLable}>Orders</Text>
+                      <Text>Orders</Text>
                     </View>
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.week?.orders || 0}
                     </Text>
                   </View>
@@ -1004,30 +938,20 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/Rupay.png')} />
-                      <Text style={styles.progressLable}> Earning</Text>
+                      <Text> Earning</Text>
                     </View>
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.month?.earning || 0}
                     </Text>
                   </View>
                   <View style={styles.circle}>
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
-                      <Image source={require('../images/Rupay.png')} />
-                      <Text style={styles.progressLable}> Total KM's</Text>
-                    </View>
-                    <Text style={styles.progressValue}>
-                      {progressData.month?.totalDistance || 0}
-                    </Text>
-                  </View>
-                  <View style={styles.circle}>
-                    <View
-                      style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/watch.png')} />
-                      <Text style={styles.progressLable}>On-Ride Duration</Text>
+                      <Text>Login Hours</Text>
                     </View>
 
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.month?.loginHours || 0}
                     </Text>
                   </View>
@@ -1035,9 +959,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     <View
                       style={{flexDirection: 'column', alignItems: 'center'}}>
                       <Image source={require('../images/order.png')} />
-                      <Text style={styles.progressLable}>Orders</Text>
+                      <Text>Orders</Text>
                     </View>
-                    <Text style={styles.progressValue}>
+                    <Text style={{fontWeight: 'bold'}}>
                       {progressData.month?.orders || 0}
                     </Text>
                   </View>
@@ -1102,9 +1026,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/Rupay.png')} />
-                          <Text style={styles.progressLable}> Earning</Text>
+                          <Text> Earning</Text>
                         </View>
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.today?.earning || 0}
                         </Text>
                       </View>
@@ -1114,26 +1038,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             flexDirection: 'column',
                             alignItems: 'center',
                           }}>
-                          <Image source={require('../images/Rupay.png')} />
-                          <Text style={styles.progressLable}> Total KM's</Text>
-                        </View>
-                        <Text style={styles.progressValue}>
-                          {progressData.today?.totalDistance || 0}
-                        </Text>
-                      </View>
-                      <View style={styles.circle}>
-                        <View
-                          style={{
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                          }}>
                           <Image source={require('../images/watch.png')} />
-                          <Text style={styles.progressLable}>
-                            On-Ride Duration
-                          </Text>
+                          <Text>Login Hours</Text>
                         </View>
 
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.today?.loginHours || 0}
                         </Text>
                       </View>
@@ -1144,9 +1053,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/order.png')} />
-                          <Text style={styles.progressLable}>Orders</Text>
+                          <Text>Orders</Text>
                         </View>
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.today?.orders || 0}
                         </Text>
                       </View>
@@ -1172,9 +1081,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/Rupay.png')} />
-                          <Text style={styles.progressLable}> Earning</Text>
+                          <Text> Earning</Text>
                         </View>
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.week?.earning || 0}
                         </Text>
                       </View>
@@ -1184,26 +1093,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             flexDirection: 'column',
                             alignItems: 'center',
                           }}>
-                          <Image source={require('../images/Rupay.png')} />
-                          <Text style={styles.progressLable}> Total KM's</Text>
-                        </View>
-                        <Text style={styles.progressValue}>
-                          {progressData.week?.totalDistance || 0}
-                        </Text>
-                      </View>
-                      <View style={styles.circle}>
-                        <View
-                          style={{
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                          }}>
                           <Image source={require('../images/watch.png')} />
-                          <Text style={styles.progressLable}>
-                            On-Ride Duration
-                          </Text>
+                          <Text>Login Hours</Text>
                         </View>
 
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.week?.loginHours || 0}
                         </Text>
                       </View>
@@ -1214,9 +1108,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/order.png')} />
-                          <Text style={styles.progressLable}>Orders</Text>
+                          <Text>Orders</Text>
                         </View>
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.week?.orders || 0}
                         </Text>
                       </View>
@@ -1242,9 +1136,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/Rupay.png')} />
-                          <Text style={styles.progressLable}> Earning</Text>
+                          <Text> Earning</Text>
                         </View>
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.month?.earning || 0}
                         </Text>
                       </View>
@@ -1254,26 +1148,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             flexDirection: 'column',
                             alignItems: 'center',
                           }}>
-                          <Image source={require('../images/Rupay.png')} />
-                          <Text style={styles.progressLable}> Total KM's</Text>
-                        </View>
-                        <Text style={styles.progressValue}>
-                          {progressData.month?.totalDistance || 0}
-                        </Text>
-                      </View>
-                      <View style={styles.circle}>
-                        <View
-                          style={{
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                          }}>
                           <Image source={require('../images/watch.png')} />
-                          <Text style={styles.progressLable}>
-                            On-Ride Duration
-                          </Text>
+                          <Text>Login Hours</Text>
                         </View>
 
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.month?.loginHours || 0}
                         </Text>
                       </View>
@@ -1284,9 +1163,9 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             alignItems: 'center',
                           }}>
                           <Image source={require('../images/order.png')} />
-                          <Text style={styles.progressLable}>Orders</Text>
+                          <Text>Orders</Text>
                         </View>
-                        <Text style={styles.progressValue}>
+                        <Text style={{fontWeight: 'bold'}}>
                           {progressData.month?.orders || 0}
                         </Text>
                       </View>
@@ -1341,11 +1220,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               </Text>
                               <Text
                                 style={{
-                                  fontWeight: '700',
+                                  fontWeight: '600',
                                   color: '#000000',
-                                  fontSize: 12,
+                                  fontSize: 15,
                                 }}>
-                                {'₹ '}{availableOrders[0]?.estimatedEarningFromPickupToDrop}
+                                {'₹ '}0
                               </Text>
                             </View>
                           </View>
@@ -1502,11 +1381,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               color: '#000000',
                               fontFamily: 'RobotoMono-Regular',
                               fontWeight: '700',
-                              fontSize: 14,
-                              alignItems:'center'
+                              fontSize: 16,
                             }}>
+                            {0}
                             {'₹'}
-                            {currentOnGoingOrderDetails?.estimatedEarningFromPickupToDrop}
                           </Text>
                         </View>
                         <View style={styles.line} />
@@ -1557,18 +1435,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               }
                             </Text>
                           </TouchableOpacity>
-                          {[OrderStatusEnum.ARRIVED].includes(
-                            currentOnGoingOrderDetails.status,
-                          ) && (
-                            <OpenCamera
-                              location={myLocation?.current}
-                              status={OrderStatusEnum?.ARRIVED}
-                              orderID={
-                                currentOnGoingOrderDetails?.order_details
-                                  .vendor_order_id
-                              }
-                            />
-                          )}
                         </View>
                       </View>
                     )}
@@ -1617,14 +1483,13 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 color: '#000000',
                                 fontFamily: 'RobotoMono-Regular',
                                 fontWeight: '700',
-                                fontSize: 14,
-                                alignItems:'center'
+                                fontSize: 16,
                               }}>
-                              {/* {
+                              {
                                 currentOnGoingOrderDetails.order_details
                                   .order_total
-                              } */}
-                              {'₹'}{currentOnGoingOrderDetails?.estimatedEarningFromPickupToDrop}
+                              }
+                              {'₹'}
                             </Text>
                           </View>
                           <View style={styles.line} />
@@ -1676,20 +1541,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 }
                               </Text>
                             </TouchableOpacity>
-                            {[
-                              OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
-                            ].includes(currentOnGoingOrderDetails.status) && (
-                              <OpenCamera
-                                location={myLocation?.current}
-                                status={
-                                  OrderStatusEnum?.ARRIVED_CUSTOMER_DOORSTEP
-                                }
-                                orderID={
-                                  currentOnGoingOrderDetails?.order_details
-                                    .vendor_order_id
-                                }
-                              />
-                            )}
                           </View>
                         </View>
                       )}
@@ -1719,17 +1570,20 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       style={styles.map}
                       ref={mapRef}
                       region={region}
+                      onRegionChangeComplete={onRegionChangeComplete}
+                      onPanDrag={onUserInteractionStart}
+                      onPress={onUserInteractionStart}
                       mapPadding={{top: 200, right: 50, left: 20, bottom: 30}}>
                       <Marker.Animated
                         identifier="dropLocationMarker"
                         coordinate={
-                          realPath?.length > 0
+                          realPath.length > 0
                             ? realPath[realPath.length - 1]
                             : myLocation.current
                         }
                         icon={require('../svg/images/driverLiveLocation.png')}
                         // imageStyle={{width: wp(200), height: hp(200)}}
-                        rotation={heading - 50 || 0}
+                        rotation={heading - 100 || 0}
                         anchor={{x: 0.5, y: 0.5}}
                         zIndex={5}
                       />
@@ -1816,6 +1670,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Navigate />
                       {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
                     </TouchableOpacity>
+
                     {/* slider Button */}
                     {cod && (
                       <View
@@ -1919,62 +1774,36 @@ const styles = StyleSheet.create({
   profileIcon: {
     width: wp(8),
     height: wp(8),
-    borderRadius: wp(50),
+    // borderRadius: wp(50),
     // backgroundColor: 'navy',
     alignItems: 'center',
     justifyContent: 'center',
-    right: wp(2),
   },
-  supportContainer: {
-    // borderRadius: 8,
-    // marginBottom: 10,
-    // backgroundColor: '#F7FDF7',
-    alignItems: 'center',
-  },
-  supportPersonName: {
-    fontFamily: 'Roboto Mono',
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#212121',
-    marginBottom: 5,
-  },
-  supportRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  profileSupportCallIcon: {
-    height: 20,
-    width: 20,
-    tintColor: '#28a745', // Matching the green color for call icon
+  profileIconText: {
+    fontFamily: 'RobotoMono-Regular',
+    color: 'white',
+    fontSize: wp(5),
   },
   profileModalView: {
     backgroundColor: 'white',
     borderRadius: wp(2),
+    padding: wp(2),
     shadowColor: '#000000',
+    shadowOffset: {
+      width: wp(0),
+      height: hp(2),
+    },
+    shadowOpacity: wp(0.25),
     shadowRadius: wp(4),
     elevation: hp(5),
     gap: hp(2),
+    justifyContent: 'center',
     alignItems: 'center',
-    width: wp(40),
-    height: hp(20),
+    width: wp(30),
     position: 'absolute',
     top: hp(6),
     right: wp(2),
     zIndex: 4,
-  },
-  separatorLine: {
-    height: 1,
-    backgroundColor: '#ddd',
-    // marginVertical: 10,
-    alignSelf: 'stretch',
-  },
-  supportText: {
-    fontFamily: 'Roboto Mono',
-    fontSize: 14,
-    color: '#28a745',
-    fontWeight: '500',
-    alignItems: 'center',
   },
   modalContainer: {
     flex: 1,
@@ -2042,14 +1871,6 @@ const styles = StyleSheet.create({
     height: 24, // Adjust the size as needed
     marginRight: 8, // Adjust the spacing as needed
   },
-  supportCallIcon: {
-    width: 20,
-    height: 20,
-  },
-  profileSupportIcon: {
-    height: hp(5),
-    width: wp(10),
-  },
   offlineModalBodyText: {
     fontFamily: 'RobotoMono-Regular',
     color: '#464E5F',
@@ -2100,8 +1921,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   circle: {
-    width: wp(22),
-    height: wp(22),
+    width: 95,
+    height: 95,
     borderRadius: 50,
     backgroundColor: 'white',
     borderColor: '#28DA95',
@@ -2111,13 +1932,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.2,
     justifyContent: 'space-evenly',
     alignItems: 'center',
-  },
-  progressLable: {
-    fontSize: wp(3),
-  },
-  progressValue: {
-    fontSize: wp(3.2),
-    fontWeight: 'bold',
   },
   modalView: {
     flex: 1,
