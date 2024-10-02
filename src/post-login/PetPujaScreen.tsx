@@ -1345,7 +1345,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                   color: '#000000',
                                   fontSize: 12,
                                 }}>
-                                {'₹ '}{availableOrders[0]?.estimatedEarningFromPickupToDrop}
+                                {'₹ '}{availableOrders[0]?.ride_income}
                               </Text>
                             </View>
                           </View>
@@ -1506,7 +1506,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               alignItems:'center'
                             }}>
                             {'₹'}
-                            {currentOnGoingOrderDetails?.estimatedEarningFromPickupToDrop}
+                            {currentOnGoingOrderDetails?.ride_income}
                           </Text>
                         </View>
                         <View style={styles.line} />
@@ -1624,7 +1624,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 currentOnGoingOrderDetails.order_details
                                   .order_total
                               } */}
-                              {'₹'}{currentOnGoingOrderDetails?.estimatedEarningFromPickupToDrop}
+                              {'₹'}{currentOnGoingOrderDetails?.ride_income}
                             </Text>
                           </View>
                           <View style={styles.line} />
