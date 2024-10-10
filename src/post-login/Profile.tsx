@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -36,8 +36,11 @@ import RNFetchBlob from 'rn-fetch-blob';
 import {FetchUserImage} from '../components/functions';
 import {Button} from 'react-native-elements';
 import Toast from 'react-native-toast-message';
+import ImageUpload from '../svg/imageUpload';
+
 
 const Profile = (props: any) => {
+  const randomLoderColor = ["#FFF","#fa053a","#fa053a","#fadd05","#f502dd","#3bf502"]
   const userId = useSelector((store: any) => store.userData._id);
   const userImg = useSelector((store: any) => store.userImage.path);
   const profileImageKey = useSelector(
@@ -64,8 +67,9 @@ const Profile = (props: any) => {
   const getDriverDetail = async () => {
     try {
       setLoading(true);
-      const response = await userDetails(userId);
+      const response: any = await userDetails(userId);
       setDriverDetails(response.data);
+      setImageUri(response.imageUri[0]?.imageUri);
       setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
@@ -137,10 +141,11 @@ const Profile = (props: any) => {
       const buffer = Buffer.from(fileContent, 'base64'); //This line creates a Buffer object from the Base64-encoded string
       try {
         const result = await axios.put(presignedUrl, buffer);
-        if(result.status === 200){
+        if (result.status === 200) {
           const response: any = await updateVehicleImageKey({
             userId: userId,
             imageKey: key,
+            photoUri: photoUri,
           });
           setIsUploading(false);
           Toast.show({
@@ -224,14 +229,40 @@ const Profile = (props: any) => {
               )}
 
               {/* uploading vehicle image  */}
-              <View style={styles.vehicleImage}>
+              {/* <View style={styles.vehicleImage}>
                 <Button title="Upload vehicle image" onPress={openCamera} />
                 {isUploading && (
                   <ActivityIndicator size="large" color="#00ff00" />
                 )}
-              </View>
+                {imageUri && (
+                  <Image source={{uri: imageUri}} style={styles.imagePreview} />
+                )}
+              </View> */}
 
               <View style={styles.profileDataContainer}>
+
+                <View style={styles.vehicleImageContainer}>
+                  <TouchableOpacity
+                    style={styles.uploadButton}
+                    onPress={openCamera}>
+                    <ImageUpload />
+                  </TouchableOpacity>
+
+                  <Text style={styles.imageViewHeading}>Vehicle Image</Text>
+
+                  {isUploading && (
+                    <ActivityIndicator size="large" color={randomLoderColor[Math.floor(Math.random() * randomLoderColor.length)]} style={{position:'absolute'}}/>
+                  )}
+
+                  {imageUri && (
+                    <Image
+                      source={{uri: imageUri}}
+                      // resizeMode="cover"
+                      style={styles.imageViewBox}
+                    />
+                  )}
+                </View>
+
                 <View style={styles.contentView}>
                   <Text style={styles.contentViewHeading}>Name</Text>
                   <Text style={styles.contentViewText}>
@@ -308,7 +339,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-around',
     alignItems: 'center',
-    marginTop:hp(4)
+    // marginTop: hp(4),
   },
   vehicleImage: {
     flexDirection: 'column',
@@ -319,7 +350,7 @@ const styles = StyleSheet.create({
   profileDataContainer: {
     alignSelf: 'center',
     gap: wp(2),
-    marginTop: hp(5),
+    marginTop: hp(2),
     // width: wp(70),
   },
   header: {
@@ -346,6 +377,62 @@ const styles = StyleSheet.create({
     marginTop: hp(8),
     alignSelf: 'center',
   },
+  vehicleImageContainer: {
+    borderRadius: wp(3),
+    shadowColor: '#171717',
+    backgroundColor: 'white',
+    overflow:'hidden',
+    // paddingTop: hp(11),
+    width: wp(90),
+    height: hp(20),
+    shadowOffset: {width: -2, height: 4},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+    position: 'relative',
+    justifyContent: 'center', 
+    alignItems: 'center', 
+  },
+
+  imageViewHeading: {
+    position: 'absolute', 
+    top: hp(0.5), 
+    left: wp(2), 
+    fontFamily: 'RobotoMono-Regular',
+    color: '#FFF',
+    fontSize: hp(1.5),
+    fontWeight: '700',
+    zIndex:5,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', 
+    borderRadius:5,
+    paddingHorizontal:wp(1.5),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8, 
+    shadowRadius: 3, 
+    elevation: 5,
+  },
+
+  uploadButton: {
+    position: 'absolute', 
+    top: hp(0.5),
+    right: wp(2), 
+    zIndex: 10,
+    borderRadius:5,
+    paddingHorizontal:wp(1.5),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.8, 
+    // shadowRadius: 3, 
+    // elevation: 5,
+  },
+
+  imageViewBox: {
+    objectFit:'fill',
+    height: hp(40),
+    width: wp(100),
+  },
+
   contentView: {
     borderRadius: wp(3),
     shadowColor: '#171717',
@@ -382,6 +469,12 @@ const styles = StyleSheet.create({
     marginTop: hp(4),
     color: '#BAB6B6',
     fontWeight: '600',
+  },
+  imagePreview: {
+    width: wp(20),
+    height: hp(10),
+    marginTop: hp(1),
+    borderRadius: 10,
   },
 });
 
