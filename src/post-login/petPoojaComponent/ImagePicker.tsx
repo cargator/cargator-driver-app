@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {View, Button, Alert, StyleSheet, ActivityIndicator} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {View, Button, Alert, StyleSheet, ActivityIndicator, Text, Animated} from 'react-native';
 import {launchCamera, Asset, CameraOptions} from 'react-native-image-picker';
 import {
   heightPercentageToDP as hp,
@@ -11,6 +11,8 @@ import axios from 'axios';
 import {Buffer} from 'buffer';
 import { requestCameraPermission } from '../../components/functions';
 import Toast from 'react-native-toast-message';
+import { randomLoderColor } from '../../svg/helper/constant';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 interface ImagePickerResponse {
   assets?: Asset[];
@@ -20,30 +22,9 @@ interface ImagePickerResponse {
 }
 
 const OpenCamera = ({location, status, orderID}: any) => {
+  const blinkAnim = useRef(new Animated.Value(1)).current;
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  // const requestCameraPermission = async (): Promise<boolean> => {
-  //   try {
-  //     if (Platform.OS === 'android') {
-  //       const granted = await PermissionsAndroid.request(
-  //         PermissionsAndroid.PERMISSIONS.CAMERA,
-  //         {
-  //           title: 'Camera Permission',
-  //           message: 'App needs camera access to take photos.',
-  //           buttonNeutral: 'Ask Me Later',
-  //           buttonNegative: 'Cancel',
-  //           buttonPositive: 'OK',
-  //         },
-  //       );
-  //       return granted === PermissionsAndroid.RESULTS.GRANTED;
-  //     }
-  //     return true;
-  //   } catch (err) {
-  //     console.warn(err);
-  //     return false;
-  //   }
-  // };
 
   async function getS3SignUrl(key: string, contentType: string, type: string) {
     try {
@@ -96,6 +77,8 @@ const OpenCamera = ({location, status, orderID}: any) => {
 
     setIsUploading(true);
 
+    console.log("status, orderId, location >>>",status, orderID, location)
+
     try {
       const key =
         status === 'ARRIVED'
@@ -139,10 +122,38 @@ const OpenCamera = ({location, status, orderID}: any) => {
     }
   };
 
+  useEffect(() => {
+    const startBlinking = () => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(blinkAnim, {
+            toValue: 0.3, // Lower opacity for blink effect
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(blinkAnim, {
+            toValue: 1, // Back to full opacity
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
+
+    startBlinking();
+  }, [blinkAnim]);
+
   return (
     <View style={styles.container}>
-      <Button title="Take a Photo" onPress={openCamera} />
-      {isUploading && <ActivityIndicator size="large" color="#00ff00" />}
+      <Animated.View style={{ opacity: blinkAnim }}>
+      <TouchableOpacity onPress={openCamera} style={{borderRadius:25,backgroundColor:'#015FAC',paddingHorizontal:wp(4),paddingVertical:hp(0.7)}}>
+        <Text style={{color:'#fff',fontWeight:'700'}}>
+        Take a photo
+        </Text>
+      </TouchableOpacity>
+      </Animated.View>
+
+      {isUploading && <ActivityIndicator size={30} color={randomLoderColor[Math.floor(Math.random() * randomLoderColor.length)]}  style={{position:'absolute',flex:1,justifyContent:'center',alignSelf:'center'}}/>}
       {/* {imageUri && (
         <Image
           source={{ uri: imageUri }}
@@ -150,16 +161,19 @@ const OpenCamera = ({location, status, orderID}: any) => {
         />
       )} */}
     </View>
+
   );
 };
 
 // Styles for the component
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
-    marginLeft: wp(10),
+    alignSelf: 'center',
+    position:'absolute',
+    bottom:hp(16),
+    // borderRadius:hp(10),
+    // overflow:'hidden'
+  
   },
   imagePreview: {
     width: 20,

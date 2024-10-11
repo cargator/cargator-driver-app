@@ -630,8 +630,10 @@ const PetPujaScreen = ({navigation, route}: any) => {
       const status = res.data.rideStatus === 'offline' ? false : true;
       setIsDriverOnline(status);
 
-      if ((!socketInstance.current || !socketInstance.current?.connected) && status) {
-        console.log("inside getDriverStatus", status);
+      if (
+        (!socketInstance.current || !socketInstance.current?.connected) &&
+        status
+      ) {
         socketInstance.current = await getSocketInstance(loginToken);
         setIsSocketConnected(socketInstance.current.connected);
         startOrderStatusListener();
@@ -819,7 +821,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               <View style={styles.supportRow}>
                 <Image
                   source={require('../images/callicon.png')}
-                  style={styles.profileSupportCallIcon}
+                  style={styles.SupportCallIcon}
                 />
                 <Text style={styles.supportText}>{supportContact[0]}</Text>
               </View>
@@ -832,7 +834,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               <View style={styles.supportRow}>
                 <Image
                   source={require('../images/callicon.png')}
-                  style={styles.profileSupportCallIcon}
+                  style={styles.SupportCallIcon}
                 />
                 <Text style={styles.supportText}>{supportContact[1]}</Text>
               </View>
@@ -1346,7 +1348,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                   color: '#000000',
                                   fontSize: 12,
                                 }}>
-                                {'₹ '}{availableOrders[0]?.ride_income}
+                                {'₹ '}
+                                {availableOrders[0]?.ride_income}
                               </Text>
                             </View>
                           </View>
@@ -1504,7 +1507,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               fontFamily: 'RobotoMono-Regular',
                               fontWeight: '700',
                               fontSize: 14,
-                              alignItems:'center'
+                              alignItems: 'center',
                             }}>
                             {'₹'}
                             {currentOnGoingOrderDetails?.ride_income}
@@ -1530,7 +1533,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         </View>
                         <View style={styles.line1} />
                         <View style={styles.contactNumber}>
+                          <Text style={{fontSize: 15, color: 'black'}}>
+                            {'Restaurant Contact:   '}
+                          </Text>
                           <TouchableOpacity
+                            style={{flexDirection: 'row'}}
                             onPress={() =>
                               dialCall(
                                 currentOnGoingOrderDetails.pickup_details
@@ -1539,16 +1546,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
                             }>
                             <Image
                               source={require('../images/callicon.png')}
-                              style={styles.callIcon}
+                              style={styles.SupportCallIcon}
                             />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() =>
-                              dialCall(
-                                currentOnGoingOrderDetails.pickup_details
-                                  .contact_number,
-                              )
-                            }>
                             <Text style={{color: '#333333'}}>
                               {' '}
                               +91
@@ -1558,18 +1557,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               }
                             </Text>
                           </TouchableOpacity>
-                          {[OrderStatusEnum.ARRIVED].includes(
-                            currentOnGoingOrderDetails.status,
-                          ) && (
-                            <OpenCamera
-                              location={myLocation?.current}
-                              status={OrderStatusEnum?.ARRIVED}
-                              orderID={
-                                currentOnGoingOrderDetails?.order_details
-                                  .vendor_order_id
-                              }
-                            />
-                          )}
                         </View>
                       </View>
                     )}
@@ -1619,13 +1606,14 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 fontFamily: 'RobotoMono-Regular',
                                 fontWeight: '700',
                                 fontSize: 14,
-                                alignItems:'center'
+                                alignItems: 'center',
                               }}>
                               {/* {
                                 currentOnGoingOrderDetails.order_details
                                   .order_total
                               } */}
-                              {'₹'}{currentOnGoingOrderDetails?.ride_income}
+                              {'₹'}
+                              {currentOnGoingOrderDetails?.ride_income}
                             </Text>
                           </View>
                           <View style={styles.line} />
@@ -1648,7 +1636,11 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           </View>
                           <View style={styles.line1} />
                           <View style={styles.contactNumber}>
+                            <Text style={{fontSize: 15, color: 'black'}}>
+                              {'Customer Contact:   '}
+                            </Text>
                             <TouchableOpacity
+                              style={{flexDirection: 'row'}}
                               onPress={() =>
                                 dialCall(
                                   currentOnGoingOrderDetails.drop_details
@@ -1657,17 +1649,8 @@ const PetPujaScreen = ({navigation, route}: any) => {
                               }>
                               <Image
                                 source={require('../images/callicon.png')}
-                                style={styles.callIcon}
+                                style={styles.SupportCallIcon}
                               />
-                            </TouchableOpacity>
-                            {/* <callLogo /> */}
-                            <TouchableOpacity
-                              onPress={() =>
-                                dialCall(
-                                  currentOnGoingOrderDetails.drop_details
-                                    .contact_number,
-                                )
-                              }>
                               <Text style={{color: '#333333'}}>
                                 {' '}
                                 +91
@@ -1677,20 +1660,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 }
                               </Text>
                             </TouchableOpacity>
-                            {[
-                              OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
-                            ].includes(currentOnGoingOrderDetails.status) && (
-                              <OpenCamera
-                                location={myLocation?.current}
-                                status={
-                                  OrderStatusEnum?.ARRIVED_CUSTOMER_DOORSTEP
-                                }
-                                orderID={
-                                  currentOnGoingOrderDetails?.order_details
-                                    .vendor_order_id
-                                }
-                              />
-                            )}
+                           
                           </View>
                         </View>
                       )}
@@ -1787,7 +1757,22 @@ const PetPujaScreen = ({navigation, route}: any) => {
                         strokeWidth={4}
                       />
                     </MapView>
+
+                    {/* Food image picker */}
+                    {[OrderStatusEnum.ARRIVED,OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,].includes(
+                            currentOnGoingOrderDetails.status,
+                          ) && (
+                            <OpenCamera
+                              location={myLocation?.current}
+                              status={currentOnGoingOrderDetails.status}
+                              orderID={
+                                currentOnGoingOrderDetails?.order_details
+                                  .vendor_order_id
+                              }
+                            />
+                          )}
                     {/*   Nevigate to google map */}
+
                     <TouchableOpacity
                       style={styles.directionButton}
                       onPress={() =>
@@ -1817,6 +1802,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
                       <Navigate />
                       {/* <Text style={styles.textNavigateReached}>Navigate</Text> */}
                     </TouchableOpacity>
+
                     {/* slider Button */}
                     {cod && (
                       <View
@@ -1825,38 +1811,51 @@ const PetPujaScreen = ({navigation, route}: any) => {
                           justifyContent: 'flex-end',
                           bottom: hp(6),
                         }}>
-                        <SlideButton
-                          width={290}
-                          height={50}
-                          animationDuration={180}
-                          autoResetDelay={1080}
-                          animation={true}
-                          autoReset={true}
-                          borderRadius={15}
-                          sliderWidth={50}
-                          icon={
-                            <Image
-                              source={require('../svg/arrow.png')}
-                              style={styles.thumbImage}
-                            />
-                          } // Adjust width and height as needed
-                          onReachedToEnd={async () => {
-                            await updateOrderStatus();
-                          }}
-                          containerStyle={{
-                            backgroundColor: '#118F5E',
-                            color: 'red',
-                          }}
-                          underlayStyle={{backgroundColor: 'Red'}}
-                          title={
-                            sliderButtonLoader ? (
-                              <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                              buttonText
-                            )
-                          }
-                          slideDirection="right"
-                          disabled={!connected}></SlideButton>
+                        <View
+                          style={{
+                            position: 'absolute',
+                            width: wp(100),
+                            paddingHorizontal: wp(5),
+                          }}>
+                          <SlideButton
+                            // width={290}
+
+                            height={50}
+                            animationDuration={180}
+                            autoResetDelay={1080}
+                            animation={true}
+                            autoReset={true}
+                            borderRadius={15}
+                            sliderWidth={50}
+                            icon={
+                              <Image
+                                source={require('../svg/arrow.png')}
+                                style={styles.thumbImage}
+                              />
+                            } // Adjust width and height as needed
+                            onReachedToEnd={async () => {
+                              await updateOrderStatus();
+                            }}
+                            containerStyle={{
+                              backgroundColor: '#118F5E',
+                              color: 'red',
+                            }}
+                            titleStyle={{
+                              maxWidth: '70%',
+                              paddingLeft: wp(5),
+                            }}
+                            underlayStyle={{backgroundColor: 'Red'}}
+                            title={
+                              sliderButtonLoader ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                              ) : (
+                                buttonText
+                              )
+                            }
+                            slideDirection="right"
+                            disabled={!connected}
+                          />
+                        </View>
                       </View>
                     )}
                   </>
@@ -1944,9 +1943,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  profileSupportCallIcon: {
-    height: 20,
-    width: 20,
+  SupportCallIcon: {
+    height: 19,
+    width: 19,
     tintColor: '#28a745', // Matching the green color for call icon
   },
   profileModalView: {
@@ -2197,7 +2196,7 @@ const styles = StyleSheet.create({
   },
   contactNumber: {
     flexDirection: 'row',
-    width: wp(45),
+    width: wp(80),
     height: hp(5),
     backgroundColor: '#F5FFFB',
     borderRadius: 20,
@@ -2205,6 +2204,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     top: hp(12),
+  },
+  imageTakerButton: {
+    bottom: hp(10),
+    marginLeft: wp(5),
+    alignSelf: 'flex-start',
+    // justifyContent:'center'
   },
   directionButton: {
     bottom: hp(15),

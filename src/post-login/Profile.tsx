@@ -37,10 +37,9 @@ import {FetchUserImage} from '../components/functions';
 import {Button} from 'react-native-elements';
 import Toast from 'react-native-toast-message';
 import ImageUpload from '../svg/imageUpload';
-
+import {randomLoderColor} from '../svg/helper/constant';
 
 const Profile = (props: any) => {
-  const randomLoderColor = ["#FFF","#fa053a","#fa053a","#fadd05","#f502dd","#3bf502"]
   const userId = useSelector((store: any) => store.userData._id);
   const userImg = useSelector((store: any) => store.userImage.path);
   const profileImageKey = useSelector(
@@ -113,7 +112,6 @@ const Profile = (props: any) => {
 
     launchCamera(options, (response: ImagePickerResponse) => {
       if (response.didCancel) {
-        console.log('User cancelled image picker');
       } else if (response.errorCode) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets.length > 0) {
@@ -240,27 +238,39 @@ const Profile = (props: any) => {
               </View> */}
 
               <View style={styles.profileDataContainer}>
+                <View style={styles.vehicleImageMainContainer}>
+                <TouchableOpacity
+                      style={styles.uploadButton}
+                      onPress={openCamera}>
+                      <ImageUpload />
+                    </TouchableOpacity>
 
-                <View style={styles.vehicleImageContainer}>
-                  <TouchableOpacity
-                    style={styles.uploadButton}
-                    onPress={openCamera}>
-                    <ImageUpload />
-                  </TouchableOpacity>
+                    <Text style={styles.imageViewHeading}>Vehicle Image</Text>
 
-                  <Text style={styles.imageViewHeading}>Vehicle Image</Text>
+                  <View style={styles.vehicleImageContainer}>
+                
+                  
 
-                  {isUploading && (
-                    <ActivityIndicator size="large" color={randomLoderColor[Math.floor(Math.random() * randomLoderColor.length)]} style={{position:'absolute'}}/>
-                  )}
+                    {isUploading && (
+                      <ActivityIndicator
+                        size="large"
+                        color={
+                          randomLoderColor[
+                            Math.floor(Math.random() * randomLoderColor.length)
+                          ]
+                        }
+                        style={{position: 'absolute'}}
+                      />
+                    )}
 
-                  {imageUri && (
-                    <Image
-                      source={{uri: imageUri}}
-                      // resizeMode="cover"
-                      style={styles.imageViewBox}
-                    />
-                  )}
+                    {imageUri && (
+                      <Image
+                        source={{uri: imageUri}}
+                        // resizeMode="contain"
+                        style={styles.imageViewBox}
+                      />
+                    )}
+                  </View>
                 </View>
 
                 <View style={styles.contentView}>
@@ -307,12 +317,12 @@ const Profile = (props: any) => {
                 </View>
               </View>
             </View>
-          </View>
-          <View style={styles.bottomView}>
+            <View style={styles.bottomView}>
             <TouchableOpacity onPress={handleLogout}>
               <LogOutIcon />
             </TouchableOpacity>
             <Text style={styles.date}>Member Since {formattedDate}</Text>
+          </View>
           </View>
         </>
       )}
@@ -377,12 +387,26 @@ const styles = StyleSheet.create({
     marginTop: hp(8),
     alignSelf: 'center',
   },
-  vehicleImageContainer: {
+
+  vehicleImageMainContainer: {
     borderRadius: wp(3),
     shadowColor: '#171717',
     backgroundColor: 'white',
-    overflow:'hidden',
-    // paddingTop: hp(11),
+    overflow: 'hidden',
+    width: wp(90),
+    height: hp(24),
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  vehicleImageContainer: {
+    // borderRadius: wp(3),
+    shadowColor: '#171717',
+    backgroundColor: 'white',
+    overflow: 'hidden',
+    paddingHorizontal:25,
+    marginTop:hp(4),
     width: wp(90),
     height: hp(20),
     shadowOffset: {width: -2, height: 4},
@@ -390,45 +414,49 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     position: 'relative',
-    justifyContent: 'center', 
-    alignItems: 'center', 
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   imageViewHeading: {
-    position: 'absolute', 
-    top: hp(0.5), 
-    left: wp(2), 
     fontFamily: 'RobotoMono-Regular',
-    color: '#FFF',
-    fontSize: hp(1.5),
-    fontWeight: '700',
-    zIndex:5,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)', 
-    borderRadius:5,
-    paddingHorizontal:wp(1.5),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8, 
-    shadowRadius: 3, 
-    elevation: 5,
+    color: '#9CA3AF',
+    fontSize: hp(1.8),
+    fontWeight: '500',
+    position: 'absolute',
+    top: hp(0.5),
+    left: wp(2),
+    // fontFamily: 'RobotoMono-Regular',
+    // color: '#FFF',
+    // fontSize: hp(1.5),
+    // fontWeight: '700',
+    // zIndex: 5,
+    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    // borderRadius: 5,
+    // paddingHorizontal: wp(1.5),
+    // shadowColor: '#000',
+    // shadowOffset: {width: 0, height: 2},
+    // shadowOpacity: 0.8,
+    // shadowRadius: 3,
+    // elevation: 5,
   },
 
   uploadButton: {
-    position: 'absolute', 
+    position: 'absolute',
     top: hp(0.5),
-    right: wp(2), 
+    right: wp(2),
     zIndex: 10,
-    borderRadius:5,
-    paddingHorizontal:wp(1.5),
+    borderRadius: 5,
+    paddingHorizontal: wp(1.5),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.8, 
-    // shadowRadius: 3, 
+    shadowOffset: {width: 0, height: 2},
+    // shadowOpacity: 0.8,
+    // shadowRadius: 3,
     // elevation: 5,
   },
 
   imageViewBox: {
-    objectFit:'fill',
+    objectFit: 'fill',
     height: hp(40),
     width: wp(100),
   },
@@ -466,7 +494,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontFamily: 'RobotoMono-Regular',
-    marginTop: hp(4),
+    marginTop: hp(1),
     color: '#BAB6B6',
     fontWeight: '600',
   },
