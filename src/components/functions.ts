@@ -13,6 +13,7 @@ import {
   setGpsPermission,
   setLocationPermission,
   setUserImgExists,
+  setVehicleImgExists,
 } from '../redux/redux';
 import {getPreSignedUrl} from '../services/userservices';
 // import {dummy_Path} from '../map-screen/dummyData';
@@ -317,6 +318,42 @@ export const FetchUserImage = async (
         path: cachedImagePath,
       }),
     );
+  } else {
+    console.error(
+      'Failed to download image. Status code: ',
+      response.respInfo.status,
+    );
+  }
+};
+
+
+export const FetchVehicleImage = async (
+  dispatch: any,
+  vehicleImageKey: string,
+  userId: any,
+) => {
+  const fileExtension = vehicleImageKey.split('.').pop();
+  const data = {
+    key: vehicleImageKey,
+    ContentType: `image/${fileExtension}`,
+    type: 'get',
+  };
+  const resp: any = await getPreSignedUrl(data);
+  const response = await RNFetchBlob.config({
+    path: `${RNFetchBlob.fs.dirs.CacheDir}/${userId}.${fileExtension}`, // Set the destination path in the cache directory
+  }).fetch('GET', resp?.url);
+  if (response.respInfo.status === 200) {
+    console.log('Image successfully stored in cache');
+    // You can now use the locally cached image from the cache directory
+    const cachedVehicleImagePath = response.path();
+    console.log("???????????????????",cachedVehicleImagePath)
+    dispatch(
+      setVehicleImgExists({
+        exists: true,
+        path: cachedVehicleImagePath,
+      }),
+    );
+    return cachedVehicleImagePath;
   } else {
     console.error(
       'Failed to download image. Status code: ',

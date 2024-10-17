@@ -174,7 +174,7 @@ const LoginOtpScreen = ({route}: any) => {
 
             <View style={styles.continueBtnContainer}>
               <TouchableOpacity
-                style={styles.continueBtn}
+                style={[styles.continueBtn, {backgroundColor: OTP.length == 4 ? '#118F5E' : 'gray'}]}
                 // disabled={!isOtpVerified}
                 disabled={isOtpEntered}
                 onPress={() => handleContinueBtn()}>

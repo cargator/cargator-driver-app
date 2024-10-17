@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import PhoneInput, {ICountry} from 'react-native-international-phone-number';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   heightPercentageToDP as hp,
@@ -19,10 +20,7 @@ import Toast from 'react-native-toast-message';
 import {useDispatch} from 'react-redux';
 import * as Yup from 'yup';
 import {setPhoneNumber} from '../redux/redux';
-import {getcountryCodeAPI, login} from '../services/userservices';
-
-const initialCountryCode = '+91'; // Default country code/
-const countryCodeList: any = []; // List of country codes
+import {login} from '../services/userservices';
 
 const LoginScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
@@ -31,71 +29,72 @@ const LoginScreen = ({navigation}: any) => {
   const [isSendOtpClicked, setIsSendOtpClicked] = useState(false);
   const [isTextInputSelected, setIsTextInputSelected] = useState(false);
   const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
-  const [selectedCountryCode, setSelectedCountryCode] =
-    useState(initialCountryCode);
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<null | ICountry>(null);
+  const [phoneMask, setPhoneMask] = useState<any>('');
+  const [inputValue, setInputValue] = useState<string>('##### #####');
 
-  const handlePhoneAndCodeView = () => {
-    if (isTextInputSelected) {
-      refTextInput.current?.blur();
-    } else {
-      refTextInput.current?.focus();
-    }
-    setIsTextInputSelected(!isTextInputSelected);
-    setShowCountryCodeDropdown(false);
+  function handleInputValue(phoneNumber: string) {
+    setInputValue(phoneNumber);
+  }
+
+  const countryMobileLengths: {[key: string]: number} = {
+    IN: 10,
+    US: 10,
+    AE: 9,
   };
 
-  const toggleCountryCodeDropdown = () => {
-    setShowCountryCodeDropdown(!showCountryCodeDropdown);
+  const countryPhoneValidationRules: {[key: string]: RegExp} = {
+    IN: /^\d{5}\s?\d{5}$/,
+    US: /^\d{3}\s?\d{3}\s?\d{4}$/,
+    AE: /^\d{2}\s?\d{3}\s?\d{4}$/,
   };
 
-  const handleCountryCodeSelection = (code: any) => {
-    setSelectedCountryCode(code);
-    toggleCountryCodeDropdown();
+  const getValidationSchema = (countryCode: any) => {
+    const phoneRegex = countryPhoneValidationRules[countryCode] || /^[0-9]+$/;
+    return Yup.object().shape({
+      mobileNumber: Yup.string()
+        .matches(phoneRegex, 'Invalid mobile number format.')
+        .required('Mobile number is required'),
+    });
   };
 
-  const getCountryCode = async () => {
-    try {
-      const res = await getcountryCodeAPI();
-      for (let i = 0; i < res.data.length; i++) {
-        countryCodeList.push(res.data[i].countryCode);
-      }
-    } catch (error: any) {
-      console.log(error);
-      Toast.show({
-        type: 'error',
-        text1: error.response.data.error,
-      });
-    }
+  const countryPhoneMasks: {[key: string]: string} = {
+    US: '### ### ####',
+    IN: '##### #####',
+    AE: '## ### ####',
   };
+
+  function handleSelectedCountry(country: ICountry) {
+    setSelectedCountry(country);
+    const mask = countryPhoneMasks[country?.cca2] || '##### #####';
+    setPhoneMask(mask);
+  }
 
   useEffect(() => {
-    getCountryCode();
-  }, []);
+    console.log('Current Mask:', phoneMask); // Debugging the mask
+  }, [phoneMask]);
 
-  const loginSchema = Yup.object().shape({
-    mobileNumber: Yup.string()
-      // .matches(/^\d{10,15}$/, 'Invalid mobile number. Only 10-15 digits allowed.')
-      .matches(/^[0-9]+$/, 'Invalid mobile number.')
-      .min(10, 'Mobile Number must be 10 digits only.')
-      .max(10, 'Mobile Number must be 10 digits only.')
-      .required('Mobile number is Required'),
-  });
+  const formattedMobileNumber = (mobileNumber: string) => {
+    const formattedNumber = mobileNumber.replace(/\s/g, '');
+    return formattedNumber;
+  };
 
   const handleSendOtp = async (formValues: any) => {
     try {
-      console.log(`handleSendOtp :>> `, formValues.mobileNumber);
       setIsSendOtpClicked(true);
+      const mobile_number = formattedMobileNumber(formValues.mobileNumber);
       Keyboard.dismiss();
-      // const formattedMobileNumber = `${countryCode}${formValues.mobileNumber}`;
       const loginData = {
-        mobileNumber: formValues.mobileNumber,
+        mobileNumber: mobile_number,
         type: 'driver',
       };
       // API Call to request OTP for Login.
       const res: any = await login(loginData);
-      dispatch(setPhoneNumber(formValues.mobileNumber));
+      console.log(`handleSendOtp :>> `, res.message, mobile_number);
+      dispatch(setPhoneNumber(mobile_number));
       navigation.navigate('LoginOtpScreen', {
-        mobileNumber: formValues.mobileNumber,
+        mobileNumber: mobile_number,
       });
       setTimeout(() => {
         setIsSendOtpClicked(false);
@@ -122,7 +121,6 @@ const LoginScreen = ({navigation}: any) => {
       contentContainerStyle={styles.keyboardAwareScrollView}>
       <ImageBackground
         style={{
-          // height: hp(100),
           height: hp(99),
           width: wp(100),
           flex: 1,
@@ -134,7 +132,7 @@ const LoginScreen = ({navigation}: any) => {
               mobileNumber: '',
             }}
             onSubmit={(values: any) => handleSendOtp(values)}
-            validationSchema={loginSchema}>
+            validationSchema={getValidationSchema(selectedCountry?.cca2)}>
             {({
               handleChange,
               handleBlur,
@@ -142,91 +140,98 @@ const LoginScreen = ({navigation}: any) => {
               values,
               errors,
               touched,
-            }) => (
-              <View style={styles.formikContainer}>
-                <View>
-                  <Text style={styles.textEnterNumber}>
-                    Enter your mobile number
-                  </Text>
-                  <Text style={styles.textContinue}>to continue</Text>
-                </View>
-
-                <View style={styles.countryCodeView}>
-                  <TouchableOpacity onPress={toggleCountryCodeDropdown}>
-                    {/* <PhoneIcon /> */}
-                    <Text style={styles.mobileInputCountryCode}>
-                      {selectedCountryCode}
+              setFieldValue,
+            }) => {
+              useEffect(() => {
+                const number = formattedMobileNumber(values.mobileNumber);
+                const expectedLength = selectedCountry
+                  ? countryMobileLengths[selectedCountry.cca2] || 'AE'
+                  : 'AE';
+                if (number.length === expectedLength) {
+                  setIsPhoneValid(true);
+                } else {
+                  setIsPhoneValid(false);
+                }
+              }, [values.mobileNumber, selectedCountry]);
+              return (
+                <View style={styles.formikContainer}>
+                  <View>
+                    <Text style={styles.textEnterNumber}>
+                      Enter your mobile number
                     </Text>
-                    <Text
-                      style={{
-                        position: 'absolute',
-                        right: -17,
-                        bottom: -1,
-                        color: 'grey',
-                        fontSize: 22,
-                      }}>
-                      ▼
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                {showCountryCodeDropdown && (
-                  <View style={styles.countryCodeDropdown}>
-                    {countryCodeList.map((code: any, index: any) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => handleCountryCodeSelection(code)}>
-                        <Text
-                          style={
-                            code === selectedCountryCode
-                              ? {fontWeight: 'bold'}
-                              : {}
-                          }>
-                          {code}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                    <Text style={styles.textContinue}>to continue</Text>
                   </View>
-                )}
-                <View style={styles.mobileInputContainer}>
-                  {/* <View
-                    style={styles.mobileInputView}
-                    onTouchStart={handlePhoneAndCodeView}>
-                    <PhoneIcon />
-                    <Text style={styles.mobileInputCountryCode}>
-                      {countryCode}
-                    </Text>
-                  </View> */}
 
-                  {errors.mobileNumber && touched.mobileNumber && (
-                    <Text style={styles.mobileInputErrorText}>
-                      {errors.mobileNumber.toString()}
-                    </Text>
-                  )}
-                  <TextInput
-                    ref={refTextInput}
-                    keyboardType="numeric"
-                    style={styles.mobileInput}
-                    onChangeText={handleChange('mobileNumber')}
-                    onBlur={handleBlur('mobileNumber')}
-                    value={values.mobileNumber}
-                    maxLength={10}
-                    onTouchStart={handlePhoneAndCodeView}
-                  />
-                </View>
-
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => handleSubmit()}
-                    disabled={isSendOtpClicked}>
-                    {isSendOtpClicked && (
-                      <ActivityIndicator size="small" color="#fff" />
+                  <View style={styles.mobileInputContainer}>
+                    {errors.mobileNumber && touched.mobileNumber && (
+                      <Text style={styles.mobileInputErrorText}>
+                        {errors.mobileNumber.toString()}
+                      </Text>
                     )}
-                    <Text style={styles.buttonText}>Send OTP</Text>
-                  </TouchableOpacity>
+                    <PhoneInput
+                      modalHeight="100%"
+                      placeholder="Enter Mobile Number"
+                      value={values.mobileNumber}
+                      onChangePhoneNumber={(phoneNumber: string) => {
+                        setFieldValue('mobileNumber', phoneNumber);
+                      }}
+                      selectedCountry={selectedCountry}
+                      onChangeSelectedCountry={handleSelectedCountry}
+                      defaultCountry="IN"
+                      showOnly={['IN', 'AE', 'US']}
+                      customMask={[phoneMask]}
+                      phoneInputStyles={{
+                        container: {
+                          // backgroundColor: '#575757',
+                          borderWidth: 1.5,
+                          borderStyle: 'solid',
+                          borderColor: isPhoneValid ? '#F3F3F3' : 'red',
+                        },
+                        flagContainer: {
+                          borderTopLeftRadius: 7,
+                          borderBottomLeftRadius: 7,
+                          // backgroundColor: '#808080',
+                          justifyContent: 'center',
+                          width: wp(33),
+                        },
+                        //   flag: {},
+                        //   caret: {
+                        //     color: '#F3F3F3',
+                        //     fontSize: 16,
+                        //   },
+                        //   divider: {
+                        //     backgroundColor: '#F3F3F3',
+                        //   },
+                        //   callingCode: {
+                        //     fontSize: 16,
+                        //     fontWeight: 'bold',
+                        //     color: '#F3F3F3',
+                        //   },
+                        //   input: {
+                        //     color: '#F3F3F3',
+                        //   },
+                      }}
+                    />
+                  </View>
+
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        {backgroundColor: isPhoneValid ? '#118F5E' : 'gray'},
+                      ]}
+                      onPress={() => handleSubmit()}
+                      disabled={isSendOtpClicked || !isPhoneValid} // Disable when phone isn't valid
+                    >
+                      {isSendOtpClicked && (
+                        <ActivityIndicator size="small" color="#fff" />
+                      )}
+                      <Text style={styles.buttonText}>Send OTP</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            )}
+              );
+            }}
           </Formik>
         </View>
       </ImageBackground>
@@ -273,10 +278,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   mobileInputContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(67),
-    marginLeft: wp(20),
+    width: wp(90),
+    // marginLeft: wp(20),
   },
   mobileInputView: {
     zIndex: 1,
@@ -290,7 +296,9 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     color: 'red',
     position: 'absolute',
-    top: hp(-2.5),
+    top: hp(1),
+    alignSelf: 'center',
+    right: wp(7),
   },
   mobileInput: {
     fontFamily: 'RobotoMono-Regular',

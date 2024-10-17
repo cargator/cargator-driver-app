@@ -21,6 +21,11 @@ const authSlice = createSlice({
       exists: false,
       path: '',
     },
+    vehicleImage: {
+      exists: false,
+      path: ''
+    },
+    vehicleImageKey: '',
     currentOnGoingOrderDetails: {},
     rejectedOrders: [],
     riderPath:[],
@@ -35,6 +40,10 @@ const authSlice = createSlice({
       state.userId = '';
       state.loginToken = '';
       state.userImage = {
+        exists: false,
+        path: '',
+      };
+      state.vehicleImage = {
         exists: false,
         path: '',
       };
@@ -63,6 +72,12 @@ const authSlice = createSlice({
     },
     setUserImgExists: (state, action) => {
       state.userImage = action.payload;
+    },
+    setVehicleImgExists: (state, action) => {
+      state.vehicleImage = action.payload;
+    },
+    setVehicleImageKey: (state, action) => {
+      state.vehicleImageKey = action.payload;
     },
     setCurrentOnGoingOrderDetails: (state, action) => {
       state.currentOnGoingOrderDetails = action.payload;
@@ -94,6 +109,8 @@ export const {
   setGpsPermission,
   setLoginToken,
   setUserImgExists,
+  setVehicleImgExists,
+  setVehicleImageKey,
   setCurrentOnGoingOrderDetails,
   removeCurrentOnGoingOrderDetails,
   resetAllOrders,

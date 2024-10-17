@@ -1,6 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {View, Button, Alert, StyleSheet, ActivityIndicator, Text, Animated} from 'react-native';
-import {launchCamera, Asset, CameraOptions} from 'react-native-image-picker';
+// import {launchCamera, Asset, CameraOptions} from 'react-native-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
+
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -14,12 +16,12 @@ import Toast from 'react-native-toast-message';
 import { randomLoderColor } from '../../svg/helper/constant';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-interface ImagePickerResponse {
-  assets?: Asset[];
-  didCancel?: boolean;
-  errorCode?: string;
-  errorMessage?: string;
-}
+// interface ImagePickerResponse {
+//   assets?: Asset[];
+//   didCancel?: boolean;
+//   errorCode?: string;
+//   errorMessage?: string;
+// }
 
 const OpenCamera = ({location, status, orderID}: any) => {
   const blinkAnim = useRef(new Animated.Value(1)).current;
@@ -44,33 +46,62 @@ const OpenCamera = ({location, status, orderID}: any) => {
     }
   }
 
+
   const openCamera = async () => {
     const hasPermission = await requestCameraPermission();
-    if (!hasPermission) {
-      Alert.alert(
-        'Permission Denied',
-        'Camera permission is required to use this feature.',
-      );
-      return;
-    }
+     if (!hasPermission) {
+       Alert.alert(
+         'Permission Denied',
+         'Camera permission is required to use this feature.',
+       );
+       return;
+     }
+ 
+   ImagePicker.openCamera({
+     width: 1000,
+     height: 1000,
+     mediaType: 'photo', 
+     saveToPhotos: true,
+     cropping: true,
+     compressImageMaxWidth: 1000,  
+     compressImageMaxHeight: 1000,
+     compressImageQuality: 0.8,    
+   }).then(image => {
+     setImageUri(image.path);
+     uploadImage(image.path);
+   }).catch(error => {
+     console.log('Camera Error: ', error.message);
+   });
+ };
+ 
 
-    const options: CameraOptions = {
-      mediaType: 'photo',
-      saveToPhotos: true,
-    };
+  // const openCamera = async () => {
+  //   const hasPermission = await requestCameraPermission();
+  //   if (!hasPermission) {
+  //     Alert.alert(
+  //       'Permission Denied',
+  //       'Camera permission is required to use this feature.',
+  //     );
+  //     return;
+  //   }
 
-    launchCamera(options, (response: ImagePickerResponse) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.errorCode) {
-        console.log('ImagePicker Error: ', response.errorMessage);
-      } else if (response.assets && response.assets.length > 0) {
-        const photoUri = response.assets[0].uri || null;
-        setImageUri(photoUri || null);
-        uploadImage(photoUri);
-      }
-    });
-  };
+  //   const options: CameraOptions = {
+  //     mediaType: 'photo',
+  //     saveToPhotos: true,
+  //   };
+
+  //   launchCamera(options, (response: ImagePickerResponse) => {
+  //     if (response.didCancel) {
+  //       console.log('User cancelled image picker');
+  //     } else if (response.errorCode) {
+  //       console.log('ImagePicker Error: ', response.errorMessage);
+  //     } else if (response.assets && response.assets.length > 0) {
+  //       const photoUri = response.assets[0].uri || null;
+  //       setImageUri(photoUri || null);
+  //       uploadImage(photoUri);
+  //     }
+  //   });
+  // };
 
   const uploadImage = async (photoUri: string | null) => {
     if (!photoUri) return;

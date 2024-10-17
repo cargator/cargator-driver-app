@@ -18,10 +18,14 @@ import {
   CameraOptions,
   ImagePickerResponse,
 } from 'react-native-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import {getS3SignUrlApi, updateVehicleImageKey} from '../services/userservices';
 import axios from 'axios';
 import {Buffer} from 'buffer';
-import {requestCameraPermission} from '../components/functions';
+import {
+  FetchVehicleImage,
+  requestCameraPermission,
+} from '../components/functions';
 import {useDispatch, useSelector} from 'react-redux';
 import SidebarIcon from '../svg/SidebarIcon';
 import moment from 'moment';
@@ -30,7 +34,7 @@ import {userDetails} from '../services/rideservices';
 import {useIsFocused} from '@react-navigation/native';
 import LogOutIcon from '../svg/LogOutIcon';
 import {socketDisconnect} from '../utils/socket';
-import {removeUserData} from '../redux/redux';
+import {removeUserData, setVehicleImageKey, setVehicleImgExists} from '../redux/redux';
 import {isEmpty} from 'lodash';
 import RNFetchBlob from 'rn-fetch-blob';
 import {FetchUserImage} from '../components/functions';
@@ -42,6 +46,8 @@ import {randomLoderColor} from '../svg/helper/constant';
 const Profile = (props: any) => {
   const userId = useSelector((store: any) => store.userData._id);
   const userImg = useSelector((store: any) => store.userImage.path);
+  const vehicleImage = useSelector((store: any) => store.vehicleImage.path);
+  let vehicleImageKey = useSelector((store: any) => store.vehicleImageKey);
   const profileImageKey = useSelector(
     (store: any) => store.userData.profileImageKey,
   );
@@ -52,10 +58,12 @@ const Profile = (props: any) => {
   const isFocused = useIsFocused();
   const [formattedDate, setFormattedDate] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [vehicleimagePath, setVehicleimagePath] = useState<string | null>();
   const [isUploading, setIsUploading] = useState(false);
   const handleLogout = async () => {
     try {
-      // await RNFetchBlob.fs.unlink(`file://${userImg}`);
+      await RNFetchBlob.fs.unlink(`file://${userImg}`);
+      await RNFetchBlob.fs.unlink(`file://${vehicleImage}`);
       socketDisconnect();
       dispatch(removeUserData());
     } catch (error) {
@@ -68,8 +76,13 @@ const Profile = (props: any) => {
       setLoading(true);
       const response: any = await userDetails(userId);
       setDriverDetails(response.data);
-      setImageUri(response.imageUri[0]?.imageUri);
+      dispatch(setVehicleImageKey(response.data?.vehicleData.profileImageKey));
+      console.log("qwertyuioiu")
+      if (!vehicleImageKey) {
+        vehicleImageKey = response.data?.vehicleData.profileImageKey;
+      }
       setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
+      fetchvehicleImageExists();
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
     } finally {
@@ -105,22 +118,65 @@ const Profile = (props: any) => {
       return;
     }
 
-    const options: CameraOptions = {
+    ImagePicker.openCamera({
+      width: 1000,
+      height: 1000,
       mediaType: 'photo',
       saveToPhotos: true,
-    };
-
-    launchCamera(options, (response: ImagePickerResponse) => {
-      if (response.didCancel) {
-      } else if (response.errorCode) {
-        console.log('ImagePicker Error: ', response.errorMessage);
-      } else if (response.assets && response.assets.length > 0) {
-        const photoUri = response.assets[0].uri || null;
-        setImageUri(photoUri || null);
-        uploadImage(photoUri);
-      }
-    });
+      cropping: true,
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 0.8,
+    })
+      .then(image => {
+        setImageUri(image.path);
+        uploadImage(image.path);
+      })
+      .catch(error => {
+        console.log('Camera Error: ', error.message);
+      });
   };
+
+  // const openCamera = async () => {
+  //   const hasPermission = await requestCameraPermission();
+  //   if (!hasPermission) {
+  //     Alert.alert(
+  //       'Permission Denied',
+  //       'Camera permission is required to use this feature.',
+  //     );
+  //     return;
+  //   }
+
+  //   const options: CameraOptions = {
+  //     mediaType: 'photo',
+  //     maxWidth: 1000,
+  //     maxHeight: 1000,
+  //     quality: 0.8,
+  //     saveToPhotos: true,
+  //   };
+
+  //   launchCamera(options, (response: ImagePickerResponse) => {
+  //     if (response.didCancel) {
+  //     } else if (response.errorCode) {
+  //       console.log('ImagePicker Error: ', response.errorMessage);
+  //     } else if (response.assets && response.assets.length > 0) {
+  //       const photoUri = response.assets[0].uri || null;
+  //       if (photoUri) {
+  //         // Resize the image
+  //         ImageResizer.createResizedImage(photoUri, 1000, 1000, 'JPEG', 80)
+  //           .then(resizedImage => {
+  //             setImageUri(resizedImage.uri || null);
+  //             uploadImage(resizedImage.uri);
+  //           })
+  //           .catch(err => {
+  //             console.log('Error resizing image: ', err);
+  //           });
+  //       }
+  //       // setImageUri(photoUri || null);
+  //       // uploadImage(photoUri);
+  //     }
+  //   });
+  // };
 
   const uploadImage = async (photoUri: string | null) => {
     if (!photoUri) return;
@@ -145,13 +201,15 @@ const Profile = (props: any) => {
             imageKey: key,
             photoUri: photoUri,
           });
+          if(response){
+            await getDriverDetail()
+          }
           setIsUploading(false);
           Toast.show({
             type: 'success',
             text1: `VEHICLE IMAGE UOLOADED SUCCESSFULLY !`,
             visibilityTime: 5000,
           });
-          // console.log("response >>",response);
         }
       } catch (error) {
         console.log('error while uploading vehicle image', error);
@@ -174,20 +232,38 @@ const Profile = (props: any) => {
     }
   }, [isFocused]);
 
-  // const checkImageExists = async () => {
-  //   try {
-  //     const exists = await RNFetchBlob.fs.exists(userImg);
-  //     if (!exists) {
-  //       console.log('fetching user Image.....as he may have cleared cache');
-  //       await FetchUserImage(dispatch, profileImageKey, userId);
-  //     }
-  //   } catch (error) {
-  //     console.log('error in checkImageExists', error);
-  //   }
-  // };
-  useEffect(() => {
-    // checkImageExists();
+  const fetchvehicleImageExists = async () => {
+    try {
+      console.log(
+        'fetching vehicle Image.....as he may have cleared cache',
+        vehicleImageKey,
+      );
+      const vehicleImagePath = await FetchVehicleImage(
+        dispatch,
+        vehicleImageKey,
+        userId,
+      );
+      setVehicleimagePath(vehicleImagePath);
+    } catch (error) {
+      console.log('error in checkVehicleImageExists', error);
+    }
+  };
+
+  const checkImageExists = async () => {
+    try {
+      const exists = await RNFetchBlob.fs.exists(userImg);
+      if (!exists) {
+        // console.log('fetching user Image.....as he may have cleared cache');
+        await FetchUserImage(dispatch, profileImageKey, userId);
+      }
+    } catch (error) {
+      console.log('error in checkProfileImageExists', error);
+    }
+  };
+  useEffect(() => {    
+    checkImageExists();
   }, []);
+
   return (
     <>
       <TouchableOpacity
@@ -227,30 +303,18 @@ const Profile = (props: any) => {
               )}
 
               {/* uploading vehicle image  */}
-              {/* <View style={styles.vehicleImage}>
-                <Button title="Upload vehicle image" onPress={openCamera} />
-                {isUploading && (
-                  <ActivityIndicator size="large" color="#00ff00" />
-                )}
-                {imageUri && (
-                  <Image source={{uri: imageUri}} style={styles.imagePreview} />
-                )}
-              </View> */}
 
               <View style={styles.profileDataContainer}>
                 <View style={styles.vehicleImageMainContainer}>
-                <TouchableOpacity
-                      style={styles.uploadButton}
-                      onPress={openCamera}>
-                      <ImageUpload />
-                    </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.uploadButton}
+                    onPress={openCamera}>
+                    <ImageUpload />
+                  </TouchableOpacity>
 
-                    <Text style={styles.imageViewHeading}>Vehicle Image</Text>
+                  <Text style={styles.imageViewHeading}>Vehicle Image</Text>
 
                   <View style={styles.vehicleImageContainer}>
-                
-                  
-
                     {isUploading && (
                       <ActivityIndicator
                         size="large"
@@ -263,12 +327,22 @@ const Profile = (props: any) => {
                       />
                     )}
 
-                    {imageUri && (
+                    {vehicleImage ? (
                       <Image
-                        source={{uri: imageUri}}
+                        source={{uri: `file://${vehicleimagePath}`}}
                         // resizeMode="contain"
                         style={styles.imageViewBox}
                       />
+                    ) : (
+                      <Text
+                        style={{
+                          fontFamily: 'RobotoMono-Regular',
+                          color: '#0A0000',
+                          fontSize: hp(2),
+                          fontWeight: '700',
+                        }}>
+                        Upload your vehicle image
+                      </Text>
                     )}
                   </View>
                 </View>
@@ -318,11 +392,11 @@ const Profile = (props: any) => {
               </View>
             </View>
             <View style={styles.bottomView}>
-            <TouchableOpacity onPress={handleLogout}>
-              <LogOutIcon />
-            </TouchableOpacity>
-            <Text style={styles.date}>Member Since {formattedDate}</Text>
-          </View>
+              <TouchableOpacity onPress={handleLogout}>
+                <LogOutIcon />
+              </TouchableOpacity>
+              <Text style={styles.date}>Member Since {formattedDate}</Text>
+            </View>
           </View>
         </>
       )}
@@ -377,7 +451,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2BB180',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: hp(10),
+    // marginTop: hp(10),
   },
   profileText: {color: '#ffffff', fontSize: wp(10)},
   horixontalLine: {
@@ -405,8 +479,8 @@ const styles = StyleSheet.create({
     shadowColor: '#171717',
     backgroundColor: 'white',
     overflow: 'hidden',
-    paddingHorizontal:25,
-    marginTop:hp(4),
+    paddingHorizontal: 25,
+    marginTop: hp(4),
     width: wp(90),
     height: hp(20),
     shadowOffset: {width: -2, height: 4},
@@ -426,19 +500,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: hp(0.5),
     left: wp(2),
-    // fontFamily: 'RobotoMono-Regular',
-    // color: '#FFF',
-    // fontSize: hp(1.5),
-    // fontWeight: '700',
-    // zIndex: 5,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    // borderRadius: 5,
-    // paddingHorizontal: wp(1.5),
-    // shadowColor: '#000',
-    // shadowOffset: {width: 0, height: 2},
-    // shadowOpacity: 0.8,
-    // shadowRadius: 3,
-    // elevation: 5,
   },
 
   uploadButton: {
@@ -450,15 +511,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(1.5),
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
-    // shadowOpacity: 0.8,
-    // shadowRadius: 3,
-    // elevation: 5,
   },
 
   imageViewBox: {
     objectFit: 'fill',
-    height: hp(40),
-    width: wp(100),
+    height: hp(25),
+    width: wp(90),
   },
 
   contentView: {
