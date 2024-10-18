@@ -65,7 +65,7 @@ const Profile = (props: any) => {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const handleLogout = async () => {
     try {
-      await RNFetchBlob.fs.unlink(`file://${userImg}`);
+      // await RNFetchBlob.fs.unlink(`file://${userImg}`);
       socketDisconnect();
       dispatch(removeUserData());
     } catch (error) {
