@@ -12,12 +12,6 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {
-  launchCamera,
-  Asset,
-  CameraOptions,
-  ImagePickerResponse,
-} from 'react-native-image-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 import {getS3SignUrlApi, updateVehicleImageKey} from '../services/userservices';
 import axios from 'axios';
@@ -34,18 +28,14 @@ import {userDetails} from '../services/rideservices';
 import {useIsFocused} from '@react-navigation/native';
 import LogOutIcon from '../svg/LogOutIcon';
 import {socketDisconnect} from '../utils/socket';
-import {
-  removeUserData,
-  setVehicleImageKey,
-  setVehicleImgExists,
-} from '../redux/redux';
+import {removeUserData, setVehicleImageKey} from '../redux/redux';
 import {isEmpty} from 'lodash';
 import RNFetchBlob from 'rn-fetch-blob';
 import {FetchUserImage} from '../components/functions';
-import {Button} from 'react-native-elements';
 import Toast from 'react-native-toast-message';
 import ImageUpload from '../svg/imageUpload';
 import {randomLoderColor} from '../svg/helper/constant';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const Profile = (props: any) => {
   const userId = useSelector((store: any) => store.userData._id);
@@ -78,11 +68,11 @@ const Profile = (props: any) => {
       setLoading(true);
       const response: any = await userDetails(userId);
       setDriverDetails(response.data);
-      dispatch(setVehicleImageKey(response.data?.vehicleData.profileImageKey));
+      dispatch(setVehicleImageKey(response.data?.vehicleData?.profileImageKey));
       if (!vehicleImageKey) {
-        vehicleImageKey = response.data?.vehicleData.profileImageKey;
-        fetchvehicleImageExists()
+        vehicleImageKey = response.data?.vehicleData?.profileImageKey;
       }
+      await fetchvehicleImageExists();
       setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
@@ -151,47 +141,6 @@ const Profile = (props: any) => {
       });
   };
 
-  // const openCamera = async () => {
-  //   const hasPermission = await requestCameraPermission();
-  //   if (!hasPermission) {
-  //     Alert.alert(
-  //       'Permission Denied',
-  //       'Camera permission is required to use this feature.',
-  //     );
-  //     return;
-  //   }
-
-  //   const options: CameraOptions = {
-  //     mediaType: 'photo',
-  //     maxWidth: 1000,
-  //     maxHeight: 1000,
-  //     quality: 0.8,
-  //     saveToPhotos: true,
-  //   };
-
-  //   launchCamera(options, (response: ImagePickerResponse) => {
-  //     if (response.didCancel) {
-  //     } else if (response.errorCode) {
-  //       console.log('ImagePicker Error: ', response.errorMessage);
-  //     } else if (response.assets && response.assets.length > 0) {
-  //       const photoUri = response.assets[0].uri || null;
-  //       if (photoUri) {
-  //         // Resize the image
-  //         ImageResizer.createResizedImage(photoUri, 1000, 1000, 'JPEG', 80)
-  //           .then(resizedImage => {
-  //             setImageUri(resizedImage.uri || null);
-  //             uploadImage(resizedImage.uri);
-  //           })
-  //           .catch(err => {
-  //             console.log('Error resizing image: ', err);
-  //           });
-  //       }
-  //       // setImageUri(photoUri || null);
-  //       // uploadImage(photoUri);
-  //     }
-  //   });
-  // };
-
   const uploadImage = async (photoUri: string | null) => {
     if (!photoUri) return;
 
@@ -216,7 +165,7 @@ const Profile = (props: any) => {
             photoUri: photoUri,
           });
           if (response) {
-            await fetchvehicleImageExists();
+            await FetchVehicleImage(dispatch, key, userId);
           }
           // setIsUploading(false);
           Toast.show({
@@ -285,6 +234,9 @@ const Profile = (props: any) => {
         <LoaderComponent />
       ) : (
         <>
+         <ScrollView // Add ScrollView here
+          contentContainerStyle={styles.scrollContainer} // Optional: Style for ScrollView content
+        >
           <View style={styles.container}>
             <View style={{alignItems: 'center'}}>
               {userImg ? (
@@ -303,16 +255,18 @@ const Profile = (props: any) => {
               {/* uploading vehicle image  */}
 
               <View style={styles.profileDataContainer}>
-                <View style={styles.vehicleImageMainContainer}>
+               
+            
+
+
+                  <View style={styles.vehicleImageContainer}>
                   <TouchableOpacity
                     style={styles.uploadButton}
                     onPress={openCamera}>
                     <ImageUpload />
                   </TouchableOpacity>
-
                   <Text style={styles.imageViewHeading}>Vehicle Image</Text>
 
-                  <View style={styles.vehicleImageContainer}>
                     {isUploading && (
                       <ActivityIndicator
                         size="large"
@@ -343,7 +297,7 @@ const Profile = (props: any) => {
                       </Text>
                     )}
                   </View>
-                </View>
+               
 
                 <View style={styles.contentView}>
                   <Text style={styles.contentViewHeading}>Name</Text>
@@ -389,13 +343,17 @@ const Profile = (props: any) => {
                 </View>
               </View>
             </View>
-            <View style={styles.bottomView}>
-              <TouchableOpacity onPress={handleLogout}>
+            <View style={styles.logoutButtonView}>
+              <TouchableOpacity
+                onPress={handleLogout}>
                 <LogOutIcon />
               </TouchableOpacity>
+            </View>
+            <View style={styles.memberSinceView}>
               <Text style={styles.date}>Member Since {formattedDate}</Text>
             </View>
           </View>
+          </ScrollView>
         </>
       )}
     </>
@@ -415,6 +373,10 @@ const styles = StyleSheet.create({
     fontFamily: 'RobotoMono-Regular',
     color: 'white',
     fontSize: wp(5),
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: hp(10)
   },
   container: {
     // flex: 1,
@@ -460,35 +422,23 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
-  vehicleImageMainContainer: {
-    borderRadius: wp(3),
-    shadowColor: '#171717',
-    backgroundColor: 'white',
-    overflow: 'hidden',
-    width: wp(90),
-    height: hp(24),
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
   vehicleImageContainer: {
-    // borderRadius: wp(3),
     shadowColor: '#171717',
     backgroundColor: 'white',
     overflow: 'hidden',
+    borderRadius: wp(3),
     paddingHorizontal: 25,
-    marginTop: hp(4),
+    // marginTop: hp(4),
     width: wp(90),
-    height: hp(20),
-    shadowOffset: {width: -2, height: 4},
+    height: wp(75), // Set height equal to width for a square
+    shadowOffset: { width: -2, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 2,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
-  },
+},
 
   imageViewHeading: {
     fontFamily: 'RobotoMono-Regular',
@@ -496,6 +446,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontWeight: '500',
     position: 'absolute',
+    marginHorizontal: wp(5),
     top: hp(0.5),
     left: wp(2),
   },
@@ -506,15 +457,16 @@ const styles = StyleSheet.create({
     right: wp(2),
     zIndex: 10,
     borderRadius: 5,
-    paddingHorizontal: wp(1.5),
+    paddingHorizontal: wp(5),
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
   },
 
   imageViewBox: {
     objectFit: 'fill',
-    height: hp(25),
+    height: hp(30),
     width: wp(90),
+    marginTop:hp(5)
   },
 
   contentView: {
@@ -543,11 +495,25 @@ const styles = StyleSheet.create({
   },
   text: {fontSize: wp(5), color: '#000000'},
   loaderStyles: {marginTop: hp(40), alignSelf: 'center'},
-  bottomView: {
-    top: hp(5),
+  logoutButtonView: {
+    top: hp(3),
+    backgroundColor: 'red',
+    width: wp(50),
+    height: hp(5),
+    borderRadius: hp(5),
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 10,
+    paddingHorizontal: wp(3),
+    opacity: 0.9, // Slight transparency for smooth look
+  },
+  memberSinceView: {
+    top: hp(4),
     alignSelf: 'center',
     alignItems: 'center',
   },
+
   date: {
     fontFamily: 'RobotoMono-Regular',
     marginTop: hp(1),

@@ -47,6 +47,7 @@ const authSlice = createSlice({
         exists: false,
         path: '',
       };
+      state.vehicleImageKey = '';
       state.currentOnGoingOrderDetails = {};
     },
     resetAllOrders: state => {

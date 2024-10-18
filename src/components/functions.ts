@@ -330,6 +330,12 @@ export const FetchVehicleImage = async (
   vehicleImageKey: string,
   userId: any,
 ) => {
+
+  if (!vehicleImageKey) {
+    
+    return;
+  }
+
   const fileExtension = vehicleImageKey.split('.').pop();
   const data = {
     key: vehicleImageKey,
