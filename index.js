@@ -14,15 +14,15 @@ Sentry.init({
   dsn: 'https://03458ba1d2632278ec64519d2973d263@o4507626764959744.ingest.us.sentry.io/4508138641162240',
   tracesSampleRate: 1.0,
   _experiments: {
-    replaysSessionSampleRate: 1.0,  // Ensure all sessions are captured during testing
-    replaysOnErrorSampleRate: 1.0,  // Ensure errors capture replays
+    replaysSessionSampleRate: 1.0, 
+    replaysOnErrorSampleRate: 1.0,
     profilesSampleRate: 1.0,
   },
   integrations: [
     Sentry.mobileReplayIntegration({
-      maskAllText: true,   // Mask all text in replays
-      maskAllImages: true, // Mask all images in replays
-      maskAllVectors: true, // Mask all vectors in replays
+      maskAllText: false,   
+      maskAllImages: false, 
+      maskAllVectors: false, 
     }),
   ],
 });

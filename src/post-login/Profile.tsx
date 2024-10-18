@@ -81,6 +81,7 @@ const Profile = (props: any) => {
       dispatch(setVehicleImageKey(response.data?.vehicleData.profileImageKey));
       if (!vehicleImageKey) {
         vehicleImageKey = response.data?.vehicleData.profileImageKey;
+        fetchvehicleImageExists()
       }
       setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
     } catch (error) {
@@ -258,7 +259,7 @@ const Profile = (props: any) => {
   };
   useEffect(() => {
     checkImageExists();
-    fetchvehicleImageExists();
+    // fetchvehicleImageExists();
   }, []);
 
   return (
