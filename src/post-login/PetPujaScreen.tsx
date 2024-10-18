@@ -269,7 +269,7 @@ const PetPujaScreen = ({navigation, route}: any) => {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
             };
-            console.log('getCurrentPosition called', newLocation);
+            // console.log('getCurrentPosition called', newLocation);
             myLocation.current = newLocation;
             driverLivelocationAPI({
               coordinates: [newLocation.latitude, newLocation.longitude],
@@ -1660,7 +1660,6 @@ const PetPujaScreen = ({navigation, route}: any) => {
                                 }
                               </Text>
                             </TouchableOpacity>
-                           
                           </View>
                         </View>
                       )}
@@ -1759,18 +1758,19 @@ const PetPujaScreen = ({navigation, route}: any) => {
                     </MapView>
 
                     {/* Food image picker */}
-                    {[OrderStatusEnum.ARRIVED,OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,].includes(
-                            currentOnGoingOrderDetails.status,
-                          ) && (
-                            <OpenCamera
-                              location={myLocation?.current}
-                              status={currentOnGoingOrderDetails.status}
-                              orderID={
-                                currentOnGoingOrderDetails?.order_details
-                                  .vendor_order_id
-                              }
-                            />
-                          )}
+                    {[
+                      OrderStatusEnum.ARRIVED,
+                      OrderStatusEnum.ARRIVED_CUSTOMER_DOORSTEP,
+                    ].includes(currentOnGoingOrderDetails.status) && (
+                      <OpenCamera
+                        location={myLocation?.current}
+                        status={currentOnGoingOrderDetails.status}
+                        orderID={
+                          currentOnGoingOrderDetails?.order_details
+                            .vendor_order_id
+                        }
+                      />
+                    )}
                     {/*   Nevigate to google map */}
 
                     <TouchableOpacity

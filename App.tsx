@@ -53,7 +53,6 @@ import store, {
 } from './src/redux/redux';
 import {requestUserPermission} from './src/utils/firebase-config';
 import {socketDisconnect} from './src/utils/socket';
-import {isLocationEnabled} from 'react-native-android-location-enabler';
 import {updateDeviceInfo} from './src/services/userservices';
 
 const Appdrawercontent = (props: any) => {
@@ -168,22 +167,27 @@ export const Routing = () => {
     });
 
     messaging()
-      .getInitialNotification()
-      .then((remoteMessage: any) => {
-        console.log(
-          'navigationRef.current?.getCurrentRoute()  ',
-          navigationRef.current?.getCurrentRoute(),
-        );
-        if (navigationRef.current?.getCurrentRoute().name === 'Home') {
-          // Force update or refresh home screen state
-          navigationRef.current?.navigate('Home', {
-            refresh: !navigationRefFlag.current,
-          });
-          navigationRefFlag.current = !navigationRefFlag.current;
-        } else {
-          navigationRef.current?.navigate('Home');
-        }
-      });
+    .getInitialNotification()
+    .then((remoteMessage: any) => {
+      // Ensure the navigationRef is valid and the route is available
+      const currentRoute = navigationRef.current?.getCurrentRoute();
+  
+      // console.log('Current Route:', currentRoute);
+  
+      if (currentRoute && currentRoute.name === 'Home') {
+        // Force update or refresh home screen state
+        navigationRef.current?.navigate('Home', {
+          refresh: !navigationRefFlag.current,
+        });
+        navigationRefFlag.current = !navigationRefFlag.current;
+      } else {
+        // If currentRoute is undefined or not 'Home', navigate to 'Home'
+        navigationRef.current?.navigate('Home');
+      }
+    })
+    .catch((error) => {
+      console.error('Error fetching initial notification:', error);
+    });
 
     const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
       if (navigationRef.current?.getCurrentRoute().name === 'Home') {

@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00E356F31AD99517003FC87E /* CargatorDriverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* CargatorDriverTests.m */; };
+		00E356F31AD99517003FC87E /* Sukam ExpressTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* Sukam ExpressTests.m */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		6B4A1C8467D9D4C12A17EA24 /* libPods-CargatorDriver.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 54B86630FD22FA825D6B7EB9 /* libPods-CargatorDriver.a */; };
+		6B4A1C8467D9D4C12A17EA24 /* libPods-Sukam Express.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 54B86630FD22FA825D6B7EB9 /* libPods-Sukam Express.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		89CD5B220B244A4C1BBE49C2 /* libPods-CargatorDriver-CargatorDriverTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C82886C9E05539E6CAE8F2DC /* libPods-CargatorDriver-CargatorDriverTests.a */; };
+		89CD5B220B244A4C1BBE49C2 /* libPods-Sukam Express-Sukam ExpressTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C82886C9E05539E6CAE8F2DC /* libPods-Sukam Express-Sukam ExpressTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -22,28 +22,28 @@
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
-			remoteInfo = CargatorDriver;
+			remoteInfo = Sukam Express;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		00E356EE1AD99517003FC87E /* CargatorDriverTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CargatorDriverTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		00E356EE1AD99517003FC87E /* Sukam ExpressTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Sukam ExpressTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		00E356F21AD99517003FC87E /* CargatorDriverTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CargatorDriverTests.m; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* CargatorDriver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CargatorDriver.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = CargatorDriver/AppDelegate.h; sourceTree = "<group>"; };
-		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = CargatorDriver/AppDelegate.mm; sourceTree = "<group>"; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CargatorDriver/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CargatorDriver/Info.plist; sourceTree = "<group>"; };
-		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = CargatorDriver/main.m; sourceTree = "<group>"; };
-		54B86630FD22FA825D6B7EB9 /* libPods-CargatorDriver.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CargatorDriver.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CargatorDriver/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		87569052ABE6FE3BB07D26BE /* Pods-CargatorDriver.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver.debug.xcconfig"; path = "Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver.debug.xcconfig"; sourceTree = "<group>"; };
-		C82886C9E05539E6CAE8F2DC /* libPods-CargatorDriver-CargatorDriverTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CargatorDriver-CargatorDriverTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E082DD82B628203BD4D01EB2 /* Pods-CargatorDriver.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver.release.xcconfig"; path = "Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver.release.xcconfig"; sourceTree = "<group>"; };
-		E4E4C845719CF7BA3B9562C9 /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver-CargatorDriverTests.release.xcconfig"; path = "Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests.release.xcconfig"; sourceTree = "<group>"; };
+		00E356F21AD99517003FC87E /* Sukam ExpressTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Sukam ExpressTests.m; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* Sukam Express.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sukam Express.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Sukam Express/AppDelegate.h; sourceTree = "<group>"; };
+		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = Sukam Express/AppDelegate.mm; sourceTree = "<group>"; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Sukam Express/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Sukam Express/Info.plist; sourceTree = "<group>"; };
+		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Sukam Express/main.m; sourceTree = "<group>"; };
+		54B86630FD22FA825D6B7EB9 /* libPods-Sukam Express.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Sukam Express.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Sukam Express/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		87569052ABE6FE3BB07D26BE /* Pods-Sukam Express.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Sukam Express.debug.xcconfig"; path = "Target Support Files/Pods-Sukam Express/Pods-Sukam Express.debug.xcconfig"; sourceTree = "<group>"; };
+		C82886C9E05539E6CAE8F2DC /* libPods-Sukam Express-Sukam ExpressTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Sukam Express-Sukam ExpressTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E082DD82B628203BD4D01EB2 /* Pods-Sukam Express.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Sukam Express.release.xcconfig"; path = "Target Support Files/Pods-Sukam Express/Pods-Sukam Express.release.xcconfig"; sourceTree = "<group>"; };
+		E4E4C845719CF7BA3B9562C9 /* Pods-Sukam Express-Sukam ExpressTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Sukam Express-Sukam ExpressTests.release.xcconfig"; path = "Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		FAC26226EC996766761A41BE /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig"; path = "Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig"; sourceTree = "<group>"; };
+		FAC26226EC996766761A41BE /* Pods-Sukam Express-Sukam ExpressTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Sukam Express-Sukam ExpressTests.debug.xcconfig"; path = "Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,7 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				89CD5B220B244A4C1BBE49C2 /* libPods-CargatorDriver-CargatorDriverTests.a in Frameworks */,
+				89CD5B220B244A4C1BBE49C2 /* libPods-Sukam Express-Sukam ExpressTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,20 +59,20 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6B4A1C8467D9D4C12A17EA24 /* libPods-CargatorDriver.a in Frameworks */,
+				6B4A1C8467D9D4C12A17EA24 /* libPods-Sukam Express.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		00E356EF1AD99517003FC87E /* CargatorDriverTests */ = {
+		00E356EF1AD99517003FC87E /* Sukam ExpressTests */ = {
 			isa = PBXGroup;
 			children = (
-				00E356F21AD99517003FC87E /* CargatorDriverTests.m */,
+				00E356F21AD99517003FC87E /* Sukam ExpressTests.m */,
 				00E356F01AD99517003FC87E /* Supporting Files */,
 			);
-			path = CargatorDriverTests;
+			path = Sukam ExpressTests;
 			sourceTree = "<group>";
 		};
 		00E356F01AD99517003FC87E /* Supporting Files */ = {
@@ -83,7 +83,7 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		13B07FAE1A68108700A75B9A /* CargatorDriver */ = {
+		13B07FAE1A68108700A75B9A /* Sukam Express */ = {
 			isa = PBXGroup;
 			children = (
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -93,15 +93,15 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 			);
-			name = CargatorDriver;
+			name = Sukam Express;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				54B86630FD22FA825D6B7EB9 /* libPods-CargatorDriver.a */,
-				C82886C9E05539E6CAE8F2DC /* libPods-CargatorDriver-CargatorDriverTests.a */,
+				54B86630FD22FA825D6B7EB9 /* libPods-Sukam Express.a */,
+				C82886C9E05539E6CAE8F2DC /* libPods-Sukam Express-Sukam ExpressTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -116,9 +116,9 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* CargatorDriver */,
+				13B07FAE1A68108700A75B9A /* Sukam Express */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				00E356EF1AD99517003FC87E /* CargatorDriverTests */,
+				00E356EF1AD99517003FC87E /* Sukam ExpressTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
@@ -131,8 +131,8 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* CargatorDriver.app */,
-				00E356EE1AD99517003FC87E /* CargatorDriverTests.xctest */,
+				13B07F961A680F5B00A75B9A /* Sukam Express.app */,
+				00E356EE1AD99517003FC87E /* Sukam ExpressTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,10 +140,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				87569052ABE6FE3BB07D26BE /* Pods-CargatorDriver.debug.xcconfig */,
-				E082DD82B628203BD4D01EB2 /* Pods-CargatorDriver.release.xcconfig */,
-				FAC26226EC996766761A41BE /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */,
-				E4E4C845719CF7BA3B9562C9 /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */,
+				87569052ABE6FE3BB07D26BE /* Pods-Sukam Express.debug.xcconfig */,
+				E082DD82B628203BD4D01EB2 /* Pods-Sukam Express.release.xcconfig */,
+				FAC26226EC996766761A41BE /* Pods-Sukam Express-Sukam ExpressTests.debug.xcconfig */,
+				E4E4C845719CF7BA3B9562C9 /* Pods-Sukam Express-Sukam ExpressTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -151,9 +151,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		00E356ED1AD99517003FC87E /* CargatorDriverTests */ = {
+		00E356ED1AD99517003FC87E /* Sukam ExpressTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "CargatorDriverTests" */;
+			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "Sukam ExpressTests" */;
 			buildPhases = (
 				82F3ED4E28A2F375604E2B81 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
@@ -167,14 +167,14 @@
 			dependencies = (
 				00E356F51AD99517003FC87E /* PBXTargetDependency */,
 			);
-			name = CargatorDriverTests;
-			productName = CargatorDriverTests;
-			productReference = 00E356EE1AD99517003FC87E /* CargatorDriverTests.xctest */;
+			name = Sukam ExpressTests;
+			productName = Sukam ExpressTests;
+			productReference = 00E356EE1AD99517003FC87E /* Sukam ExpressTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		13B07F861A680F5B00A75B9A /* CargatorDriver */ = {
+		13B07F861A680F5B00A75B9A /* Sukam Express */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CargatorDriver" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Sukam Express" */;
 			buildPhases = (
 				D56E6D44F34CCA155100F7C3 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
@@ -184,14 +184,15 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				1A9CFF7D0A31FE5037CFB5BE /* [CP] Embed Pods Frameworks */,
 				06DF04D05E04253F78CA4A7D /* [CP] Copy Pods Resources */,
+				FA3EBD1C373448ABB3360080 /* Upload Debug Symbols to Sentry */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = CargatorDriver;
-			productName = CargatorDriver;
-			productReference = 13B07F961A680F5B00A75B9A /* CargatorDriver.app */;
+			name = Sukam Express;
+			productName = Sukam Express;
+			productReference = 13B07F961A680F5B00A75B9A /* Sukam Express.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -211,7 +212,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "CargatorDriver" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Sukam Express" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -224,8 +225,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* CargatorDriver */,
-				00E356ED1AD99517003FC87E /* CargatorDriverTests */,
+				13B07F861A680F5B00A75B9A /* Sukam Express */,
+				00E356ED1AD99517003FC87E /* Sukam ExpressTests */,
 			);
 		};
 /* End PBXProject section */
@@ -264,7 +265,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT \\\"/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode.sh $REACT_NATIVE_XCODE\\\"\"\n";
 		};
 		06DF04D05E04253F78CA4A7D /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -272,15 +273,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express/Pods-Sukam Express-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express/Pods-Sukam Express-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Sukam Express/Pods-Sukam Express-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		1A9CFF7D0A31FE5037CFB5BE /* [CP] Embed Pods Frameworks */ = {
@@ -289,15 +290,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express/Pods-Sukam Express-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express/Pods-Sukam Express-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver/Pods-CargatorDriver-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Sukam Express/Pods-Sukam Express-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		82F3ED4E28A2F375604E2B81 /* [CP] Check Pods Manifest.lock */ = {
@@ -315,7 +316,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-CargatorDriver-CargatorDriverTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Sukam Express-Sukam ExpressTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -328,15 +329,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D56E6D44F34CCA155100F7C3 /* [CP] Check Pods Manifest.lock */ = {
@@ -354,7 +355,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-CargatorDriver-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Sukam Express-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -367,15 +368,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CargatorDriver-CargatorDriverTests/Pods-CargatorDriver-CargatorDriverTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Sukam Express-Sukam ExpressTests/Pods-Sukam Express-Sukam ExpressTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -397,6 +398,20 @@
 			shellScript = "export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\necho \"export RCT_METRO_PORT=${RCT_METRO_PORT}\" > \"${SRCROOT}/../node_modules/react-native/scripts/.packager.env\"\nif [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost ${RCT_METRO_PORT} ; then\n    if ! curl -s \"http://localhost:${RCT_METRO_PORT}/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port ${RCT_METRO_PORT} already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		FA3EBD1C373448ABB3360080 /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Upload Debug Symbols to Sentry";
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -404,7 +419,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00E356F31AD99517003FC87E /* CargatorDriverTests.m in Sources */,
+				00E356F31AD99517003FC87E /* Sukam ExpressTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -422,7 +437,7 @@
 /* Begin PBXTargetDependency section */
 		00E356F51AD99517003FC87E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 13B07F861A680F5B00A75B9A /* CargatorDriver */;
+			target = 13B07F861A680F5B00A75B9A /* Sukam Express */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -430,14 +445,14 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FAC26226EC996766761A41BE /* Pods-CargatorDriver-CargatorDriverTests.debug.xcconfig */;
+			baseConfigurationReference = FAC26226EC996766761A41BE /* Pods-Sukam Express-Sukam ExpressTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = CargatorDriverTests/Info.plist;
+				INFOPLIST_FILE = Sukam ExpressTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -451,17 +466,17 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CargatorDriver.app/CargatorDriver";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sukam Express.app/Sukam Express";
 			};
 			name = Debug;
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E4E4C845719CF7BA3B9562C9 /* Pods-CargatorDriver-CargatorDriverTests.release.xcconfig */;
+			baseConfigurationReference = E4E4C845719CF7BA3B9562C9 /* Pods-Sukam Express-Sukam ExpressTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
-				INFOPLIST_FILE = CargatorDriverTests/Info.plist;
+				INFOPLIST_FILE = Sukam ExpressTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -475,21 +490,21 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CargatorDriver.app/CargatorDriver";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Sukam Express.app/Sukam Express";
 			};
 			name = Release;
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 87569052ABE6FE3BB07D26BE /* Pods-CargatorDriver.debug.xcconfig */;
+			baseConfigurationReference = 87569052ABE6FE3BB07D26BE /* Pods-Sukam Express.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = M8GRU4CY28;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = CargatorDriver/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CargatorDriver;
+				INFOPLIST_FILE = Sukam Express/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Sukam Express;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -501,7 +516,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.codeb.sukamexpress;
-				PRODUCT_NAME = CargatorDriver;
+				PRODUCT_NAME = Sukam Express;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -510,14 +525,14 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E082DD82B628203BD4D01EB2 /* Pods-CargatorDriver.release.xcconfig */;
+			baseConfigurationReference = E082DD82B628203BD4D01EB2 /* Pods-Sukam Express.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = M8GRU4CY28;
-				INFOPLIST_FILE = CargatorDriver/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CargatorDriver;
+				INFOPLIST_FILE = Sukam Express/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Sukam Express;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -529,7 +544,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.codeb.sukamexpress;
-				PRODUCT_NAME = CargatorDriver;
+				PRODUCT_NAME = Sukam Express;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -677,7 +692,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "CargatorDriverTests" */ = {
+		00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "Sukam ExpressTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				00E356F61AD99517003FC87E /* Debug */,
@@ -686,7 +701,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CargatorDriver" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Sukam Express" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -695,7 +710,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "CargatorDriver" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Sukam Express" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

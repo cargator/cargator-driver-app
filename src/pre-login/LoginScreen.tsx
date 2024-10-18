@@ -71,10 +71,6 @@ const LoginScreen = ({navigation}: any) => {
     setPhoneMask(mask);
   }
 
-  useEffect(() => {
-    console.log('Current Mask:', phoneMask); // Debugging the mask
-  }, [phoneMask]);
-
   const formattedMobileNumber = (mobileNumber: string) => {
     const formattedNumber = mobileNumber.replace(/\s/g, '');
     return formattedNumber;
@@ -85,13 +81,16 @@ const LoginScreen = ({navigation}: any) => {
       setIsSendOtpClicked(true);
       const mobile_number = formattedMobileNumber(formValues.mobileNumber);
       Keyboard.dismiss();
+      console.log(
+        `handleSendOtp :>> `,
+        `${selectedCountry?.callingCode}${mobile_number}`,
+      );
       const loginData = {
-        mobileNumber: mobile_number,
+        mobileNumber: `${selectedCountry?.callingCode}${mobile_number}`,
         type: 'driver',
       };
       // API Call to request OTP for Login.
       const res: any = await login(loginData);
-      console.log(`handleSendOtp :>> `, res.message, mobile_number);
       dispatch(setPhoneNumber(mobile_number));
       navigation.navigate('LoginOtpScreen', {
         mobileNumber: mobile_number,

@@ -1,5 +1,8 @@
 import {Alert, Linking, PermissionsAndroid, Platform} from 'react-native';
-import RNAndroidLocationEnabler, { isLocationEnabled, promptForEnableLocationIfNeeded } from 'react-native-android-location-enabler';
+import RNAndroidLocationEnabler, {
+  isLocationEnabled,
+  promptForEnableLocationIfNeeded,
+} from 'react-native-android-location-enabler';
 import Geolocation from 'react-native-geolocation-service';
 import {
   check,
@@ -20,25 +23,23 @@ import {getPreSignedUrl} from '../services/userservices';
 
 export const requestGpsPermission = async (dispatch: any) => {
   try {
-
     if (Platform.OS === 'android') {
       try {
         const enableResult = await promptForEnableLocationIfNeeded();
         // console.log('enableResult', enableResult);
-        if(enableResult == 'enabled' || enableResult == 'already-enabled'){
-          dispatch(setGpsPermission(true))
-        }
-        else{
+        if (enableResult == 'enabled' || enableResult == 'already-enabled') {
+          dispatch(setGpsPermission(true));
+        } else {
           Alert.alert(
-            "Title", 
-            "Please turn on your GPS location",
+            'Title',
+            'Please turn on your GPS location',
             [
               {
-                text: "OK",
-                onPress: () => console.log("OK Pressed")
-              }
+                text: 'OK',
+                onPress: () => console.log('OK Pressed'),
+              },
             ],
-            { cancelable: false }
+            {cancelable: false},
           );
         }
         // The user has accepted to enable the location services
@@ -92,26 +93,24 @@ export const requestGpsPermission = async (dispatch: any) => {
     //       //   {enableHighAccuracy: false, timeout: 15000},
     //       // );
 
+    // dispatch(setGpsPermission(true));
+    // })
+    // .catch(error => {
+    // The user has not accepted to enable the location services or something went wrong during the process
+    // "error" : { "code" : "ERR00|ERR01|ERR02|ERR03", "message" : "message"}
+    // codes :
+    //  - ERR00 : The user has clicked on Cancel button in the popup
+    //  - ERR01 : If the Settings change are unavailable
+    //  - ERR02 : If the popup has failed to open
+    //  - ERR03 : Internal error
 
-          // dispatch(setGpsPermission(true));
-        // })
-        // .catch(error => {
-          // The user has not accepted to enable the location services or something went wrong during the process
-          // "error" : { "code" : "ERR00|ERR01|ERR02|ERR03", "message" : "message"}
-          // codes :
-          //  - ERR00 : The user has clicked on Cancel button in the popup
-          //  - ERR01 : If the Settings change are unavailable
-          //  - ERR02 : If the popup has failed to open
-          //  - ERR03 : Internal error
-
-        //   console.log(`promptForEnableLocationIfNeeded error :>> `, error);
-        //   dispatch(setGpsPermission(false));
-        // });
+    //   console.log(`promptForEnableLocationIfNeeded error :>> `, error);
+    //   dispatch(setGpsPermission(false));
+    // });
   } catch (error) {
     console.log(`requestGpsPermission error :>> `, error);
   }
 };
-
 
 export const checkLocationPermission = async (dispatch: any) => {
   try {
@@ -309,7 +308,7 @@ export const FetchUserImage = async (
     path: `${RNFetchBlob.fs.dirs.CacheDir}/${userId}.${fileExtension}`, // Set the destination path in the cache directory
   }).fetch('GET', resp?.url);
   if (response.respInfo.status === 200) {
-    console.log('Image successfully stored in cache');
+    // console.log('Image successfully stored in cache');
     // You can now use the locally cached image from the cache directory
     const cachedImagePath = response.path();
     dispatch(
@@ -326,7 +325,6 @@ export const FetchUserImage = async (
   }
 };
 
-
 export const FetchVehicleImage = async (
   dispatch: any,
   vehicleImageKey: string,
@@ -338,26 +336,30 @@ export const FetchVehicleImage = async (
     ContentType: `image/${fileExtension}`,
     type: 'get',
   };
-  const resp: any = await getPreSignedUrl(data);
-  const response = await RNFetchBlob.config({
-    path: `${RNFetchBlob.fs.dirs.CacheDir}/${userId}.${fileExtension}`, // Set the destination path in the cache directory
-  }).fetch('GET', resp?.url);
-  if (response.respInfo.status === 200) {
-    console.log('Image successfully stored in cache');
-    // You can now use the locally cached image from the cache directory
-    const cachedVehicleImagePath = response.path();
-    console.log("???????????????????",cachedVehicleImagePath)
-    dispatch(
-      setVehicleImgExists({
-        exists: true,
-        path: cachedVehicleImagePath,
-      }),
-    );
-    return cachedVehicleImagePath;
-  } else {
-    console.error(
-      'Failed to download image. Status code: ',
-      response.respInfo.status,
-    );
+
+  try {
+    // Get the pre-signed URL for fetching the image from S3
+    const resp: any = await getPreSignedUrl(data);
+
+    // Fetch the image directly from S3 using the URL
+    const response = await RNFetchBlob.fetch('GET', resp?.url);
+
+    if (response.respInfo.status === 200) {
+      // console.log('Image successfully fetched from S3',resp.url);
+
+      dispatch(
+        setVehicleImgExists({
+          exists: true,
+          path: resp?.url,
+        }),
+      );
+    } else {
+      console.error(
+        'Failed to download image. Status code: ',
+        response.respInfo.status,
+      );
+    }
+  } catch (error) {
+    console.error('Error fetching the image: ', error);
   }
 };

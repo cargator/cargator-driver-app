@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "CargatorDriver.app"
-               BlueprintName = "CargatorDriver"
-               ReferencedContainer = "container:CargatorDriver.xcodeproj">
+               BuildableName = "Sukam Express.app"
+               BlueprintName = "Sukam Express"
+               ReferencedContainer = "container:Sukam Express.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "CargatorDriverTests.xctest"
-               BlueprintName = "CargatorDriverTests"
-               ReferencedContainer = "container:CargatorDriver.xcodeproj">
+               BuildableName = "Sukam ExpressTests.xctest"
+               BlueprintName = "Sukam ExpressTests"
+               ReferencedContainer = "container:Sukam Express.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "CargatorDriver.app"
-            BlueprintName = "CargatorDriver"
-            ReferencedContainer = "container:CargatorDriver.xcodeproj">
+            BuildableName = "Sukam Express.app"
+            BlueprintName = "Sukam Express"
+            ReferencedContainer = "container:Sukam Express.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "CargatorDriver.app"
-            BlueprintName = "CargatorDriver"
-            ReferencedContainer = "container:CargatorDriver.xcodeproj">
+            BuildableName = "Sukam Express.app"
+            BlueprintName = "Sukam Express"
+            ReferencedContainer = "container:Sukam Express.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

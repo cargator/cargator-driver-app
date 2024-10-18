@@ -34,7 +34,11 @@ import {userDetails} from '../services/rideservices';
 import {useIsFocused} from '@react-navigation/native';
 import LogOutIcon from '../svg/LogOutIcon';
 import {socketDisconnect} from '../utils/socket';
-import {removeUserData, setVehicleImageKey, setVehicleImgExists} from '../redux/redux';
+import {
+  removeUserData,
+  setVehicleImageKey,
+  setVehicleImgExists,
+} from '../redux/redux';
 import {isEmpty} from 'lodash';
 import RNFetchBlob from 'rn-fetch-blob';
 import {FetchUserImage} from '../components/functions';
@@ -58,12 +62,10 @@ const Profile = (props: any) => {
   const isFocused = useIsFocused();
   const [formattedDate, setFormattedDate] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [vehicleimagePath, setVehicleimagePath] = useState<string | null>();
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const handleLogout = async () => {
     try {
       await RNFetchBlob.fs.unlink(`file://${userImg}`);
-      await RNFetchBlob.fs.unlink(`file://${vehicleImage}`);
       socketDisconnect();
       dispatch(removeUserData());
     } catch (error) {
@@ -77,12 +79,10 @@ const Profile = (props: any) => {
       const response: any = await userDetails(userId);
       setDriverDetails(response.data);
       dispatch(setVehicleImageKey(response.data?.vehicleData.profileImageKey));
-      console.log("qwertyuioiu")
       if (!vehicleImageKey) {
         vehicleImageKey = response.data?.vehicleData.profileImageKey;
       }
       setFormattedDate(moment(response.data.createdAt).format('D MMMM, YYYY'));
-      fetchvehicleImageExists();
     } catch (error) {
       console.log('Driver Detail error :>> ', error);
     } finally {
@@ -107,6 +107,19 @@ const Profile = (props: any) => {
       console.log('error while getting S3SignedUrl', error);
     }
   }
+
+  const fetchvehicleImageExists = async () => {
+    try {
+      // setIsUploading(true)
+      // console.log(
+      //   'fetching vehicle Image.....as he may have cleared cache',
+      //   vehicleImageKey,
+      // );
+      await FetchVehicleImage(dispatch, vehicleImageKey, userId);
+    } catch (error) {
+      console.log('error in checkVehicleImageExists', error);
+    }
+  };
 
   const openCamera = async () => {
     const hasPermission = await requestCameraPermission();
@@ -201,20 +214,20 @@ const Profile = (props: any) => {
             imageKey: key,
             photoUri: photoUri,
           });
-          if(response){
-            await getDriverDetail()
+          if (response) {
+            await fetchvehicleImageExists();
           }
-          setIsUploading(false);
+          // setIsUploading(false);
           Toast.show({
             type: 'success',
             text1: `VEHICLE IMAGE UOLOADED SUCCESSFULLY !`,
             visibilityTime: 5000,
           });
         }
+        setIsUploading(false);
       } catch (error) {
         console.log('error while uploading vehicle image', error);
       }
-      setIsUploading(false);
     } catch (error) {
       console.error('Error uploading image:', error);
       Alert.alert('Error', 'An error occurred while uploading the image.');
@@ -232,23 +245,6 @@ const Profile = (props: any) => {
     }
   }, [isFocused]);
 
-  const fetchvehicleImageExists = async () => {
-    try {
-      console.log(
-        'fetching vehicle Image.....as he may have cleared cache',
-        vehicleImageKey,
-      );
-      const vehicleImagePath = await FetchVehicleImage(
-        dispatch,
-        vehicleImageKey,
-        userId,
-      );
-      setVehicleimagePath(vehicleImagePath);
-    } catch (error) {
-      console.log('error in checkVehicleImageExists', error);
-    }
-  };
-
   const checkImageExists = async () => {
     try {
       const exists = await RNFetchBlob.fs.exists(userImg);
@@ -260,8 +256,9 @@ const Profile = (props: any) => {
       console.log('error in checkProfileImageExists', error);
     }
   };
-  useEffect(() => {    
+  useEffect(() => {
     checkImageExists();
+    fetchvehicleImageExists();
   }, []);
 
   return (
@@ -323,13 +320,13 @@ const Profile = (props: any) => {
                             Math.floor(Math.random() * randomLoderColor.length)
                           ]
                         }
-                        style={{position: 'absolute'}}
+                        style={{position: 'absolute', zIndex: 5}}
                       />
                     )}
 
                     {vehicleImage ? (
                       <Image
-                        source={{uri: `file://${vehicleimagePath}`}}
+                        source={{uri: vehicleImage}}
                         // resizeMode="contain"
                         style={styles.imageViewBox}
                       />
