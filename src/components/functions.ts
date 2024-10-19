@@ -332,7 +332,6 @@ export const FetchVehicleImage = async (
 ) => {
 
   if (!vehicleImageKey) {
-    
     return;
   }
 

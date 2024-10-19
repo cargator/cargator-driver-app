@@ -35,7 +35,7 @@ import {FetchUserImage} from '../components/functions';
 import Toast from 'react-native-toast-message';
 import ImageUpload from '../svg/imageUpload';
 import {randomLoderColor} from '../svg/helper/constant';
-import { ScrollView } from 'react-native-gesture-handler';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const Profile = (props: any) => {
   const userId = useSelector((store: any) => store.userData._id);
@@ -234,38 +234,43 @@ const Profile = (props: any) => {
         <LoaderComponent />
       ) : (
         <>
-         <ScrollView // Add ScrollView here
-          contentContainerStyle={styles.scrollContainer} // Optional: Style for ScrollView content
-        >
-          <View style={styles.container}>
-            <View style={{alignItems: 'center'}}>
-              {userImg ? (
-                <Image
-                  style={styles.profileView}
-                  source={{uri: `file://${userImg}`}}
-                />
-              ) : (
-                <View style={styles.profileIcon}>
-                  <Text style={styles.profileIconText}>
-                    {userData.firstName[0].toUpperCase()}
-                  </Text>
-                </View>
-              )}
+          <ScrollView // Add ScrollView here
+            contentContainerStyle={styles.scrollContainer} // Optional: Style for ScrollView content
+          >
+            <View style={styles.container}>
+              <View style={{alignItems: 'center'}}>
+                {userImg ? (
+                  <Image
+                    style={styles.profileView}
+                    source={{uri: `file://${userImg}`}}
+                  />
+                ) : (
+                  <View style={styles.profileIcon}>
+                    <Text style={styles.profileIconText}>
+                      {userData.firstName[0].toUpperCase()}
+                    </Text>
+                  </View>
+                )}
 
-              {/* uploading vehicle image  */}
+                {/* uploading vehicle image  */}
 
-              <View style={styles.profileDataContainer}>
-               
-            
-
-
+                <View style={styles.profileDataContainer}>
                   <View style={styles.vehicleImageContainer}>
-                  <TouchableOpacity
-                    style={styles.uploadButton}
-                    onPress={openCamera}>
-                    <ImageUpload />
-                  </TouchableOpacity>
-                  <Text style={styles.imageViewHeading}>Vehicle Image</Text>
+                    {!vehicleImage ? (
+                      <TouchableOpacity
+                        style={styles.uploadButtonCenter}
+                        onPress={openCamera}>
+                        <ImageUpload />
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.uploadButtonRightCorner}
+                        onPress={openCamera}>
+                        <ImageUpload />
+                      </TouchableOpacity>
+                    )}
+
+                    <Text style={styles.imageViewHeading}>Vehicle Image</Text>
 
                     {isUploading && (
                       <ActivityIndicator
@@ -292,67 +297,68 @@ const Profile = (props: any) => {
                           color: '#0A0000',
                           fontSize: hp(2),
                           fontWeight: '700',
+                          marginTop: hp(6),
                         }}>
                         Upload your vehicle image
                       </Text>
                     )}
                   </View>
-               
 
-                <View style={styles.contentView}>
-                  <Text style={styles.contentViewHeading}>Name</Text>
-                  <Text style={styles.contentViewText}>
-                    {driverDetails.firstName} {driverDetails.lastName}
-                  </Text>
-                </View>
+                  <View style={styles.contentView}>
+                    <Text style={styles.contentViewHeading}>Name</Text>
+                    <Text style={styles.contentViewText}>
+                      {driverDetails.firstName} {driverDetails.lastName}
+                    </Text>
+                  </View>
 
-                <View style={styles.contentView}>
-                  <Text style={styles.contentViewHeading}>Mobile Number</Text>
-                  <Text style={styles.contentViewText}>
-                    +{driverDetails.mobileNumber}
-                  </Text>
-                </View>
-                <View style={styles.contentView}>
-                  <Text style={styles.contentViewHeading}>Vehicle Number</Text>
-                  <Text style={styles.contentViewText}>
-                    {driverDetails.vehicleNumber
-                      ? `${driverDetails.vehicleNumber.substring(
-                          0,
-                          2,
-                        )}${driverDetails.vehicleNumber.substring(
-                          2,
-                          4,
-                        )}${driverDetails.vehicleNumber.substring(
-                          4,
-                          6,
-                        )}${driverDetails.vehicleNumber.substring(6)}`
-                      : 'N/A'}
-                  </Text>
-                </View>
-                <View style={styles.contentView}>
-                  <Text style={styles.contentViewHeading}>Vehicle Type</Text>
-                  <Text style={styles.contentViewText}>
-                    {driverDetails.vehicleType}
-                  </Text>
-                </View>
-                <View style={styles.contentView}>
-                  <Text style={styles.contentViewHeading}>Vehicle Name</Text>
-                  <Text style={styles.contentViewText}>
-                    {driverDetails.vehicleName}
-                  </Text>
+                  <View style={styles.contentView}>
+                    <Text style={styles.contentViewHeading}>Mobile Number</Text>
+                    <Text style={styles.contentViewText}>
+                      +{driverDetails.mobileNumber}
+                    </Text>
+                  </View>
+                  <View style={styles.contentView}>
+                    <Text style={styles.contentViewHeading}>
+                      Vehicle Number
+                    </Text>
+                    <Text style={styles.contentViewText}>
+                      {driverDetails.vehicleNumber
+                        ? `${driverDetails.vehicleNumber.substring(
+                            0,
+                            2,
+                          )}${driverDetails.vehicleNumber.substring(
+                            2,
+                            4,
+                          )}${driverDetails.vehicleNumber.substring(
+                            4,
+                            6,
+                          )}${driverDetails.vehicleNumber.substring(6)}`
+                        : 'N/A'}
+                    </Text>
+                  </View>
+                  <View style={styles.contentView}>
+                    <Text style={styles.contentViewHeading}>Vehicle Type</Text>
+                    <Text style={styles.contentViewText}>
+                      {driverDetails.vehicleType ? driverDetails.vehicleType : 'NA'}
+                    </Text>
+                  </View>
+                  <View style={styles.contentView}>
+                    <Text style={styles.contentViewHeading}>Vehicle Name</Text>
+                    <Text style={styles.contentViewText}>
+                      {driverDetails.vehicleName ? driverDetails.vehicleName : 'NA'}
+                    </Text>
+                  </View>
                 </View>
               </View>
+              <View style={styles.logoutButtonView}>
+                <TouchableOpacity onPress={handleLogout}>
+                  <LogOutIcon />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.memberSinceView}>
+                <Text style={styles.date}>Member Since {formattedDate}</Text>
+              </View>
             </View>
-            <View style={styles.logoutButtonView}>
-              <TouchableOpacity
-                onPress={handleLogout}>
-                <LogOutIcon />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.memberSinceView}>
-              <Text style={styles.date}>Member Since {formattedDate}</Text>
-            </View>
-          </View>
           </ScrollView>
         </>
       )}
@@ -376,7 +382,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: hp(10)
+    paddingBottom: hp(10),
   },
   container: {
     // flex: 1,
@@ -431,14 +437,14 @@ const styles = StyleSheet.create({
     // marginTop: hp(4),
     width: wp(90),
     height: wp(75), // Set height equal to width for a square
-    shadowOffset: { width: -2, height: 4 },
+    shadowOffset: {width: -2, height: 4},
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 2,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
-},
+  },
 
   imageViewHeading: {
     fontFamily: 'RobotoMono-Regular',
@@ -451,9 +457,18 @@ const styles = StyleSheet.create({
     left: wp(2),
   },
 
-  uploadButton: {
+  uploadButtonCenter: {
     position: 'absolute',
-    top: hp(0.5),
+    marginBottom: hp(5),
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  uploadButtonRightCorner: {
+    position: 'absolute',
+    top: hp(1),
     right: wp(2),
     zIndex: 10,
     borderRadius: 5,
@@ -466,7 +481,7 @@ const styles = StyleSheet.create({
     objectFit: 'fill',
     height: hp(30),
     width: wp(90),
-    marginTop:hp(5)
+    marginTop: hp(5),
   },
 
   contentView: {

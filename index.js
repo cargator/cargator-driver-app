@@ -9,10 +9,6 @@ import {name as appName} from './app.json';
 
 import * as Sentry from '@sentry/react-native';
 
-const sentryProd = 'prod'
-
-if (sentryProd === 'local') {
-
 Sentry.init({
   dsn: 'https://03458ba1d2632278ec64519d2973d263@o4507626764959744.ingest.us.sentry.io/4508138641162240',
   tracesSampleRate: 1.0,
@@ -29,8 +25,6 @@ Sentry.init({
     }),
   ],
 });
-
-}
   
 
 ReactNativeForegroundService.register();
