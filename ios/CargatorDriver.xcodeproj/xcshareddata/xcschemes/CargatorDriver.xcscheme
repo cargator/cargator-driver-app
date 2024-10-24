@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Sukam Express.app"
-               BlueprintName = "Sukam Express"
-               ReferencedContainer = "container:Sukam Express.xcodeproj">
+               BuildableName = "RolDrive.app"
+               BlueprintName = "RolDrive"
+               ReferencedContainer = "container:RolDrive.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "Sukam ExpressTests.xctest"
-               BlueprintName = "Sukam ExpressTests"
-               ReferencedContainer = "container:Sukam Express.xcodeproj">
+               BuildableName = "RolDriveTests.xctest"
+               BlueprintName = "RolDriveTests"
+               ReferencedContainer = "container:RolDrive.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Sukam Express.app"
-            BlueprintName = "Sukam Express"
-            ReferencedContainer = "container:Sukam Express.xcodeproj">
+            BuildableName = "RolDrive.app"
+            BlueprintName = "RolDrive"
+            ReferencedContainer = "container:RolDrive.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Sukam Express.app"
-            BlueprintName = "Sukam Express"
-            ReferencedContainer = "container:Sukam Express.xcodeproj">
+            BuildableName = "RolDrive.app"
+            BlueprintName = "RolDrive"
+            ReferencedContainer = "container:RolDrive.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

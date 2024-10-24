@@ -59,7 +59,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'Sukam Express' do
+target 'RolDrive' do
   config = use_native_modules!
 
   # Flags change depending on the env values.
@@ -79,7 +79,7 @@ target 'Sukam Express' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'Sukam ExpressTests' do
+  target 'RolDriveTests' do
     inherit! :complete
     # Pods for testing
   end
