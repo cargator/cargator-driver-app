@@ -4,40 +4,39 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {requestLocationPermission} from './functions';
-import LocationPermission from '../svg/LocationPermission';
+// import LocationPermission from '../svg/LocationPermission';
+import LocationPermission from '../svg/AllowGPS'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const LocationPermissionScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
-  // const locationPermission = useSelector((store: any) => store.locationPermission,);
+  const locationPermission = useSelector((store: any) => store.locationPermission,);
 
   return (
-    <View style={styles.container}>
-      <View></View>
-
-      <View style={styles.imageContainer}>
-        <LocationPermission />
-
-
+    <SafeAreaView style={styles.container}>
+  
+    <View style={styles.imageContainer}>
+      <LocationPermission />
+  
+      <View style={styles.overlay}>
         <Text style={styles.headingText}>Location permission required</Text>
-
         <Text style={styles.subHeadingText}>
-          Allow Sukam to automatically detect your current location to show
+          Allow ROl Drive to automatically detect your current location to show
           you available orders
         </Text>
+        
+        <TouchableOpacity
+          onPress={() => {
+            requestLocationPermission(dispatch);
+          }}
+          style={styles.button}>
+          <Text style={styles.buttonText}>Allow</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        // activeOpacity={0.9}
-        onPress={() => {
-          requestLocationPermission(dispatch);
-          // navigation.navigate('LoginScreen');
-        }}
-        style={styles.button}>
-        <Text style={styles.buttonText}>Allow</Text>
-      </TouchableOpacity>
     </View>
+  </SafeAreaView>
   );
 };
 
@@ -45,39 +44,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-around',
+    // justifyContent: 'center',
   },
   imageContainer: {
-    justifyContent: 'center',
+    // justifyContent: 'center',
     alignItems: 'center',
-    width: wp(85),
+    // width: wp(85),
+    // height: hp(0), 
+  },
+  overlay: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    width: wp(100),
+    height: hp(95),
+    paddingHorizontal: wp(5),
   },
   headingText: {
-    fontWeight: '600',
+    fontFamily:'RobotoMono-Regular',
+    fontWeight: '700',
     fontSize: wp(5),
-    color: '#000',
+    color: '#000000',
     textAlign: 'center',
-    marginTop: hp(4),
-    marginBottom: hp(1),
+    marginBottom: hp(2),
   },
   subHeadingText: {
     fontSize: wp(4.8),
-    color: '#464E5F',
+    color: '#000000',
     textAlign: 'center',
+    marginBottom: hp(2),
   },
   button: {
     width: wp(90),
     height: hp(7),
-    backgroundColor: '#2BB180',
+    backgroundColor: '#FF5302',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: wp(3.5),
+    marginTop:hp(2)
   },
   buttonText: {
     fontSize: wp(5.5),
     fontWeight: '600',
-    color: '#fff',
+    color: '#FFFFFF',
   },
 });
-
 export default LocationPermissionScreen;

@@ -100,6 +100,7 @@ const LoginScreen = ({navigation}: any) => {
       }, 1000);
     } catch (error: any) {
       console.log(error);
+      const errorMessage = error?.response?.data?.error || 'An unexpected error occurred.';
       Toast.show({
         type: 'error',
         // text1: error.message,
@@ -124,7 +125,7 @@ const LoginScreen = ({navigation}: any) => {
           width: wp(100),
           flex: 1,
         }}
-        source={require('../images/SukamExpress.png')}>
+        source={require('../images/RolDrive.png')}>
         <View style={styles.bottomContainer}>
           <Formik
             initialValues={{
@@ -216,8 +217,8 @@ const LoginScreen = ({navigation}: any) => {
                   <View style={styles.buttonContainer}>
                     <TouchableOpacity
                       style={[
-                        styles.button,
-                        {backgroundColor: isPhoneValid ? '#118F5E' : 'gray'},
+                        styles.loginButton,
+                        {backgroundColor: isPhoneValid ? '#FF5302' : 'gray'},
                       ]}
                       onPress={() => handleSubmit()}
                       disabled={isSendOtpClicked || !isPhoneValid} // Disable when phone isn't valid
@@ -315,12 +316,12 @@ const styles = StyleSheet.create({
   buttonContainer: {
     justifyContent: 'center',
   },
-  button: {
+  loginButton: {
     width: wp(90),
     height: hp(6),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#118F5E',
+    backgroundColor: '#FF5302',
     borderRadius: wp(3),
     flexDirection: 'row',
     gap: wp(2),
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     padding: 10,
     borderRadius: 5,
-    textColor: 'grey',
+    color: 'grey',
   },
   countryCodeView: {
     height: hp(5.6),

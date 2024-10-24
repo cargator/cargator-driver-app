@@ -26,7 +26,7 @@ const authSlice = createSlice({
       path: ''
     },
     vehicleImageKey: '',
-    currentOnGoingOrderDetails: {},
+    currentOnGoingRide: {},
     rejectedOrders: [],
     riderPath:[],
   },
@@ -48,10 +48,10 @@ const authSlice = createSlice({
         path: '',
       };
       state.vehicleImageKey = '';
-      state.currentOnGoingOrderDetails = {};
+      state.currentOnGoingRide = {};
     },
     resetAllOrders: state => {
-      state.currentOnGoingOrderDetails = {};
+      state.currentOnGoingRide = {};
     },
     setPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
@@ -80,17 +80,17 @@ const authSlice = createSlice({
     setVehicleImageKey: (state, action) => {
       state.vehicleImageKey = action.payload;
     },
-    setCurrentOnGoingOrderDetails: (state, action) => {
-      state.currentOnGoingOrderDetails = action.payload;
+    setCurrentOnGoingRide: (state, action) => {
+      state.currentOnGoingRide = action.payload;
     },
-    removeCurrentOnGoingOrderDetails: state => {
-      state.currentOnGoingOrderDetails = {};
+    removeCurrentOnGoingRide: state => {
+      state.currentOnGoingRide = {};
     },
     setRejectedOrders: (state, action) => {
       state.rejectedOrders = action.payload;
     },
     removeRejectedOrders: state => {
-      state.currentOnGoingOrderDetails = [];
+      state.currentOnGoingRide = [];
     },
     setRiderPath: (state, action) => {
       state.riderPath = action.payload;
@@ -112,8 +112,8 @@ export const {
   setUserImgExists,
   setVehicleImgExists,
   setVehicleImageKey,
-  setCurrentOnGoingOrderDetails,
-  removeCurrentOnGoingOrderDetails,
+  setCurrentOnGoingRide,
+  removeCurrentOnGoingRide,
   resetAllOrders,
   setRejectedOrders,
   removeRejectedOrders,

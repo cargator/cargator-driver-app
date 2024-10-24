@@ -59,6 +59,10 @@ export const getAllOrdersAPI = () => {
   return customAxios.get('/get-pending-orders');
 };
 
+export const getdriverDetailsAPI = (id: any) => {
+  return customAxios.get(`/getDriverById/${id}`);
+};
+
 export const orderAcceptAPI = (order: any) => {
   return customAxios.post('/order-accept', order);
 };

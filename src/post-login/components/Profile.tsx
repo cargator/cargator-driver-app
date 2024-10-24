@@ -13,28 +13,27 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import ImagePicker from 'react-native-image-crop-picker';
-import {getS3SignUrlApi, updateVehicleImageKey} from '../services/userservices';
+import {getdriverDetailsAPI, getS3SignUrlApi, updateVehicleImageKey} from '../../services/userservices';
 import axios from 'axios';
 import {Buffer} from 'buffer';
 import {
   FetchVehicleImage,
   requestCameraPermission,
-} from '../components/functions';
+} from '../../components/functions';
 import {useDispatch, useSelector} from 'react-redux';
-import SidebarIcon from '../svg/SidebarIcon';
+import SidebarIcon from '../../svg/SidebarIcon';
 import moment from 'moment';
-import LoaderComponent from '../components/LoaderComponent';
-import {userDetails} from '../services/rideservices';
+import LoaderComponent from '../../components/LoaderComponent';
 import {useIsFocused} from '@react-navigation/native';
-import LogOutIcon from '../svg/LogOutIcon';
-import {socketDisconnect} from '../utils/socket';
-import {removeUserData, setVehicleImageKey} from '../redux/redux';
+import LogOutIcon from '../../svg/LogOutIcon';
+// import {socketDisconnect} from '../utils/socket';
+import {removeUserData, setVehicleImageKey} from '../../redux/redux';
 import {isEmpty} from 'lodash';
 import RNFetchBlob from 'rn-fetch-blob';
-import {FetchUserImage} from '../components/functions';
+import {FetchUserImage} from '../../components/functions';
 import Toast from 'react-native-toast-message';
-import ImageUpload from '../svg/imageUpload';
-import {randomLoderColor} from '../svg/helper/constant';
+import ImageUpload from '../../svg/imageUpload';
+import {randomLoderColor} from '../../svg/helper/constant';
 import {ScrollView} from 'react-native-gesture-handler';
 
 const Profile = (props: any) => {
@@ -56,7 +55,7 @@ const Profile = (props: any) => {
   const handleLogout = async () => {
     try {
       // await RNFetchBlob.fs.unlink(`file://${userImg}`);
-      socketDisconnect();
+    //   socketDisconnect();
       dispatch(removeUserData());
     } catch (error) {
       console.log('error while logging out', error);
@@ -66,7 +65,7 @@ const Profile = (props: any) => {
   const getDriverDetail = async () => {
     try {
       setLoading(true);
-      const response: any = await userDetails(userId);
+      const response: any = await getdriverDetailsAPI(userId);
       setDriverDetails(response.data);
       dispatch(setVehicleImageKey(response.data?.vehicleData?.profileImageKey));
       if (!vehicleImageKey) {
@@ -225,7 +224,7 @@ const Profile = (props: any) => {
             marginLeft: wp(2),
             marginTop: hp(0.4),
           }}>
-          <Text style={{fontSize: hp(3), fontFamily: 'RobotoMono-Regular'}}>
+          <Text style={{fontSize: hp(3), fontFamily: 'RobotoMono-Regular',fontWeight:'600', color:'#212121'}}>
             My Profile
           </Text>
         </View>
@@ -371,25 +370,26 @@ const styles = StyleSheet.create({
     width: wp(18),
     height: wp(18),
     borderRadius: wp(50),
-    backgroundColor: 'navy',
+    backgroundColor: '#FF5302',
     alignItems: 'center',
     justifyContent: 'center',
   },
   profileIconText: {
     fontFamily: 'RobotoMono-Regular',
-    color: 'white',
-    fontSize: wp(5),
+    color: '#FFFFFF',
+    fontSize: wp(10),
   },
   scrollContainer: {
     flexGrow: 1,
     paddingBottom: hp(10),
+    backgroundColor: '#FFF8F5',
+    paddingTop:hp(2)
   },
   container: {
     // flex: 1,
     flexDirection: 'column',
     justifyContent: 'space-around',
     alignItems: 'center',
-    // marginTop: hp(4),
   },
   vehicleImage: {
     flexDirection: 'column',
@@ -405,6 +405,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: wp(2),
@@ -512,7 +513,7 @@ const styles = StyleSheet.create({
   loaderStyles: {marginTop: hp(40), alignSelf: 'center'},
   logoutButtonView: {
     top: hp(3),
-    backgroundColor: 'red',
+    backgroundColor: '#FC5302',
     width: wp(50),
     height: hp(5),
     borderRadius: hp(5),

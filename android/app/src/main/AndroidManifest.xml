@@ -10,7 +10,7 @@
   <uses-permission android:name="android.permission.CAMERA" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/cargator_icon_square" android:roundIcon="@mipmap/cargator_icon_circle" android:allowBackup="false" android:theme="@style/AppTheme"  android:requestLegacyExternalStorage="true">
+  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/roldrive_square" android:roundIcon="@mipmap/roldrive_round" android:allowBackup="false" android:theme="@style/AppTheme"  android:requestLegacyExternalStorage="true">
     <!--  You will only need to add this meta-data tag, but make sure it's a child of application  -->
     <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyD5uT-lkmYmOXp58LmMi5939ZFstUDpC0k"/>
       <meta-data

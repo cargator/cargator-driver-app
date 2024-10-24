@@ -25,7 +25,7 @@ import {
 } from '../redux/redux';
 import {login, verifyOtp} from '../services/userservices';
 import RightArrow from '../svg/RightArrow';
-import {getFcmTokenAndSendToBackend} from '../utils/firebase-config';
+// import {getFcmTokenAndSendToBackend} from '../utils/firebase-config';
 
 const LoginOtpScreen = ({route}: any) => {
   const dispatch = useDispatch();
@@ -64,7 +64,8 @@ const LoginOtpScreen = ({route}: any) => {
       if (res.status == 200) {
         Toast.show({
           type: 'success',
-          text1: 'Welcome to Sukam-Express!!!',
+          text1: 'Welcome to ROlDrive!!!',
+          visibilityTime: 20000,
         });
         setIsOtpVerified(true);
 
@@ -75,10 +76,10 @@ const LoginOtpScreen = ({route}: any) => {
         dispatch(setUserId(res.user._id));
         dispatch(setLoginToken(res.token));
         dispatch(resetAllOrders());
-        setTimeout(async () => {
-          setIsOtpEntered(false);
-          await getFcmTokenAndSendToBackend();
-        }, 1000);
+        // setTimeout(async () => {
+        //   setIsOtpEntered(false);
+        //   await getFcmTokenAndSendToBackend();
+        // }, 1000);
       }
     } catch (error: any) {
       setOTP('');
@@ -132,7 +133,7 @@ const LoginOtpScreen = ({route}: any) => {
         }}
         source={
           Platform.OS == 'android'
-            ? require('../images/SukamExpress.png')
+            ? require('../images/RolDrive.png')
             : require('../images/LoginBgIos.png')
         }>
         <View style={styles.bottomContainer}>
@@ -174,7 +175,7 @@ const LoginOtpScreen = ({route}: any) => {
 
             <View style={styles.continueBtnContainer}>
               <TouchableOpacity
-                style={[styles.continueBtn, {backgroundColor: OTP.length == 4 ? '#118F5E' : 'gray'}]}
+                style={[styles.continueBtn, {backgroundColor: OTP.length == 4 ? '#FF5302' : 'gray'}]}
                 // disabled={!isOtpVerified}
                 disabled={isOtpEntered}
                 onPress={() => handleContinueBtn()}>
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: wp(1),
     color: 'black',
     fontSize: wp(6),
-    borderColor: '#118F5E',
+    borderColor: '#FF5302',
     fontWeight: '600',
   },
   underlineStyleHighLighted: {
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     height: hp(6),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#118F5E',
+    backgroundColor: '#FF5302',
     borderRadius: wp(3),
     marginTop: hp(2),
     flexDirection: 'row',

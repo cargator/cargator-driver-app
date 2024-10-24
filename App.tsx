@@ -37,13 +37,11 @@ import {PersistGate} from 'redux-persist/integration/react';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   checkLocationPermission,
+  requestGpsPermission,
   requestLocationPermission,
 } from './src/components/functions';
 import GPSPermissionScreen from './src/components/GPSPermissionScreen';
 import LocationPermissionScreen from './src/components/LocationPermissionScreen';
-import HistoryPage from './src/post-login/petPoojaComponent/HistoryPage';
-import PetPujaScreen from './src/post-login/PetPujaScreen';
-import Profile from './src/post-login/Profile';
 import LoginOtpScreen from './src/pre-login/LoginOtpScreen';
 import LoginScreen from './src/pre-login/LoginScreen';
 import store, {
@@ -54,6 +52,12 @@ import store, {
 import {requestUserPermission} from './src/utils/firebase-config';
 import {socketDisconnect} from './src/utils/socket';
 import {updateDeviceInfo} from './src/services/userservices';
+import HomeScreen from './src/post-login/HomeScreen';
+import Profile from './src/post-login/components/Profile';
+import RideHistory from './src/post-login/components/RideHistory';
+import { toastConfig } from './toastconfig'; // Import custom toast config
+import RideAcceptScreen from './src/post-login/components/RideAcceptScreen';
+
 
 const Appdrawercontent = (props: any) => {
   const dispatch = useDispatch();
@@ -62,7 +66,7 @@ const Appdrawercontent = (props: any) => {
 
   const updateDeviceInformation = async (data: any) => {
     try {
-      const res: any = await updateDeviceInfo(data);
+      // const res: any = await updateDeviceInfo(data);
       // console.log('device info response>>>', res);
     } catch (error: any) {
       console.log('error device info api>>', error);
@@ -87,12 +91,13 @@ const Appdrawercontent = (props: any) => {
           systemVersion,
           batteryLevel,
         };
-        updateDeviceInformation(data);
+        // updateDeviceInformation(data);
       });
     };
 
     requestUserPermission();
-    getDeviceInfo();
+    // getDeviceInfo();
+    requestGpsPermission(dispatch);
   }, []);
 
   const userImg = useSelector((store: any) => store.userImage.path);
@@ -124,14 +129,14 @@ Appearance.setColorScheme('light');
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-const MapScreenDrawer = () => {
+const HomeScreenDrawer = () => {
   return (
     <Drawer.Navigator
       screenOptions={{headerShown: false, swipeEnabled: false}}
       drawerContent={props => <Appdrawercontent {...props} />}>
-      <Drawer.Screen name="Home" component={PetPujaScreen} />
+      <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Profile" component={Profile} />
-      <Drawer.Screen name="Order History" component={HistoryPage} />
+      <Drawer.Screen name="RideHistory" component={RideHistory} />
     </Drawer.Navigator>
   );
 };
@@ -140,6 +145,7 @@ export const Routing = () => {
   const dispatch = useDispatch();
   const loginToken = useSelector((store: any) => store.loginToken);
   const gpsPermission = useSelector((store: any) => store.gpsPermission);
+  const currentOnGoingRide = useSelector((store: any) => store.currentOnGoingRide);
   const locationPermission = useSelector(
     (store: any) => store.locationPermission,
   );
@@ -156,7 +162,6 @@ export const Routing = () => {
 
     messaging().onNotificationOpenedApp((remoteMessage: any) => {
       if (navigationRef.current?.getCurrentRoute().name === 'Home') {
-        // Force update or refresh home screen state
         navigationRef.current?.navigate('Home', {
           refresh: !navigationRefFlag.current,
         });
@@ -206,38 +211,48 @@ export const Routing = () => {
 
   return (
     <SafeAreaProvider style={{backgroundColor: '#ffffff'}}>
-      <NavigationContainer ref={navigationRef}>
-        <Stack.Navigator
-          initialRouteName="LoginScreen"
-          // initialRouteName="PetPujaScreen"
-          screenOptions={{headerShown: false, orientation: 'portrait'}}>
-          {!locationPermission ? (
+    <NavigationContainer ref={navigationRef}>
+      <Stack.Navigator
+        initialRouteName="LoginScreen"
+        // initialRouteName="PetPujaScreen"
+        screenOptions={{headerShown: false, orientation: 'portrait'}}>
+        {!locationPermission ? (
+          <Stack.Screen
+            name="LocationPermissionScreen"
+            component={LocationPermissionScreen}
+          />
+        ) : Platform.OS == 'android' && !gpsPermission ? (
+          <Stack.Screen
+            name="GPSPermissionScreen"
+            component={GPSPermissionScreen}
+          />
+        ) : !loginToken ? (
+          <>
+            <Stack.Screen name="LoginScreen" component={LoginScreen} />
+            <Stack.Screen name="LoginOtpScreen" component={LoginOtpScreen} />
+          </>
+        ) : currentOnGoingRide.length ? (
+          // Show RideAcceptScreen if there is an ongoing ride
+          <Stack.Screen
+            name="RideAcceptScreen"
+            component={RideAcceptScreen}
+            initialParams={{ ride: currentOnGoingRide }} // Pass ongoing ride data
+          />
+        ) : (
+          <>
             <Stack.Screen
-              name="LocationPermissionScreen"
-              component={LocationPermissionScreen}
+              name="HomeScreenDrawer"
+              component={HomeScreenDrawer}
             />
-          ) : Platform.OS == 'android' && !gpsPermission ? (
             <Stack.Screen
-              name="GPSPermissionScreen"
-              component={GPSPermissionScreen}
+              name="RideAcceptScreen"
+              component={RideAcceptScreen}
             />
-          ) : !loginToken ? (
-            <>
-              <Stack.Screen name="LoginScreen" component={LoginScreen} />
-              <Stack.Screen name="LoginOtpScreen" component={LoginOtpScreen} />
-            </>
-          ) : (
-            <>
-              <Stack.Screen
-                name="MapScreenDrawer"
-                component={MapScreenDrawer}
-              />
-            </>
-          )}
-        </Stack.Navigator>
-        <Toast />
-      </NavigationContainer>
-    </SafeAreaProvider>
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  </SafeAreaProvider>
   );
 };
 
@@ -247,6 +262,7 @@ function App(): JSX.Element {
       <PersistGate persistor={persistor}>
         <SafeAreaView style={styles.safeAreaView}>
           <Routing />
+          <Toast config={toastConfig} />
         </SafeAreaView>
       </PersistGate>
     </Provider>
